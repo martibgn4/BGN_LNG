@@ -1,0 +1,1 @@
+# Package initialiser - needed for xlwings Excel addin
