@@ -316,7 +316,6 @@ class TestSeasonalVolCorr(TestVolCorr):
         assert equiv_sigma == sigma
 
     def test_vol_ratio_3fs(self):
-        # TODO: test the seasonal vol / spot ratios behaviour
         equivalent_vol_corr = VolCorr(power_mean_rev_procs)
         vol_corr = VolCorr(power_mean_rev_procs, spot_vol_ratios=self.dated_spot_vol_ratios)
 
