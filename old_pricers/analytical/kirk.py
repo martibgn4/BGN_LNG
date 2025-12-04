@@ -1,0 +1,242 @@
+from math import log, exp, sqrt
+import numpy as np
+from scipy.stats import norm, multivariate_normal
+
+from general_utils import is_array
+from quantity import Quantity, value, units, convert_into
+from trade_data import OptionType
+from value_object import Attr, Object
+
+from thorn.core.pricers.analytical.european_option import Black76Option
+
+POS = True
+NEG = False
+
+N = norm.cdf
+N_dash = norm.pdf
+N_inv = norm.ppf
+
+
+class KirkParameters(Object):
+    pos_fwd: Quantity = Attr()
+    neg_fwd: Quantity = Attr()
+    strike: Quantity = Attr()
+    pos_vol: float = Attr()
+    neg_vol: float = Attr()
+    corr: float = Attr()
+    te: float = Attr()
+    option_type: OptionType = Attr()
+
+    def __mul__(self, notional):
+        return self.clone(
+            pos_fwd=self.pos_fwd * notional,
+            neg_fwd=self.neg_fwd * notional,
+            strike=self.strike * notional
+        )
+
+    @property
+    def result(self):
+        return self
+
+
+class KirkSpreadPricer:
+    def __init__(self, pos_fwd, neg_fwd, strike, pos_vol, neg_vol, corr, te, option_type=None):
+        self.pos_fwd = pos_fwd
+        self.neg_fwd = neg_fwd
+        self.pos_vol = pos_vol.mean() if is_array(value(pos_vol)) else pos_vol
+        adj_neg_vol = self._adjust_neg_vol(neg_fwd, neg_vol, strike)
+        self._starting_neg_vol = neg_vol.mean() if is_array(value(neg_vol)) else neg_vol
+        self.neg_vol = adj_neg_vol.mean() if is_array(value(adj_neg_vol)) else adj_neg_vol
+        self.strike = strike
+        self.corr = corr
+        self.te = te
+        self.option_type = option_type
+
+    @staticmethod
+    def _adjust_neg_vol(neg_fwd, neg_vol, strike):
+        adj_neg_vol = -neg_fwd * neg_vol
+        if len(np.atleast_1d(value(adj_neg_vol))) == 1:
+            if adj_neg_vol != 0:
+                try:
+                    adj_neg_vol /= (-neg_fwd + strike)
+                except ZeroDivisionError as e:
+                    adj_neg_vol = np.inf
+        else:
+            zeros = (adj_neg_vol != 0)
+            adj_neg_vol[zeros] /= (-neg_fwd + strike)[zeros]
+        return adj_neg_vol
+
+    @property
+    def spread_vol(self):
+        if self.neg_vol <= 0:
+            return self.pos_vol
+        if self.pos_vol <= 0:
+            return self.neg_vol
+        pos_var = self.pos_vol * self.pos_vol
+        neg_var = self.neg_vol * self.neg_vol
+        pos_neg_cov = -2 * self.corr * self.pos_vol * self.neg_vol
+        # Handle precision errors when using proxy vols
+        return sqrt(max(0.0, pos_var + neg_var + pos_neg_cov))
+
+    def _option(self, option_type, intrinsic):
+        """ [s_1 - (s_2 + k)]^+ """
+        s = self.pos_fwd
+        k = -self.neg_fwd + self.strike
+        vol = 0 if intrinsic else self.spread_vol
+        return Black76Option(s, k, vol, self.te, option_type or self.option_type)
+
+    def _option_neg(self, option_type, intrinsic):
+        """ [(s_1 - k) - s_2]^+ """
+        s = -self.neg_fwd
+        k = self.pos_fwd - self.strike
+        vol = 0 if intrinsic else self.spread_vol
+        call_put = option_type or self.option_type
+        return Black76Option(s, k, vol, self.te, call_put.inverse)
+
+    def option_value(self, option_type=None, intrinsic=False):
+        option = self._option(option_type, intrinsic)
+        return option.value
+
+    def _delta_leg(self, is_pos_leg, option_type=None, intrinsic=False):
+        # Does not support pathwise
+        option = (self._option if is_pos_leg else self._option_neg)(option_type, intrinsic)
+        tol = 1e-6
+        if option.sigma < tol:
+            if value(option.value) > tol:  # In the money
+                return option.omega
+            return 0.0  # Out of the money
+        return option.delta
+
+    def delta_pos_leg(self, option_type=None, intrinsic=False):
+        return self._delta_leg(True, option_type, intrinsic)
+
+    def delta_neg_leg(self, option_type=None, intrinsic=False):
+        return self._delta_leg(False, option_type, intrinsic)
+
+    def delta(self, option_type=None, intrinsic=False):
+        return self.delta_pos_leg(option_type, intrinsic)
+
+    def gamma_pos_leg(self, option_type=None, intrinsic=False):
+        option = self._option(option_type, intrinsic)
+        return option.gamma
+
+    def gamma_neg_leg(self, option_type=None, intrinsic=False):
+        option = self._option_neg(option_type, intrinsic)
+        return option.gamma
+
+    def gamma(self, option_type=None, intrinsic=False):
+        return self.gamma_pos_leg(option_type, intrinsic)
+
+    def vega(self, option_type=None, intrinsic=False):
+        option = self._option(option_type, intrinsic)
+        return option.vega
+
+    def _vega_leg(self, is_pos=True):
+        dc_dsigma = self.vega()
+        b = -self.neg_fwd / (-self.neg_fwd + self.strike)
+        if is_pos:
+            dsigma_dsigma_leg = (self.pos_vol - self._starting_neg_vol * b * self.corr) / self.spread_vol
+        else:
+            dsigma_dsigma_leg = (self._starting_neg_vol * (b ** 2) - self.pos_vol * b * self.corr) / self.spread_vol
+        return dc_dsigma * dsigma_dsigma_leg
+
+    def vega_pos_leg(self):
+        r"""
+        \frac{\partial C}{\partial \sigma_1}
+        = \frac{\partial C}{\partial \sigma} \frac{\partial \sigma}{\partial \sigma_1}
+        = \frac{\partial C}{\partial \sigma}  \frac{\sigma_1 - \sigma_2 b \rho}{\sigma}
+        where b = \frac{s_2}{s_2 + k}
+        """
+        return self._vega_leg(True)
+
+    def vega_neg_leg(self):
+        r"""
+        \frac{\partial C}{\partial \sigma_2}
+        = \frac{\partial C}{\partial \sigma} \frac{\partial \sigma}{\partial \sigma_2}
+        = \frac{\partial C}{\partial \sigma} \frac{\sigma_2 b^2 - \sigma_1 b \rho}{\sigma}
+        where b = \frac{s_2}{s_2 + k}
+        """
+        return self._vega_leg(False)
+
+    def theta(self, option_type=None, intrinsic=False):
+        option = self._option(option_type, intrinsic)
+        return option.theta
+
+
+class GaussianCopulaSpreadPricer:
+    nb_integration_points = 500
+    nb_stdevs = 7
+
+    def __init__(self, pos_fwd, neg_fwd, strike, pos_surface, neg_surface, corr, te):
+        assert pos_fwd > 0 > neg_fwd
+        self.unit = units(strike)
+        self.pos_fwd = value(convert_into(pos_fwd, self.unit))
+        self.neg_fwd = -value(convert_into(neg_fwd, self.unit))
+        self.pos_surface = pos_surface
+        self.neg_surface = neg_surface
+        self.strike = value(strike)
+        self.corr = corr
+        self.te = te
+
+    def option_value(self, option_type, intrinsic=False):
+        intrinsic_value = Black76Option(self.pos_fwd, self.neg_fwd + self.strike, 0, self.te, option_type).value
+        if intrinsic:
+            return intrinsic_value * self.unit
+        call_premium = self.call_value()
+        if option_type is OptionType.CALL:
+            return max(intrinsic_value, call_premium) * self.unit
+        else:
+            return max(intrinsic_value, call_premium + self.neg_fwd - self.pos_fwd + self.strike) * self.unit
+
+    def call_value(self):
+        k_min, k_max = self._integration_bounds()
+        dk = (k_max - k_min) / self.nb_integration_points
+        lower, upper = -np.inf * np.ones(2), np.inf * np.ones(2)
+        correl = np.array(self.corr)
+        integral = 0
+        k_ys = np.exp([k_min + i * dk for i in range(self.nb_integration_points + 1)])
+        k_xs = k_ys + self.strike
+        lower_0s = norm.ppf(self.cdf(POS, k_xs))
+        upper_1s = norm.ppf(self.cdf(NEG, k_ys))
+        for k_y, lower_0, upper_1 in zip(k_ys, lower_0s, upper_1s):
+            lower[0] = lower_0
+            upper[1] = upper_1
+            cdf_xy = self.norm2_cdf(lower=lower, upper=upper, correl=correl)
+            integral += cdf_xy * k_y * dk
+        return integral
+
+    def _integration_bounds(self):
+        k_min, k_max = np.inf, 0
+        for fwd, surface, strike_adj in [
+            (self.pos_fwd, self.pos_surface, self.strike),
+            (self.neg_fwd, self.neg_surface, 0)
+        ]:
+            k_min = min(k_min, fwd * exp(surface.get_inv_cdf(self.te, norm.cdf(-self.nb_stdevs))) - strike_adj)
+            k_max = max(k_max, fwd * exp(surface.get_inv_cdf(self.te, norm.cdf(self.nb_stdevs))) - strike_adj)
+
+        return log(max(1e-6, k_min)), log(max(1e-6, k_max))
+
+    def cdf(self, sign, k):
+        _k = np.atleast_1d(k)
+        res = np.zeros_like(_k)
+        mask = _k > 0
+        surface = self.pos_surface if sign == POS else self.neg_surface
+        fwd = self.pos_fwd if sign == POS else self.neg_fwd
+        res[mask] = surface.get_cdf(self.te, np.log(_k[mask] / fwd))
+        return res
+
+    @staticmethod
+    def norm2_cdf(lower, upper, correl):
+        if lower[0] == np.inf or lower[1] == np.inf or upper[0] == -np.inf or upper[1] == -np.inf:
+            return 0.
+
+        mean = np.zeros(2)
+        cov = np.array([
+            [1.0, correl],
+            [correl, 1.0],
+        ])
+
+        return  multivariate_normal(mean=mean, cov=cov).cdf(upper, lower_limit=lower)
+
+
+
