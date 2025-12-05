@@ -2,12 +2,8 @@ from math import log, exp, sqrt
 import numpy as np
 from scipy.stats import norm, multivariate_normal
 
-from general_utils import is_array
-from quantity import Quantity, value, units, convert_into
-from trade_data import OptionType
-from value_object import Attr, Object
-
-from thorn.core.pricers.analytical.european_option import Black76Option
+from BGN_LNG.Pricers.european_option import Black76Option
+from BGN_LNG.Utils.datetime_utils import time_between
 
 POS = True
 NEG = False
@@ -16,37 +12,14 @@ N = norm.cdf
 N_dash = norm.pdf
 N_inv = norm.ppf
 
-
-class KirkParameters(Object):
-    pos_fwd: Quantity = Attr()
-    neg_fwd: Quantity = Attr()
-    strike: Quantity = Attr()
-    pos_vol: float = Attr()
-    neg_vol: float = Attr()
-    corr: float = Attr()
-    te: float = Attr()
-    option_type: OptionType = Attr()
-
-    def __mul__(self, notional):
-        return self.clone(
-            pos_fwd=self.pos_fwd * notional,
-            neg_fwd=self.neg_fwd * notional,
-            strike=self.strike * notional
-        )
-
-    @property
-    def result(self):
-        return self
-
-
 class KirkSpreadPricer:
-    def __init__(self, pos_fwd, neg_fwd, strike, pos_vol, neg_vol, corr, te, option_type=None):
+    def __init__(self, pos_fwd, neg_fwd, strike, pos_vol, neg_vol, corr, te, option_type="c"):
         self.pos_fwd = pos_fwd
         self.neg_fwd = neg_fwd
-        self.pos_vol = pos_vol.mean() if is_array(value(pos_vol)) else pos_vol
+        self.pos_vol = pos_vol
         adj_neg_vol = self._adjust_neg_vol(neg_fwd, neg_vol, strike)
-        self._starting_neg_vol = neg_vol.mean() if is_array(value(neg_vol)) else neg_vol
-        self.neg_vol = adj_neg_vol.mean() if is_array(value(adj_neg_vol)) else adj_neg_vol
+        self._starting_neg_vol = neg_vol
+        self.neg_vol = adj_neg_vol
         self.strike = strike
         self.corr = corr
         self.te = te
@@ -55,15 +28,11 @@ class KirkSpreadPricer:
     @staticmethod
     def _adjust_neg_vol(neg_fwd, neg_vol, strike):
         adj_neg_vol = -neg_fwd * neg_vol
-        if len(np.atleast_1d(value(adj_neg_vol))) == 1:
-            if adj_neg_vol != 0:
-                try:
-                    adj_neg_vol /= (-neg_fwd + strike)
-                except ZeroDivisionError as e:
-                    adj_neg_vol = np.inf
-        else:
-            zeros = (adj_neg_vol != 0)
-            adj_neg_vol[zeros] /= (-neg_fwd + strike)[zeros]
+        if adj_neg_vol != 0:
+            try:
+                adj_neg_vol /= (-neg_fwd + strike)
+            except ZeroDivisionError as e:
+                adj_neg_vol = np.inf
         return adj_neg_vol
 
     @property
@@ -91,7 +60,8 @@ class KirkSpreadPricer:
         k = self.pos_fwd - self.strike
         vol = 0 if intrinsic else self.spread_vol
         call_put = option_type or self.option_type
-        return Black76Option(s, k, vol, self.te, call_put.inverse)
+        inverse_call_put = "c" if call_put == "p" else "c"
+        return Black76Option(s, k, vol, self.te, inverse_call_put)
 
     def option_value(self, option_type=None, intrinsic=False):
         option = self._option(option_type, intrinsic)
@@ -102,7 +72,7 @@ class KirkSpreadPricer:
         option = (self._option if is_pos_leg else self._option_neg)(option_type, intrinsic)
         tol = 1e-6
         if option.sigma < tol:
-            if value(option.value) > tol:  # In the money
+            if option.value > tol:  # In the money
                 return option.omega
             return 0.0  # Out of the money
         return option.delta
@@ -169,24 +139,24 @@ class GaussianCopulaSpreadPricer:
 
     def __init__(self, pos_fwd, neg_fwd, strike, pos_surface, neg_surface, corr, te):
         assert pos_fwd > 0 > neg_fwd
-        self.unit = units(strike)
-        self.pos_fwd = value(convert_into(pos_fwd, self.unit))
-        self.neg_fwd = -value(convert_into(neg_fwd, self.unit))
+        # self.unit = units(strike)
+        self.pos_fwd = pos_fwd
+        self.neg_fwd = -neg_fwd
         self.pos_surface = pos_surface
         self.neg_surface = neg_surface
-        self.strike = value(strike)
+        self.strike = strike
         self.corr = corr
         self.te = te
 
     def option_value(self, option_type, intrinsic=False):
         intrinsic_value = Black76Option(self.pos_fwd, self.neg_fwd + self.strike, 0, self.te, option_type).value
         if intrinsic:
-            return intrinsic_value * self.unit
+            return intrinsic_value
         call_premium = self.call_value()
-        if option_type is OptionType.CALL:
-            return max(intrinsic_value, call_premium) * self.unit
+        if option_type is "c":
+            return max(intrinsic_value, call_premium)
         else:
-            return max(intrinsic_value, call_premium + self.neg_fwd - self.pos_fwd + self.strike) * self.unit
+            return max(intrinsic_value, call_premium + self.neg_fwd - self.pos_fwd + self.strike)
 
     def call_value(self):
         k_min, k_max = self._integration_bounds()
@@ -240,3 +210,52 @@ class GaussianCopulaSpreadPricer:
 
 
 
+
+def kirk_spread_option(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+                       option_type="c"):
+    expiry_time = time_between(pricing_date, expiry_date)
+    return KirkSpreadPricer(pos_fwd=pos_fwd_price, neg_fwd=-neg_fwd_price, strike=strike, pos_vol=pos_vol,
+                            neg_vol=neg_vol, corr=corr, te=expiry_time, option_type=option_type)
+
+
+def kirk_price(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+               option_type="c"):
+    option = kirk_spread_option(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+                                option_type)
+    return option.option_value(intrinsic=False)
+
+
+def kirk_delta(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+               option_type="c"):
+    option = kirk_spread_option(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+                                option_type)
+    return option.delta_pos_leg(intrinsic=False), option.delta_neg_leg(intrinsic=False)
+
+
+def kirk_gamma(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+               option_type="c"):
+    option = kirk_spread_option(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+                                option_type)
+    return option.gamma_pos_leg(intrinsic=False), option.gamma_neg_leg(intrinsic=False)
+
+
+def kirk_vega(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+              option_type="c"):
+    option = kirk_spread_option(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+                                option_type)
+    return option.vega(intrinsic=False)
+
+
+def kirk_vega_by_leg(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+              option_type="c"):
+    """Vega for constituent vols"""
+    option = kirk_spread_option(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+                                option_type)
+    return option.vega_pos_leg(), option.vega_neg_leg()
+
+
+def kirk_theta(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+               option_type="c"):
+    option = kirk_spread_option(pricing_date, expiry_date, pos_fwd_price, neg_fwd_price, strike, pos_vol, neg_vol, corr,
+                                option_type)
+    return option.theta(intrinsic=False) / 365

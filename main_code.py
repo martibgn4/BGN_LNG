@@ -1,4 +1,4 @@
-from Pricers.black76 import black76_price, black76_greeks
+from Pricers.european_option import black76_price, black76_greeks
 from Data.vol_surface import VolSurface
 
 # Example forward and market data
