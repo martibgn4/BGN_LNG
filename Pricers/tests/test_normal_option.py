@@ -1,11 +1,3 @@
-import numpy as np
-
-from pytest_quants import assert_almost_equal, repeat
-from quantity import PENCE, THERM
-from thorn.core.pricers.analytical.normal_option import BachelierOption
-from trade_data import OptionType
-
-
 class TestBachelierOption:
 
     def setup_method(self):
@@ -180,5 +172,3 @@ class TestBachelierOption:
         new_value = self.option.value
         fd_theta = (new_value - value) / shock
         assert_almost_equal(theta, fd_theta, atol=1e-6)
-
-

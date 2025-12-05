@@ -1,53 +1,36 @@
+
 import calendar
-from datetime import date, datetime, time, timedelta, tzinfo
+from datetime import date, datetime, time, timedelta
 from functools import lru_cache
+from typing import Any, Optional
 
-from .memoize_utils import memoize
-
-__all__ = [
-    "DAYS_PER_YEAR",
-    "MON",
-    "TUE",
-    "WED",
-    "THU",
-    "FRI",
-    "SAT",
-    "SUN",
-    "time_between",
-    "parse_date",
-    "parse_datetime",
-    "parse_month",
-    "force_date",
-    "force_datetime",
-    "workdays",
-    "days_split",
-    "create_date",
-    "get_nth_of_next_month",
-    "get_first_of_next_month",
-    "is_weekday",
-    "is_weekend_day",
-    "previous_weekday",
-    "convert_ole_to_date",
-    "convert_datetime_to_ole",
-    "is_excel_date",
-    "BST",
-    "last_occurrence_of_day_in_month",
-    "dst_start",
-    "dst_end",
-    "is_dst_start",
-    "is_dst_end",
-    "this_or_next_weekday",
-    "this_or_previous_weekday",
-    "next_weekday",
-    "date_formats"
-]
+from xlwings.conversion import Converter
 
 DAYS_PER_YEAR = 365.0
-
 
 def time_between(start_date, end_date):
     """Calculates time between two dates as a fraction of a year"""
     return (end_date - start_date).days / DAYS_PER_YEAR
+
+_period_str_to_months_dict = {
+    "M": 1
+}
+
+def get_T_and_D_from_tenor(pricing_date, tenor="M1"):
+    # Implements the logic of:
+    # start of tenor = T = M1.start (date) - pricing_date
+    # end of tenor = M1.end (date) - start_date
+    str_tenor = tenor[0]
+    assert str_tenor == "M", f"Only monthly tenors supported for now"
+    n_periods = int(tenor[1:]) # Months for now only
+
+    actual_date = pricing_date + timedelta(days=5) # hardcoded expiry date for now, approximation
+
+    tenor_start_date = get_first_of_mth_next_month(actual_date, n_periods)
+    tenor_end_date = get_first_of_mth_next_month(tenor_start_date, 1)
+    T = time_between(pricing_date, tenor_start_date)
+    D = time_between(tenor_start_date, tenor_end_date)
+    return T, D
 
 
 def parse_month(s):
@@ -111,7 +94,6 @@ def force_date(d):
 (MON, TUE, WED, THU, FRI, SAT, SUN) = range(7)
 
 
-@memoize
 def workdays(start_date, end_date, which_days=(MON, TUE, WED, THU, FRI)):
     """Calculate the number of working days between two dates inclusive (start_date <= end_date).
 
@@ -130,21 +112,6 @@ def workdays(start_date, end_date, which_days=(MON, TUE, WED, THU, FRI)):
     return num_workdays
 
 
-@memoize
-def days_split(start_date, end_date):
-    """Calculate the number of mondays, tuesdays, ..  between two dates inclusive (start_date <= end_date)"""
-    assert start_date <= end_date, f"Cannot split period because {start_date} is after {end_date}."
-    delta_days = (end_date - start_date).days + 1
-    full_weeks, extra_days = divmod(delta_days, 7)
-    split = [full_weeks + 1] * 7
-    # subtract out any working days that fall in the 'shortened week'
-    end_weekday = end_date.weekday()
-    for d in range(1, 8 - extra_days):
-        weekday = (end_weekday + d) % 7
-        split[weekday] -= 1
-    return split  # list of num_of_days (index 0 is Monday, ... )
-
-
 def create_date(year, month, day):
     plus_years, remaining_month = divmod((month - 1), 12)
     remaining_month += 1
@@ -157,6 +124,12 @@ def get_nth_of_next_month(d, n):
 
 def get_first_of_next_month(d):
     return get_nth_of_next_month(d, 1)
+
+def get_nth_of_mth_next_month(d, n, m):
+    return create_date(d.year, d.month + m, n)
+
+def get_first_of_mth_next_month(d, m):
+    return get_nth_of_mth_next_month(d, 1, m)
 
 
 def is_weekday(d):
@@ -214,14 +187,12 @@ def last_occurrence_of_day_in_month(year, month, day_index):
     return max(week[day_index] for week in calendar.monthcalendar(year, month))
 
 
-@memoize
 def dst_start(y):
     """Last Sunday in March for a given year"""
     march = 3
     return date(y, march, last_occurrence_of_day_in_month(y, march, SUN))
 
 
-@memoize
 def dst_end(y):
     """Last Sunday in October for a given year"""
     october = 10
@@ -252,34 +223,14 @@ def is_dst_end(d):
         return False
 
 
-class BST(tzinfo):
+class DateConverter(Converter):
 
-    def utcoffset(self, dt):
-        return self.dst(dt)
+    @classmethod
+    def read_value(self, value: Any, options: Optional[dict] = None) -> Any:
+        return parse_date(value)
 
-    def dst(self, dt):
-        # DST starts last Sunday in March
-        d = datetime(dt.year, 4, 1)  # ends last Sunday in October
-        dston = d - timedelta(days=d.weekday() + 1)
-        d = datetime(dt.year, 11, 1)
-        dstoff = d - timedelta(days=d.weekday() + 1)
-        if dston <= dt.replace(tzinfo=None) < dstoff:
-            return timedelta(hours=1)
-        else:
-            return timedelta(0)
+    @classmethod
+    def write_value(self, value: Any, options: Optional[dict] = None) -> Any:
+        return value
 
-    def tzname(self, dt):
-        return "BST"
-
-
-def is_excel_date(cell):
-    """Assumes we're not looking at dates before 1970/1/1"""
-    if isinstance(cell, (float, int)):
-        return float(cell) >= 25569.00
-    try:
-        _ = parse_date(cell)
-    except Exception:
-        return False
-    return True
-
-
+DateConverter.register(datetime.date)
