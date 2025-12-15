@@ -4,86 +4,89 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import time
 
+
+def generate_local_vol_surface(tenors, strikes, ivol_matrix, interpolation_method,
+                               todays_date, spot, r=0.0, div_rate=0.0):
+    calendar = ql.UnitedStates(ql.UnitedStates.NYSE)
+    day_counter = ql.Actual365Fixed()
+    ql.Settings.instance().evaluationDate = todays_date
+    # Term Structures for Discounting
+    flat_ts = ql.YieldTermStructureHandle(
+        ql.FlatForward(todays_date, r, day_counter)
+    )
+    dividend_ts = ql.YieldTermStructureHandle(
+        ql.FlatForward(todays_date, div_rate, day_counter)
+    )
+    spot_handle = ql.QuoteHandle(ql.SimpleQuote(spot))
+
+    # 2. Market Data (Implied Volatility Surface)
+    # Maturities in years
+    expiries = [todays_date + ql.Period(int(t * 365.25), ql.Days) for t in tenors]
+
+    # Strikes
+    # Implied Volatility Matrix (Example Data)
+    # Rows: Strikes, Columns: Maturities (T1, T2, T3, T4)
+    implied_vols = ql.Matrix(len(strikes), len(expiries))
+    for i in range(len(strikes)):
+        for j in range(len(expiries)):
+            implied_vols[i][j] = ivol_matrix[i][j]
+
+    # 3. Construct the Black Variance Surface (Input)
+    black_var_surface = ql.BlackVarianceSurface(
+        todays_date,
+        calendar,
+        expiries,
+        strikes.tolist(),
+        implied_vols,
+        day_counter
+    )
+    black_var_surface.setInterpolation(interpolation_method)
+    # 4. Construct the Local Volatility Surface (Output)
+    local_vol_surface = ql.LocalVolSurface(
+        ql.BlackVolTermStructureHandle(black_var_surface),
+        flat_ts,
+        dividend_ts,
+        spot_handle
+    )
+    local_vol_surface.enableExtrapolation()
+
+    return local_vol_surface
+
+
 if __name__ == "__main__":
     plot_VOL_GRAPHS = False
 
     # 1. Setup (Dates, Rates, Spot)
     interpolation_method = "bilinear"
-    def generate_local_vol_surface(underyling):
-        calendar = ql.UnitedStates(ql.UnitedStates.NYSE)
-        day_counter = ql.Actual365Fixed()
-        todays_date = ql.Date(9, 12, 2025)
-        ql.Settings.instance().evaluationDate = todays_date
+    # def generate_local_vol_surface(underyling):
+    today = ql.Date(9, 12, 2025)
 
-        spot = 100.0
-        risk_free_rate = 0.02
-        dividend_rate = 0.00
+    ttf_forward_price = 20.0
+    tenors = [0.25, 0.50, 0.75, 1.0]
+    ttf_strikes = np.array([10.0, 15.0, 20.0, 25.0, 30.0])
+    ttf_ivol_matrix = np.zeros((len(ttf_strikes), len(tenors)))
+    ttf_ivol_matrix[0][0] = 0.35; ttf_ivol_matrix[0][1] = 0.30; ttf_ivol_matrix[0][2] = 0.25; ttf_ivol_matrix[0][3] = 0.20
+    ttf_ivol_matrix[1][0] = 0.30; ttf_ivol_matrix[1][1] = 0.28; ttf_ivol_matrix[1][2] = 0.23; ttf_ivol_matrix[1][3] = 0.20
+    ttf_ivol_matrix[2][0] = 0.28; ttf_ivol_matrix[2][1] = 0.25; ttf_ivol_matrix[2][2] = 0.22; ttf_ivol_matrix[2][3] = 0.20  # ATM Vol
+    ttf_ivol_matrix[3][0] = 0.30; ttf_ivol_matrix[3][1] = 0.28; ttf_ivol_matrix[3][2] = 0.23; ttf_ivol_matrix[3][3] = 0.20
+    ttf_ivol_matrix[4][0] = 0.35; ttf_ivol_matrix[4][1] = 0.30; ttf_ivol_matrix[4][2] = 0.25; ttf_ivol_matrix[4][3] = 0.20
 
-        # Term Structures for Discounting
-        flat_ts = ql.YieldTermStructureHandle(
-            ql.FlatForward(todays_date, risk_free_rate, day_counter)
-        )
-        dividend_ts = ql.YieldTermStructureHandle(
-            ql.FlatForward(todays_date, dividend_rate, day_counter)
-        )
-        spot_handle = ql.QuoteHandle(ql.SimpleQuote(spot))
+    local_vol_surface_ttf = generate_local_vol_surface(tenors, ttf_strikes, ttf_ivol_matrix, interpolation_method,
+                               today, ttf_forward_price, r=0.0, div_rate=0.0)
+    # local_vol_surface_ttf, tenors_ttf, strikes_ttf, implied_vols_ttf = generate_local_vol_surface("TTF")
 
-        # 2. Market Data (Implied Volatility Surface)
-        # Maturities in years
-        tenors = [0.25, 0.50, 1.0, 2.0]
-        expiries = [todays_date + ql.Period(int(t * 365.25), ql.Days) for t in tenors]
+    brent_forward_price = 60.0
+    tenors = [0.25, 0.50, 0.75, 1.0]
+    brent_strikes = np.array([40.0, 50.0, 60.0, 70.0, 80.0])
+    brent_ivol_matrix = np.zeros((len(brent_strikes), len(tenors)))
+    brent_ivol_matrix[0][0] = 0.35; brent_ivol_matrix[0][1] = 0.30; brent_ivol_matrix[0][2] = 0.25; brent_ivol_matrix[0][3] = 0.20
+    brent_ivol_matrix[1][0] = 0.30; brent_ivol_matrix[1][1] = 0.28; brent_ivol_matrix[1][2] = 0.23; brent_ivol_matrix[1][3] = 0.20
+    brent_ivol_matrix[2][0] = 0.28; brent_ivol_matrix[2][1] = 0.25; brent_ivol_matrix[2][2] = 0.22; brent_ivol_matrix[2][3] = 0.20  # ATM Vol
+    brent_ivol_matrix[3][0] = 0.30; brent_ivol_matrix[3][1] = 0.28; brent_ivol_matrix[3][2] = 0.23; brent_ivol_matrix[3][3] = 0.20
+    brent_ivol_matrix[4][0] = 0.35; brent_ivol_matrix[4][1] = 0.30; brent_ivol_matrix[4][2] = 0.25; brent_ivol_matrix[4][3] = 0.20
 
-        # Strikes
-        strikes = np.array([80.0, 90.0, 100.0, 110.0, 120.0])
-
-        # Implied Volatility Matrix (Example Data)
-        # Rows: Strikes, Columns: Maturities (T1, T2, T3, T4)
-        implied_vols = ql.Matrix(len(strikes), len(expiries))
-        implied_vols[0][0] = 0.35; implied_vols[0][1] = 0.30; implied_vols[0][2] = 0.25; implied_vols[0][3] = 0.20
-        implied_vols[1][0] = 0.30; implied_vols[1][1] = 0.28; implied_vols[1][2] = 0.23; implied_vols[1][3] = 0.20
-        implied_vols[2][0] = 0.28; implied_vols[2][1] = 0.25; implied_vols[2][2] = 0.22; implied_vols[2][3] = 0.20 # ATM Vol
-        implied_vols[3][0] = 0.30; implied_vols[3][1] = 0.28; implied_vols[3][2] = 0.23; implied_vols[3][3] = 0.20
-        implied_vols[4][0] = 0.35; implied_vols[4][1] = 0.30; implied_vols[4][2] = 0.25; implied_vols[4][3] = 0.20
-
-        implied_vols_mat = np.array([[implied_vols[i][j] for j in range(len(expiries))] for i in range(len(strikes))])
-        # 3. Construct the Black Variance Surface (Input)
-        black_var_surface = ql.BlackVarianceSurface(
-            todays_date,
-            calendar,
-            expiries,
-            strikes.tolist(),
-            implied_vols,
-            day_counter
-        )
-
-        # Optional: Set interpolation for smoother derivatives (crucial step)
-
-        # interpolation_method = "bilinear"
-        black_var_surface.setInterpolation(interpolation_method)
-        print("Interpolation set to 'bilinear' successfully.")
-
-        # 4. Construct the Local Volatility Surface (Output)
-        local_vol_surface = ql.LocalVolSurface(
-            ql.BlackVolTermStructureHandle(black_var_surface),
-            flat_ts,
-            dividend_ts,
-            spot_handle
-        )
-        local_vol_surface.enableExtrapolation()
-
-        # 5. Extract a Local Volatility Value
-        time_to_expiry = tenors[2] # 1.0 year
-        strike_price = 95.0
-
-        # The localVol method applies the Dupire formula to the interpolated surface
-        local_vol = local_vol_surface.localVol(time_to_expiry, strike_price, True)
-
-        print(f"Local Volatility at T={time_to_expiry} and K={strike_price}: {local_vol:.4f}")
-
-        return local_vol_surface, tenors, strikes, implied_vols_mat
-
-    local_vol_surface_ttf, tenors_ttf, strikes_ttf, implied_vols_ttf = generate_local_vol_surface("TTF")
-    local_vol_surface_brent, tenors_brent, strikes_brent, implied_vols_brent = generate_local_vol_surface("BRENT")
+    local_vol_surface_brent = generate_local_vol_surface(tenors, brent_strikes, brent_ivol_matrix, interpolation_method,
+                                                       today, brent_forward_price, r=0.0, div_rate=0.0)
 
 
     # --- 2. DATA PREPARATION FOR PLOTTING ---
@@ -93,8 +96,8 @@ if __name__ == "__main__":
         N_TIME = 50
         N_STRIKE = 50
 
-        time_grid = np.linspace(min(tenors_ttf), max(tenors_ttf), N_TIME)
-        strike_grid = np.linspace(min(strikes_ttf), max(strikes_ttf), N_STRIKE)
+        time_grid = np.linspace(min(tenors), max(tenors), N_TIME)
+        strike_grid = np.linspace(min(ttf_strikes), max(ttf_strikes), N_STRIKE)
 
         T, K = np.meshgrid(time_grid, strike_grid)
 
@@ -107,7 +110,7 @@ if __name__ == "__main__":
 
         # 2.3. Prepare Market Data (Z_market)
         # Convert QuantLib Matrix back to a NumPy array for easy plotting
-        Z_market = implied_vols_ttf
+        Z_market = ttf_ivol_matrix
 
         # --- 3. VISUALIZATION ---
 
@@ -117,7 +120,7 @@ if __name__ == "__main__":
         ax1 = fig.add_subplot(121, projection='3d')
         ax1.plot_wireframe(T, K, Z_fitted, color='lightgray', alpha=0.5)  # Background fitted surface
         # Scatter plot the original input points (Z_market)
-        X_market, Y_market = np.meshgrid(tenors_ttf, strikes_ttf)
+        X_market, Y_market = np.meshgrid(tenors, ttf_strikes)
         ax1.scatter(X_market, Y_market, Z_market, color='red', marker='o', s=50, label='Market Data Points')
 
         ax1.set_title('Market Implied Volatility (Input Points)', fontsize=14)
@@ -143,12 +146,13 @@ if __name__ == "__main__":
         plt.show()
 
     # 3 Contract Specs & Market Parameters
-    K = 20.0  # Spread option strike (TTF - Brent)
+    K = 2.0  # Spread option strike (TTF - Brent)
     T = 0.1  # Option maturity in years
-    r = 0.02  # Risk-free rate (assumed constant)
+    slope = 0.15
+    r = 0.0  # Risk-free rate (assumed constant)
     historical_rho = 0.99  # Historical (or implied) correlation between TTF and Brent M12, TO BE CALIBRATED
-    S0_TTF = 100.0  # Current TTF Forward Price (e.g., F(0, T))
-    S0_Brent = 80.0  # Current Brent Forward Price (e.g., F(0, T))
+    S0_TTF = 20.0  # Current TTF Forward Price (e.g., F(0, T))
+    S0_Brent = 60.0  # Current Brent Forward Price (e.g., F(0, T))
 
     # Monte Carlo Parameters
     N_PATHS = 50000  # Number of simulation paths
@@ -233,7 +237,7 @@ if __name__ == "__main__":
         S2_T = S2_paths[:, -1]
 
         # Payoff: max(S1_T - S2_T - K, 0)
-        payoffs = np.maximum(S1_T - S2_T - K, 0.0)
+        payoffs = np.maximum(S1_T - slope * S2_T - K, 0.0)
 
         # 5. Discount and Average
         discount_factor = np.exp(-r * T)
