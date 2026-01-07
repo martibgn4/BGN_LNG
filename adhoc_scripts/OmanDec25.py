@@ -4,7 +4,7 @@ from datetime import date
 def price_basket_option_mc(vol_des, vol_brent301, vol_freight,
                            rho_des_brent, rho_des_freight, rho_brent_freight,
                            slope, r, T, route_days, mmbtu_start, mmbtu_end,
-                           S0_des, S0_brent301, S0_freight, N_PATHS, antithetic=True,
+                           S0_des, S0_brent301, S0_freight, N_PATHS, antithetic=True, mc_seed=1,
                            extra_costs = 0.0):
     # 1. Initialize Price Arrays
     # Initialize paths with starting forward prices
@@ -15,7 +15,7 @@ def price_basket_option_mc(vol_des, vol_brent301, vol_freight,
 
     # Time vector for path simulation
     # t_values = np.linspace(0.0, T, N_STEPS + 1)
-
+    rng = np.random.default_rng(seed=mc_seed)
     # 2. Generate Correlated Random Numbers
     # Generate standard normal random variables
     corr_matrix = np.array([
@@ -65,6 +65,9 @@ def price_basket_option_mc(vol_des, vol_brent301, vol_freight,
     forward_payoff = mmbtu_end * ST_des - slope * mmbtu_start * ST_brent - ST_freight * route_days - extra_costs
     payoff = np.maximum(forward_payoff, 0.0)  # directly in USD
 
+    intrinsic = mmbtu_end * S0_des - slope * mmbtu_start * S0_brent301 - S0_freight * route_days - extra_costs
+    intrinsic =  np.exp(-r * T) * intrinsic
+
     # Discount & statistics
     disc_payoff = np.exp(-r * T) * payoff
     price = np.mean(disc_payoff)
@@ -80,8 +83,9 @@ def price_basket_option_mc(vol_des, vol_brent301, vol_freight,
     stderr_forward = sd_forward / np.sqrt(disc_payoff_forward.size)
     ci95_forward = (price_forward - 1.96 * stderr_forward, price_forward + 1.96 * stderr_forward)
 
-    return (float(price), float(stderr), (float(ci95[0]), float(ci95[1])),
-            float(price_forward), float(stderr_forward), (float(ci95_forward[0]), float(ci95_forward[1])))
+    return (float(price), float(stderr),
+            float(price_forward), float(stderr_forward),
+            intrinsic)
 
 if __name__ == "__main__":
     vol_des = 0.4
