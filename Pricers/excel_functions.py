@@ -5,7 +5,7 @@ from BGN_LNG.Pricers.kirk import kirk_theta, kirk_vega_by_leg, kirk_vega, kirk_g
     kirk_corr_sensitivity
 
 from BGN_LNG.Utils.datetime_utils import DateConverter
-from BGN_LNG.adhoc_scripts.OmanDec25 import price_basket_option_mc
+from BGN_LNG.adhoc_scripts.OmanDec25 import price_basket_option_mc, price_long_basket_option_mc
 
 
 # from xlwings.conversion.standard import DateConverter
@@ -278,3 +278,40 @@ def BGNLNGOption_mc(
         vol_u1, vol_u2, vol_freight, corr_u1u2, corr_u1freight, corr_u2freight,
         1.0, r, T, route_days, mmbtu_start, mmbtu_end,
         u1_price, u2_price, freight_price, int(N_paths), mc_seed=mc_seed, extra_costs=extra_costs)
+
+
+
+
+
+@xw.func(call_in_wizard=False)
+@xw.arg('vol_u1', doc="Yearly volatility underlying 1")
+@xw.arg('vol_u2', doc="Yearly volatility underlying 2")
+@xw.arg('vol_u3', doc="Yearly volatility underlying 3")
+@xw.arg('corr_u1u2', doc="Correlation underlying 1 and 2")
+@xw.arg('corr_u1u3', doc="Correlation underlying 1 and 3")
+@xw.arg('corr_u2u3', doc="Correlation underlying 2 and 3")
+@xw.arg('weight_u1', doc="Weight for underlying 1")
+@xw.arg('weight_u2', doc="Weight for underlying 2")
+@xw.arg('weight_u3', doc="Weight for underlying 3")
+@xw.arg('r', doc="Yearly Interest Rat")
+@xw.arg('T', doc="Option maturity")
+@xw.arg('price_u1', doc="Current u1 price for delivery, in usd/mmbtu")
+@xw.arg('price_u2', doc="Current u2 price for delivery, in usd/mmbtu")
+@xw.arg('price_u3', doc="Current u3 price for delivery, in usd/mmbtu")
+@xw.arg('N_paths', doc="Total simulation paths")
+@xw.arg('extra_costs', doc="Extra costs in USD")
+@xw.arg('mc_seed', doc="Seed to be used in MC simulations")
+@xw.ret(doc="LNG Basket Option price via MC")
+def BGNLNGBasketOption_mc(
+        vol_u1, vol_u2, vol_u3, corr_u1u2, corr_u1u3, corr_u2u3,
+        weight_u1, weight_u2, weight_u3, r, T,
+        price_u1, price_u2, price_u3,
+        N_paths=10000, extra_costs=0.0, mc_seed=1):
+    """Computes a spread option price"""
+    return price_long_basket_option_mc(vol_u1, vol_u2, vol_u3,
+                           corr_u1u2, corr_u1u3, corr_u2u3,
+                           weight_u1, weight_u2, weight_u3,
+                           r, T,
+                           price_u1, price_u2, price_u3,
+                           int(N_paths), antithetic=True, mc_seed=mc_seed,
+                           extra_costs = extra_costs)
