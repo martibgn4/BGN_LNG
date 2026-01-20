@@ -109,7 +109,7 @@ def do_api_get_query(uri, access_token):
         "accept": "application/json",
     }
 
-    print(f"Fetching {url}")
+    # print(f"Fetching {url}")
 
     # HTTP GET request
     req = request.Request(url, headers=headers)
@@ -219,7 +219,7 @@ def fetch_historical_price_releases(access_token, ticker, limit=4, offset=None, 
     if vessel is not None:
         query_params += "&vessel-type={}".format(vessel)
 
-    print("/v1.0/contracts/{}/price-releases/{}".format(ticker, query_params))
+    # print("/v1.0/contracts/{}/price-releases/{}".format(ticker, query_params))
 
     content = do_api_get_query(
         uri="/v1.0/contracts/{}/price-releases/{}".format(ticker, query_params),
@@ -358,7 +358,7 @@ def fetch_ffa_prices(access_token, my_tick, my_lim, latest_only=False):
 def fetch_ffa_prices_for_month_only(access_token, my_tick, my_lim, month_tenor):
     print(my_tick)
 
-    my_dict_hist = fetch_historical_price_releases(access_token, my_tick, limit=my_lim)
+    my_dict_hist = fetch_historical_price_releases(access_token, my_tick, limit=my_lim);
 
     release_dates = []
     period_name = []
