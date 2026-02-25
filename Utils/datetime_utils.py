@@ -12,9 +12,121 @@ def time_between(start_date, end_date):
     """Calculates time between two dates as a fraction of a year"""
     return (end_date - start_date).days / DAYS_PER_YEAR
 
+def month_int_from_string(s_month):
+    return {"Jan":1, "Feb":2, "Mar":3, "Apr":4, "May":5, "Jun":6,
+              "Jul":7, "Aug":8, "Sep":9, "Oct":10, "Nov":11, "Dec":12}[s_month]
+
+def month_string_from_int(i_month):
+    _dict = {"Jan":1, "Feb":2, "Mar":3, "Apr":4, "May":5, "Jun":6,
+              "Jul":7, "Aug":8, "Sep":9, "Oct":10, "Nov":11, "Dec":12}
+    return {i: m for m, i in _dict.items()}[i_month]
+
 _period_str_to_months_dict = {
     "M": 1
 }
+
+def is_tenor_month(tenor):
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return tenor[:3] in months
+
+def _add_year(m, year):
+    return m + "_" + year
+
+def get_month_from_tenor(tenor):
+    month, _ = tenor.split("_")
+    return month
+
+def get_int_year_from_tenor(tenor):
+    _, year = tenor.split("_")
+    return int(year)
+
+def month_codes_only_for_period(period):
+    months = {
+        "Q1": ("Jan", "Feb", "Mar"),
+        "Q2": ("Apr", "May", "Jun"),
+        "Q3": ("Jul", "Aug", "Sep"),
+        "Q4": ("Oct", "Nov", "Dec"),
+        "SS": ("Apr", "May", "Jun", "Jul", "Aug", "Sep"),
+        "WS": ("Oct", "Nov", "Dec", "Jan", "Feb", "Mar"),
+        "Y": ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    }[period]
+    return months
+
+
+def date_tenor_from_label(label):
+    month, year = label.split("_")
+    month_int_dict = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4,
+                      "May": 5, "Jun": 6, "Jul": 7, "Aug": 8,
+                  "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
+    month_int = month_int_dict[month] if month in month_int_dict else -1
+    if month_int < 0:
+        return label
+    return date(int("20" + year), month_int, 1)
+
+def label_from_date_tenor(date_tenor):
+    year, month, day = date_tenor.split("-")
+    month_int_dict = {"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4,
+                      "May": 5, "Jun": 6, "Jul": 7, "Aug": 8,
+                  "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}
+    int_month_dict = {v:k for k, v in month_int_dict.items()}
+
+    int_month = int_month_dict[int(month)] if int(month) in int_month_dict else -1
+    if int_month not in month_int_dict:
+        return date_tenor
+    return int_month + "_" + str(year)[-2:]
+
+
+def tenor_to_monthly_strip(long_tenor):
+    if is_tenor_month(long_tenor):
+        raise ValueError(f"Expected non-month tenor got {long_tenor}")
+
+    _period, _y = long_tenor.split("_")
+    months = {
+        "Q1": [_add_year(m, _y) for m in month_codes_only_for_period("Q1")],
+        "Q2": [_add_year(m, _y) for m in month_codes_only_for_period("Q2")],
+        "Q3": [_add_year(m, _y) for m in month_codes_only_for_period("Q3")],
+        "Q4": [_add_year(m, _y) for m in month_codes_only_for_period("Q4")],
+        "SS": [_add_year(m, _y) for m in month_codes_only_for_period("SS")],
+        "WS": [_add_year(m, y) for m, y in zip(month_codes_only_for_period("WS"), (_y, _y, _y, str(int(_y)+1), str(int(_y)+1), str(int(_y)+1)))],
+        "Y": [_add_year(m, _y) for m in month_codes_only_for_period("Y")]
+    }[_period]
+    return months
+
+def full_period_year_in_list(tenor_list, year, tenor_period):
+    # Return true for example for Q1, 2028 only if Jan_28, Feb_28 and Mar_28 are present in tenor_list, otherwise False
+    year_months_for_period = tenor_to_monthly_strip(tenor_period + "_" + year)
+    # tenor_months = month_codes_only_for_period(tenor_period)
+    return all([t in tenor_list for t in year_months_for_period])
+
+
+def infer_ratios_from_monthly_quotes(forward_quotes, period_to_infer_ratios):
+    assert all(is_tenor_month(t) for t in forward_quotes), f"Contains non-month tenors, cannot infer shape: {forward_quotes}"
+
+    q_ratios = {}
+    for q_str in period_to_infer_ratios: # E.j., period_to_infer_ratios = ["Q1", "Q2", "Q3", "Q4", "SS", "WS", "Y"]:
+        months = month_codes_only_for_period(q_str)
+        q_quotes = {q:forward_quotes[q] for q in forward_quotes if get_month_from_tenor(q) in months}
+
+        year_to_infer_ratios = "-1"
+        for y in range(15, 30): # Very long shot here
+            if full_period_year_in_list(q_quotes, str(y), q_str) and year_to_infer_ratios=="-1":
+                year_to_infer_ratios = str(y)
+
+                full_quotes = {
+                    get_month_from_tenor(tenor): q_quotes[tenor]
+                    for tenor in tenor_to_monthly_strip(q_str + "_" + year_to_infer_ratios)
+                }
+
+                average_period = sum(full_quotes.values())/len(full_quotes)
+                q_ratios[q_str] = {m: full_quotes[m]/average_period for m in months}
+        if year_to_infer_ratios == "-1":
+            # Period is just not fully represented
+            q_ratios[q_str] = {m: 1.0 for m in months}
+
+    return q_ratios
+
+
 
 def get_T_and_D_from_tenor(pricing_date, tenor="M1"):
     # Implements the logic of:
