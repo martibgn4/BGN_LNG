@@ -6,7 +6,7 @@ from scipy.optimize import newton
 from numpy import atleast_1d, exp, log, nan, sqrt, isnan, isinf, isneginf, divide
 import warnings
 
-from Utils.datetime_utils import time_between
+from BGN_LNG.Utils.datetime_utils import time_between
 
 N = norm.cdf
 N_dash = norm.pdf
@@ -62,7 +62,7 @@ class Black76Option:
                     result[~nans] = \
                         self.omega * (self.s * N(self.omega * self.d1) - self.k * N(self.omega * self.d2))[~nans]
 
-        if self.r != 0:
+        if self.r != 0.0:
             result *= exp(-self.r * self.te)
         return result
 

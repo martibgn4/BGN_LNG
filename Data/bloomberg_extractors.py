@@ -10,8 +10,9 @@ from Utils.utils_spark import retrieve_credentials, get_access_token, fetch_carg
     list_contracts
 
 dict_fx_to_tickers = {
-    "EURGBP": "GBP",
+    "GBPUSD": "GBP",
     "EURUSD": "EUR",
+    "EURGBP": "EURGBP"
 }
 dict_comm_to_tickers = {
     "HenryHub": "NG",
@@ -37,6 +38,9 @@ bbg_month_codes = ["F", "G", "H", "J", "K", "M",
                "N", "Q", "U", "V", "X", "Z"]
 bbg_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+bbg_dict = {m: c for m, c in zip(bbg_months, bbg_month_codes)}
+bbg_dict_code_to_month = {c: m for m, c in zip(bbg_months, bbg_month_codes)}
 
 add_suffix_underlyings = ["THE", "PEG", "PSV", "PVB", "VTP"]
 
@@ -87,6 +91,9 @@ class BloombergExtractor:
                 tickers.append(self.commodity_code + s_month + label_curncy)
                 _month_int = current_month_int + i_month
                 one_to_twelve_month, years_to_add = _month_int % 12, _month_int // 12
+                if one_to_twelve_month == 0:
+                    one_to_twelve_month = 12
+                    years_to_add -= 1
                 year = self.start_year + years_to_add
                 month = month_string_from_int(one_to_twelve_month)
                 raw_tickers.append(month + "_" + str(year)[-2:])
@@ -367,12 +374,12 @@ def plot_nwe_vs_nbp(years, today_date, hide_show=False):
         common_tenors = [t for t in ttf_monthly_quotes if t in c_monthly_quotes]
 
         ttf_nbp_threshold = {}
-        eurgbp_quotes = BloombergExtractor(commodity="EURGBP", start_year=_start_year, years=years).retrieve_latest_bbg_values("")
-        dict_tenor_to_price_eurgbp = {m: eurgbp_quotes.loc[m]["px_last"] for m in eurgbp_quotes.index}
-        eurgbp_curve = ForwardCurve(dict_tenor_to_price_eurgbp, today_date)
+        gbpusd_quotes = BloombergExtractor(commodity="GBPUSD", start_year=_start_year, years=years).retrieve_latest_bbg_values("")
+        dict_tenor_to_price_gbpusd = {m: gbpusd_quotes.loc[m]["px_last"] for m in gbpusd_quotes.index}
+        gbpusd_curve = ForwardCurve(dict_tenor_to_price_gbpusd, today_date)
 
         for monthly_t in common_tenors:
-            gbpusd_rate = eurgbp_curve.get_value_on_month(monthly_t)
+            gbpusd_rate = gbpusd_curve.get_value_on_month(monthly_t)
             eurusd_rate = eurusd_curve.get_value_on_month(monthly_t)
             eurgbp_rate = gbpusd_rate / eurusd_rate
             nbp_transformed = c_curve.get_value_on_month(monthly_t) * 0.01 * eurgbp_rate / 0.0293001
@@ -431,10 +438,10 @@ def extract_spark_quotes(quote_type="Cargo", latest_only=True, limit=90, cal_mon
     return full_df
 
 
-def get_historical_prices_for_underlyings(underlyings, start_date, end_date):
+def get_historical_prices_for_underlyings(underlyings, start_date, end_date, price_label="px_last"):
     df_h = blp.bdh(
         underlyings,
-        "px_last",
+        price_label,
         start_date,
         end_date,
     )
@@ -692,17 +699,96 @@ def create_bgn_lng_report_grid(report_date):
     plt.show()
 
 
+def violin_plots_ttf_nbp_spread(start_date, back_periods=400):
+    import seaborn as sns
+
+    periods_historical = back_periods
+    initial_date = start_date
+
+    dates = pd.date_range(end=initial_date, periods=periods_historical)
+
+    y = initial_date.year % 2000  # - 20
+    bbg_tenor_codes = ["J" + str(y), "K" + str(y), "M" + str(y), "N" + str(y), "Q" + str(y), "U" + str(y), "V" + str(y), "X" + str(y), "Z" + str(y),
+                       "F" + str(y + 1), "G" + str(y + 1), "H" + str(y + 1)]
+
+
+    ttf_codes = ["CO" + t + " Comdty" for t in bbg_tenor_codes]
+    # nbp_codes = ["FN" + t + " Comdty" for t in bbg_tenor_codes]
+    nbp_codes = []
+    nbp_codes_clean = ["FN" + t for t in bbg_tenor_codes]
+    fx_codes = ["EURGBP BGN Curncy"] + ["EURGBP" + str(m) + "M BGN Curncy" for m in range(1, 20)]
+
+    df = get_historical_prices_for_underlyings(
+        ttf_codes + nbp_codes + fx_codes,
+        dates[0],
+        dates[-1],
+        price_label="px_last"
+    )
+
+    new_columns = [c[0].replace(" Comdty", "").replace(" BGN Curncy", "") for c in df.columns]
+    df.columns = new_columns
+    df.dropna(inplace=True)
+
+    for c in df.columns:
+        if c[-1] == "M":  # If its FX tenor, add spot to it due to its FX format from bbg
+            df[c] = df[c] / 10000 + df["EURGBP"]
+
+    # tenors_fx, raw_tenors_fx = BloombergExtractor("EURGBP", start_year=26, start_month="Feb").get_monthly_tickers()
+
+    def convert_nbp_from_full_row(row):
+        current_date = row.name
+        month_code = month_string_from_int(current_date.month)
+        year_code = current_date.year % 2000
+        tenors_fx, raw_tenors_fx = BloombergExtractor("EURGBP", start_year=year_code,
+                                                      start_month=month_code).get_monthly_tickers()
+
+        tenors_fx = [t.replace(" BGN Curncy", "") for t in tenors_fx]
+        dict_tenors_fx_to_raw_tenors_fx = dict(zip(tenors_fx, raw_tenors_fx))
+        tenors_in_df = [t for t in df.columns if t in tenors_fx]
+        dict_tenor_to_price = {dict_tenors_fx_to_raw_tenors_fx[t]: row[t] for t in tenors_in_df}
+        eurgbp_curve = ForwardCurve(dict_tenor_to_price, current_date)
+        nbp_transformed = []
+        for _nbp_tenor in nbp_codes_clean:
+            month_code = _nbp_tenor[-3]
+            year_code = _nbp_tenor[-2:]
+            current_tenor = bbg_dict_code_to_month[month_code] + "_" + year_code
+            nbp_in_eurmwh = row[_nbp_tenor] / eurgbp_curve.get_value_on_month(current_tenor) * 0.01 / 0.0293001
+            nbp_transformed.append(nbp_in_eurmwh)
+        return pd.Series(nbp_transformed)
+
+    df[nbp_codes_clean] = df.apply(convert_nbp_from_full_row, axis=1)
+
+    spread_codes = ["TTFNBP_Spread_" + bbg_dict_code_to_month[bbg_code[0]] + "_" + bbg_code[-2:] for bbg_code in
+                    bbg_tenor_codes]
+
+    for spread_code, bbg_code in zip(spread_codes, bbg_tenor_codes):
+        df[spread_code] = df["TZT" + bbg_code] - df["FN" + bbg_code]
+
+    df_to_plot = df[spread_codes]
+    df_to_plot.columns = [c.replace("TTFNBP_Spread_", "") for c in df_to_plot.columns]
+    sns.set(style="whitegrid")
+    ax = sns.violinplot(data=df_to_plot, cut=0)
+    last_values = df_to_plot.loc[dates[-1].date()]
+    sns.stripplot(x=last_values.keys(), y=last_values.values,
+                  edgecolor='black', linewidth=1, s=10, ax=ax)
+    plt.xticks(rotation=30)
+    plt.ylabel("EUR/MWh", fontsize=14)
+    plt.xlabel("")
+    plt.title(f"TTF-NBP spread from {dates[0].date()} to {dates[-1].date()}")
+
+    plt.show()
+
+
 if __name__ == "__main__":
 
-    from datetime import datetime, timedelta
-
+    from datetime import datetime, timedelta, date
+    import pandas as pd
     pricing_date = datetime.now().date()
     # create_bgn_lng_report_grid(pricing_date)
 
-    fig, axes = plt.subplots(1, 1, figsize=(8, 5))
-    plot_nwe_vs_nbp(4, pricing_date, hide_show=False)
-    plt.show()
+    # fig, axes = plt.subplots(1, 1, figsize=(8, 5))
+    # plot_nwe_vs_nbp(4, pricing_date, hide_show=False)
+    # plt.show()
 
-    full_df = extract_spark_quotes(quote_type='NWEDiscountsFinancial', latest_only=True, limit=90, cal_month=None, print_available_contacts=True)
-
-    a = 1
+    start_date = datetime(2026, 2, 25)
+    violin_plots_ttf_nbp_spread(start_date, back_periods=800)
