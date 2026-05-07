@@ -62,7 +62,7 @@ class Black76Option:
                     result[~nans] = \
                         self.omega * (self.s * N(self.omega * self.d1) - self.k * N(self.omega * self.d2))[~nans]
 
-        if self.r != 0:
+        if self.r != 0.0:
             result *= exp(-self.r * self.te)
         return result
 

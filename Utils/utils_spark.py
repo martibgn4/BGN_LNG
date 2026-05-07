@@ -1,7 +1,11 @@
 import json
 import os
 import sys
+import time
+from io import StringIO
+
 import pandas as pd
+import requests
 from base64 import b64encode
 from urllib.parse import urljoin
 import datetime
@@ -109,7 +113,7 @@ def do_api_get_query(uri, access_token):
         "accept": "application/json",
     }
 
-    print(f"Fetching {url}")
+    # print(f"Fetching {url}")
 
     # HTTP GET request
     req = request.Request(url, headers=headers)
@@ -169,6 +173,35 @@ def get_access_token(client_id, client_secret):
     return content["accessToken"]
 
 
+def list_netbacks(access_token):
+    """
+    Fetch available routes. Return contract ticker symbols
+
+    # Procedure:
+
+    Do a GET query to /v1.0/routes/ with a Bearer token authorization HTTP header.
+    """
+    content = do_api_get_query(uri="/v1.0/netbacks/reference-data/", access_token=access_token)
+
+    print(">>>> All the routes you can fetch")
+    tickers = []
+    fobPort_names = []
+
+    availablevia = []
+
+    for contract in content["data"]['staticData']['fobPorts']:
+        tickers.append(contract["uuid"])
+        fobPort_names.append(contract['name'])
+
+        availablevia.append(contract['availableViaPoints'])
+
+    reldates = content["data"]['staticData']['sparkReleases']
+
+    dicto1 = content["data"]
+
+    return tickers, fobPort_names, availablevia, reldates, dicto1
+
+
 # Defining function for collecting the list of contracts
 def list_contracts(access_token):
     """
@@ -219,7 +252,7 @@ def fetch_historical_price_releases(access_token, ticker, limit=4, offset=None, 
     if vessel is not None:
         query_params += "&vessel-type={}".format(vessel)
 
-    print("/v1.0/contracts/{}/price-releases/{}".format(ticker, query_params))
+    # print("/v1.0/contracts/{}/price-releases/{}".format(ticker, query_params))
 
     content = do_api_get_query(
         uri="/v1.0/contracts/{}/price-releases/{}".format(ticker, query_params),
@@ -231,7 +264,53 @@ def fetch_historical_price_releases(access_token, ticker, limit=4, offset=None, 
     return my_dict
 
 
-def fetch_freight_prices(access_token, ticker, my_lim, my_vessel=None, latest_only=False):
+def get_terminal_list(access_token):
+    uri = urljoin(API_BASE_URL,'beta/terminal-slots/terminals/')
+    headers = {
+            "Authorization": "Bearer {}".format(access_token),
+            "accept": "text/csv"
+        }
+    response = requests.get(uri, headers=headers)
+    if response.status_code == 200:
+        df = response.content.decode('utf-8')
+        df = pd.read_csv(StringIO(df))
+    else:
+        print('Bad Request')
+    return df
+
+
+# Function to collect and store historical slots for one specific terminal
+def get_individual_terminal(access_token, terminal_uuid):
+    uri = urljoin(API_BASE_URL, f'/beta/terminal-slots/terminals/{terminal_uuid}/')
+    headers = {
+            "Authorization": "Bearer {}".format(access_token),
+            "accept": "text/csv"
+        }
+    response = requests.get(uri, headers=headers)
+    if response.status_code == 200:
+        df = response.content.decode('utf-8')
+        df = pd.read_csv(StringIO(df))
+        return df
+
+    elif response.content == b'{"errors":[{"code":"object_not_found","detail":"Object not found"}]}':
+        print('Bad Terminal Request')
+        return None
+    else:
+        print('Bad Request')
+        return None
+
+
+# Function to collect and store each terminal's historical slots data
+def get_all_terminal_data(access_token, terminal_list):
+    terminals_all = pd.DataFrame()
+    for i in range(len(terminal_list)):
+        terminal_df = get_individual_terminal(access_token, terminal_list['TerminalUUID'].loc[i])
+        # time.sleep(0.1)
+        terminals_all = pd.concat([terminals_all,terminal_df])
+    return terminals_all
+
+
+def fetch_freight_prices(access_token, ticker, my_lim, my_vessel=None, latest_only=False, cal_month=None):
     if not latest_only:
         my_dict_hist = fetch_historical_price_releases(access_token, ticker, limit=my_lim, vessel=my_vessel)
     else:
@@ -245,24 +324,36 @@ def fetch_freight_prices(access_token, ticker, my_lim, my_vessel=None, latest_on
 
     day_min = []
     day_max = []
-    cal_month = []
 
     for release in my_dict_hist:
             release_date = release["releaseDate"]
 
             data_points = release["data"][0]["dataPoints"]
-
             for data_point in data_points:
-                ticker.append(release['contractId'])
-                release_dates.append(release_date)
-
                 period_start_at = data_point["deliveryPeriod"]["startAt"]
-                period_start.append(period_start_at)
+                calendar_month = datetime.datetime.strptime(period_start_at, '%Y-%m-%d').strftime('%b-%Y')
+                if cal_month is None:
+                    ticker.append(release['contractId'])
+                    release_dates.append(release_date)
 
-                usd_day.append(data_point['derivedPrices']['usdPerDay']['spark'])
-                day_min.append(data_point['derivedPrices']['usdPerDay']['sparkMin'])
-                day_max.append(data_point['derivedPrices']['usdPerDay']['sparkMax'])
-                aa = 3
+                    period_start_at = data_point["deliveryPeriod"]["startAt"]
+                    period_start.append(period_start_at)
+
+                    usd_day.append(data_point['derivedPrices']['usdPerDay']['spark'])
+                    day_min.append(data_point['derivedPrices']['usdPerDay']['sparkMin'])
+                    day_max.append(data_point['derivedPrices']['usdPerDay']['sparkMax'])
+                else:
+                    if cal_month == calendar_month:
+                        ticker.append(release['contractId'])
+                        release_dates.append(release_date)
+
+                        period_start_at = data_point["deliveryPeriod"]["startAt"]
+                        period_start.append(period_start_at)
+
+                        usd_day.append(data_point['derivedPrices']['usdPerDay']['spark'])
+                        day_min.append(data_point['derivedPrices']['usdPerDay']['sparkMin'])
+                        day_max.append(data_point['derivedPrices']['usdPerDay']['sparkMax'])
+
 
     historical_df = pd.DataFrame({
         'Release Date': release_dates,
@@ -358,7 +449,7 @@ def fetch_ffa_prices(access_token, my_tick, my_lim, latest_only=False):
 def fetch_ffa_prices_for_month_only(access_token, my_tick, my_lim, month_tenor):
     print(my_tick)
 
-    my_dict_hist = fetch_historical_price_releases(access_token, my_tick, limit=my_lim)
+    my_dict_hist = fetch_historical_price_releases(access_token, my_tick, limit=my_lim);
 
     release_dates = []
     period_name = []
@@ -424,56 +515,62 @@ def fetch_ffa_prices_for_month_only(access_token, my_tick, my_lim, month_tenor):
     return historical_df
 
 
-def fetch_cargo_prices(access_token, ticker, limit, month, latest_only=False):
+def fetch_cargo_prices(access_token, ticker, limit, latest_only=False, cal_month=None):
 
     # imports front month or forward curve prices, depending on the "month" user input
-
-    if month == 'M+1':
-        full_tick = ticker + '-b-f'
-        # hist_data = fetch_historical_price_releases(access_token, full_tick, limit)
-    else:
-        full_tick = ticker + '-b-fo'
-        # hist_data = fetch_historical_price_releases(access_token, full_tick, limit)
-
-    if not latest_only:
-        hist_data = fetch_historical_price_releases(access_token, full_tick, limit=limit)
-    else:
-        hist_data = fetch_latest_price_releases(access_token, full_tick)
-        hist_data = [hist_data]
-
     release_dates = []
     period_start = []
-    ticker = []
+    tickers = []
     spark = []
 
     spark_min = []
     spark_max = []
-    cal_month = []
+    cal_months = []
 
-    # iterating through historical data points to fetch relevant data
-    for release in hist_data:
-            release_date = release["releaseDate"]
-            ticker.append(release['contractId'])
-            release_dates.append(release_date)
+    small_tickers = ["-b-f", "-b-fo"] if "sparknwe-fin-monthly" not in ticker else [""]
 
-            mi = int(month[-1])-2
+    for small_ticker in small_tickers:
+        full_tick = ticker + small_ticker
 
-            data_point = release['data'][0]['dataPoints'][mi]
+        if not latest_only:
+            hist_data = fetch_historical_price_releases(access_token, full_tick, limit=limit)
+        else:
+            hist_data = fetch_latest_price_releases(access_token, full_tick)
+            hist_data = [hist_data]
 
-            period_start_at = data_point["deliveryPeriod"]["startAt"]
-            period_start.append(period_start_at)
+        # iterating through historical data points to fetch relevant data
+        for release in hist_data:
+                release_date = release["releaseDate"]
+                data_points = release['data'][0]['dataPoints']
+                for data_point in data_points:
+                    period_start_at = data_point["deliveryPeriod"]["startAt"]
+                    calendar_month = datetime.datetime.strptime(period_start_at, '%Y-%m-%d').strftime('%b-%Y')
+                    if cal_month is None:  # Add them all
+                        period_start.append(period_start_at)
+                        tickers.append(release['contractId'])
+                        release_dates.append(release_date)
 
-            spark.append(data_point['derivedPrices']['usdPerMMBtu']['spark'])
-            spark_min.append(data_point['derivedPrices']['usdPerMMBtu']['sparkMin'])
-            spark_max.append(data_point['derivedPrices']['usdPerMMBtu']['sparkMax'])
+                        spark.append(data_point['derivedPrices']['usdPerMMBtu']['spark'])
+                        spark_min.append(data_point['derivedPrices']['usdPerMMBtu']['sparkMin'])
+                        spark_max.append(data_point['derivedPrices']['usdPerMMBtu']['sparkMax'])
 
-            cal_month.append(datetime.datetime.strptime(period_start_at, '%Y-%m-%d').strftime('%b-%Y'))
+                        cal_months.append(calendar_month)
+                    else:  # Add only calendar month
+                        if cal_month == calendar_month:
+                            period_start.append(period_start_at)
+                            tickers.append(release['contractId'])
+                            release_dates.append(release_date)
 
+                            spark.append(data_point['derivedPrices']['usdPerMMBtu']['spark'])
+                            spark_min.append(data_point['derivedPrices']['usdPerMMBtu']['sparkMin'])
+                            spark_max.append(data_point['derivedPrices']['usdPerMMBtu']['sparkMax'])
+
+                            cal_months.append(calendar_month)
 
     # Converting into DataFrame
     hist_df = pd.DataFrame({
         'Release Date': release_dates,
-        'ticker': ticker,
+        'ticker': tickers,
         'Period Start': period_start,
         'Price': spark,
         })
@@ -492,8 +589,9 @@ if __name__ == "__main__":
     client_id, client_secret = retrieve_credentials(file_path=file_pathh)
     access_token = get_access_token(client_id, client_secret)
 
-    hist_df = fetch_ffa_prices_for_month_only(access_token, "spark30ffa-monthly", 30 * 30, month_tenor="Feb-2026")
+    # hist_df = fetch_ffa_prices_for_month_only(access_token, "spark30ffa-monthly", 30 * 30, month_tenor="Feb-2026")
     a = 1
 
+    print(list_contracts(access_token))
 
 

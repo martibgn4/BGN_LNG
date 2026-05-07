@@ -106,6 +106,7 @@ def BGNBlack76VolFromPremium(pricing_date, expiry_date, forward_price, strike, p
 @xw.arg('pos_vol', doc="Positive Volatility")
 @xw.arg('neg_vol', doc="Negative Volatility")
 @xw.arg('corr', doc="Correlation")
+@xw.arg('r', doc="Interest Rate")
 @xw.ret(doc="Kirk option price")
 def BGNKirkPrice(pricing_date, expiry_date, pos_forward_price, neg_forward_price, strike, option_type,
                 pos_vol, neg_vol, corr, r=0.0):
@@ -268,19 +269,28 @@ def BGNKirkAllRisks(pricing_date, expiry_date, pos_forward_price, neg_forward_pr
 @xw.arg('N_paths', doc="Total simulation paths")
 @xw.arg('extra_costs', doc="Extra costs in USD")
 @xw.arg('mc_seed', doc="Seed to be used in MC simulations")
+@xw.arg('big_jump_yearly_probability', doc="Seed to be used in MC simulations")
+@xw.arg('big_jump_size', doc="Seed to be used in MC simulations")
+@xw.arg('small_jump_yearly_probability', doc="Seed to be used in MC simulations")
+@xw.arg('small_jump_size', doc="Seed to be used in MC simulations")
 @xw.ret(doc="LNG Option price via MC")
 def BGNLNGOption_mc(
         vol_u1, vol_u2, vol_freight, corr_u1u2, corr_u1freight, corr_u2freight,
         r, T, route_days, mmbtu_start, mmbtu_end, u1_price, u2_price, freight_price,
-        N_paths=10000, extra_costs=0.0, mc_seed=1):
+        N_paths=10000, extra_costs=0.0, mc_seed=1,
+        big_jump_yearly_probability=0.0, big_jump_size=0.0,
+        small_jump_yearly_probability=0.0, small_jump_size=0.0
+):
     """Computes a spread option price"""
     return price_basket_option_mc(
         vol_u1, vol_u2, vol_freight, corr_u1u2, corr_u1freight, corr_u2freight,
         1.0, r, T, route_days, mmbtu_start, mmbtu_end,
-        u1_price, u2_price, freight_price, int(N_paths), mc_seed=mc_seed, extra_costs=extra_costs)
-
-
-
+        u1_price, u2_price, freight_price, int(N_paths), mc_seed=mc_seed, extra_costs=extra_costs,
+        big_jump_yearly_probability=big_jump_yearly_probability,
+        big_jump_size=big_jump_size,
+        small_jump_yearly_probability=small_jump_yearly_probability,
+        small_jump_size=small_jump_size
+        )
 
 
 @xw.func(call_in_wizard=False)

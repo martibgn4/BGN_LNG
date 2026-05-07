@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from BGN_LNG.Pricers.european_option import Black76Option
+from Pricers.european_option import Black76Option
 
 
 def vectors_equal(v1, v2, tol=1e-4):
