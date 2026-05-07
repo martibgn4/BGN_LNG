@@ -202,25 +202,25 @@ def price_long_basket_option_mc(vol_u1, vol_u2, vol_u3,
 
 
 if __name__ == "__main__":
-    vol_jkm = 0.2
-    vol_ttf = 0.22
+    vol_jkm = 0.01
+    vol_ttf = 0.01
     vol_freight = 0.001
-    rho_jkm_ttf = 0.995
-    rho_jkm_freight = 0.99
-    rho_ttf_freight = 0.99
+    rho_jkm_ttf = 0.4
+    rho_jkm_freight = 0.5
+    rho_ttf_freight = 0.5
 
     r = 0.02
-    route_days = 20
+    route_days = 0
     today_date = date(2026, 3, 17)
-    fob_delivery_date = date(2027, 5, 15)
+    fob_delivery_date = date(2028, 5, 15)
 
     # potential_delivery_dates = [date(2026, m, 15) for m in [1, 5, 6, 10]]
 
     T = (fob_delivery_date - today_date).days / 365.0
 
     N_PATHS = 1000000
-    S0_jkm = 10.0  # USD/MMBtu
-    S0_ttf = 9.9 # USD/bbl
+    S0_jkm = 13.4  # USD/MMBtu
+    S0_ttf = 11.50 # USD/bbl
     S0_freight = 20000  # USD/day
     mmbtu_start = 3500000  # MMBtu
     boiloff_rate = 0.00085  # %MMBtu / day

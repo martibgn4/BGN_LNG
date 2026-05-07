@@ -289,8 +289,8 @@ def plot_ttf_and_eu_spreads(years, today_date, plot_spreads=True, hide_show=Fals
                 else:
                     ttf_c_spread[monthly_t] = c_curve.get_value_on_month(monthly_t)
         else:
-            eurgbp_quotes = BloombergExtractor(commodity="EURGBP", start_year=_start_year, years=years).retrieve_latest_bbg_values(bbg_price_label)
-            dict_tenor_to_price_eurgbp = {m: eurgbp_quotes.loc[m][bbg_price_label] for m in eurgbp_quotes.index}
+            eurgbp_quotes = BloombergExtractor(commodity="EURGBP", start_year=_start_year, years=years).retrieve_latest_bbg_values()
+            dict_tenor_to_price_eurgbp = {m: eurgbp_quotes.loc[m]["px_last"] for m in eurgbp_quotes.index}
             eurgbp_curve = ForwardCurve(dict_tenor_to_price_eurgbp, today_date)
 
             for monthly_t in common_tenors:
@@ -425,7 +425,7 @@ def extract_spark_quotes(quote_type="Cargo", latest_only=True, limit=90, cal_mon
 
     if quote_type == "Cargo":
         full_df = fetch_cargo_prices(access_token, 'sparknwe', limit, latest_only=latest_only, cal_month=cal_month)
-    if quote_type == "NWEDiscountsFinancial":
+    elif quote_type == "NWEDiscountsFinancial":
         full_df = fetch_cargo_prices(access_token, 'sparknwe-fin-monthly', limit, latest_only=latest_only, cal_month=cal_month)
     elif quote_type == "FreightSpark30":
         full_df = fetch_freight_prices(access_token, 'spark30fo', limit, my_vessel='174-2stroke', latest_only=latest_only, cal_month=cal_month)
@@ -592,7 +592,7 @@ def plot_spark_quotes(hide_show=False):
     ax_left.barh(y-right_height, df['NWE_Prev'], height, color='#FF0055', alpha=alpha, label='NWE Prev')
 
     # 4. SCALE ALIGNMENT (Crucial Step)
-    ax_right.set_xlim(-27, 81)
+    ax_right.set_xlim(-38, 114)
     ax_left.set_xlim(-1.5, 4.5)
 
     # 5. FORMATTING
@@ -605,7 +605,7 @@ def plot_spark_quotes(hide_show=False):
     ax_left.set_xlabel(f'NWE Discount (USD/MMBtu): Latest on {str(nwe_days[-1].date())} (Spark)', color='#FF0055', loc='left', fontweight='bold', fontsize=20)
 
     # Clean up ticks to only show positive values
-    ax_right.set_xticks([0, 10, 20, 30, 40, 50, 60, 70, 80])
+    ax_right.set_xticks([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110])
     ax_right.xaxis.set_tick_params(labelsize=20)
     ax_right.yaxis.set_tick_params(labelsize=20)
     ax_right.grid(True, which='major', linestyle=':', alpha=1.0)
@@ -624,7 +624,7 @@ def plot_spark_quotes(hide_show=False):
         Line2D([0], [0], color='#FF0055', lw=6, label=f'NWE Discount (USD/MMBtu)'),
         Line2D([0], [0], color='gray', alpha=alpha, lw=6, label='Prev Day Value')
     ]
-    ax_right.legend(handles=legend_elements, loc='upper right', frameon=True, fontsize=20)
+    ax_right.legend(handles=legend_elements, loc='lower right', frameon=True, fontsize=20)
 
     plt.tight_layout()
     if not hide_show:
@@ -786,9 +786,78 @@ if __name__ == "__main__":
     pricing_date = datetime.now().date()
     # create_bgn_lng_report_grid(pricing_date)
 
+
+
+
     # fig, axes = plt.subplots(1, 1, figsize=(8, 5))
     # plot_nwe_vs_nbp(4, pricing_date, hide_show=False)
     # plt.show()
 
-    start_date = datetime(2026, 2, 25)
-    violin_plots_ttf_nbp_spread(start_date, back_periods=800)
+    # start_date = datetime(2026, 2, 25)
+    # violin_plots_ttf_nbp_spread(start_date, back_periods=800)
+    #
+
+    ticker = "NG"
+
+    df = get_historical_prices_for_underlyings(
+        [ticker+str(i)+ " Comdty" for i in range(1, 36)],
+        start_date=date(2022,1,1),
+        end_date=date(2026,5,4),
+        price_label=["px_settle", "px_open", "px_close", "px_high", "px_low", "volume", "open_int"]
+    )
+
+    roll_dates = blp.bdp(
+        tickers=[ticker + str(i) + str(year)[-2:] + " Comdty" for i in bbg_month_codes for year in range(2022, 2030)],
+        flds="last_tradeable_dt"
+    ).sort_values(by="last_tradeable_dt")
+
+    def get_roll_date(current_date):
+        idx = np.where(roll_dates >=current_date)[0][0]
+        return roll_dates.iloc[idx].last_tradeable_dt
+
+
+    # Apply to the index
+    df['roll_date'] = df.index.map(get_roll_date)
+
+    a = 1
+    #
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.map(lambda x: '/'.join([str(i) for i in x]))
+
+    df.to_csv("C:\\Marti\\HH_daily_OCHL_data.csv")
+
+    # a =1
+    # import pandas as pd
+    #
+    # big_df = pd.DataFrame()
+    #
+    #
+    # for i in range(1, 37):
+    #
+    #     intraday = blp.bdib(
+    #         ticker=f"NG{i} Comdty",
+    #         start_datetime='2024-01-01 09:30:00',
+    #         end_datetime='2026-04-21 17:30:00',
+    #         interval=30,
+    #         # ref ="FuturesEuropeICE",
+    #         ref="NYME"
+    #     )
+    #     if isinstance(intraday.columns, pd.MultiIndex):
+    #         intraday.columns = intraday.columns.map(lambda x: '/'.join([str(i) for i in x]))
+    #     # intraday.to_csv("C:\\Marti\\TTF_intraday_data.csv")
+    #
+    #     big_df = pd.concat([big_df, intraday], axis=1)
+    #
+    # big_df.to_csv("C:\\Marti\\HH_intraday_data.csv")
+
+
+    # intraday_tick_data = blp.bdtick(
+    #     ticker="TZT1 Comdty",
+    #     dt="2026-04-14",
+    #     time_range=('09:30','17:30'),
+    #     interval=15,
+    #     ref ="FuturesFinancialsICE",
+    #     types= ["TRADE", "AT_TRADE", "BID", "ASK", "MID_PRICE", "BID_BEST", "ASK_BEST", "BEST_BID", "BEST_ASK"]
+    # )
+
+    a = 1
