@@ -1,7 +1,7 @@
 import numpy as np
 from datetime import date
 
-from Utils.utils_maths import jump_rv
+from BGN_LNG.Utils.utils_maths import jump_rv
 
 
 def price_basket_option_mc(vol_des, vol_brent301, vol_freight,

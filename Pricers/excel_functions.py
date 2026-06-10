@@ -4,7 +4,7 @@ from BGN_LNG.Pricers.european_option import black76_price, black76_delta, black7
 from BGN_LNG.Pricers.kirk import kirk_theta, kirk_vega_by_leg, kirk_vega, kirk_gamma, kirk_delta, kirk_price, \
     kirk_corr_sensitivity
 
-from BGN_LNG.Utils.datetime_utils import DateConverter
+from BGN_LNG.Utils.datetime_utils import DateConverter, parse_date
 from BGN_LNG.adhoc_scripts.OmanDec25 import price_basket_option_mc, price_long_basket_option_mc
 
 
@@ -113,6 +113,46 @@ def BGNKirkPrice(pricing_date, expiry_date, pos_forward_price, neg_forward_price
     """Computes a spread option price"""
     return kirk_price(pricing_date, expiry_date, pos_forward_price, neg_forward_price, strike,
                       pos_vol, neg_vol, corr, r, option_type)
+
+
+@xw.func(call_in_wizard=False)
+@xw.arg('pricing_date', doc="Pricing Date")
+@xw.arg('expiry_date', doc="Expiry Date")
+@xw.arg('pos_forward_price', doc="Positive Forward Price")
+@xw.arg('neg_forward_price', doc="Negative Forward Price")
+@xw.arg('strike', doc="Strike price")
+@xw.arg('option_type', doc="Call or Put / C or P")
+@xw.arg('pos_vol', doc="Positive Volatility")
+@xw.arg('neg_vol', doc="Negative Volatility")
+@xw.arg('corr', doc="Correlation")
+@xw.arg('r', doc="Interest Rate")
+@xw.ret(doc="Kirk option price")
+def BGNKirkPrice_Array(pricing_date, expiry_date, pos_forward_price, neg_forward_price, strike, option_type,
+                pos_vol, neg_vol, corr, r=0.0):
+    """Computes a spread option price from arrays of inputs"""
+    result = []
+
+
+    for _p_date, _e_date, _p, _n, _k, _pos_vol, _neg_vol, _corr in zip(
+            pricing_date, expiry_date, pos_forward_price, neg_forward_price,
+            strike, pos_vol, neg_vol, corr
+    ):
+        result.append(
+            kirk_price(
+                parse_date(_p_date),
+                parse_date(_e_date),
+                _p,
+                _n,
+                _k,
+                _pos_vol,
+                _neg_vol,
+                _corr,
+                r,
+                option_type
+            )
+        )
+
+    return [[i] for i in result]
 
 
 @xw.func(call_in_wizard=False)
@@ -291,6 +331,58 @@ def BGNLNGOption_mc(
         small_jump_yearly_probability=small_jump_yearly_probability,
         small_jump_size=small_jump_size
         )
+
+
+@xw.func(call_in_wizard=False)
+@xw.arg('vol_u1', doc="Yearly volatility underlying 1")
+@xw.arg('vol_u2', doc="Yearly volatility underlying 2")
+@xw.arg('vol_freight', doc="Yearly volatility freight underlying")
+@xw.arg('corr_u1u2', doc="Correlation underlying 1 and 2")
+@xw.arg('corr_u1freight', doc="Correlation underlying 1 and freight")
+@xw.arg('corr_u2freight', doc="Correlation underlying 2 and freight")
+@xw.arg('r', doc="Yearly Interest Rat")
+@xw.arg('T', doc="Option maturity")
+@xw.arg('route_days', doc="Days from u1 to u2")
+@xw.arg('mmbtu_start', doc="Starting MMBTU cargo")
+@xw.arg('mmbtu_end', doc="Ending MMBTU cargo")
+@xw.arg('u1_price', doc="Current u1 price for delivery, in usd/mmbtu")
+@xw.arg('u2_price', doc="Current u2 price for delivery, in usd/mmbtu")
+@xw.arg('freight_price', doc="Current freight price for delivery, in USD/day")
+@xw.arg('N_paths', doc="Total simulation paths")
+@xw.arg('extra_costs', doc="Extra costs in USD")
+@xw.arg('mc_seed', doc="Seed to be used in MC simulations")
+@xw.arg('big_jump_yearly_probability', doc="Seed to be used in MC simulations")
+@xw.arg('big_jump_size', doc="Seed to be used in MC simulations")
+@xw.arg('small_jump_yearly_probability', doc="Seed to be used in MC simulations")
+@xw.arg('small_jump_size', doc="Seed to be used in MC simulations")
+@xw.ret(doc="LNG Option price via MC")
+def BGNLNGOption_mc_Array(
+        vol_u1, vol_u2, vol_freight, corr_u1u2, corr_u1freight, corr_u2freight,
+        r, T, route_days, mmbtu_start, mmbtu_end, u1_price, u2_price, freight_price,
+        N_paths=10000, extra_costs=[0.0], mc_seed=1,
+        big_jump_yearly_probability=0.0, big_jump_size=0.0,
+        small_jump_yearly_probability=0.0, small_jump_size=0.0
+):
+    """Computes a spread option price"""
+    result = []
+
+    for v1, v2, v_f, c12, c1f, c2f, _T, u1, u2, uf, extra_cost in zip(
+        vol_u1, vol_u2, vol_freight, corr_u1u2, corr_u1freight, corr_u2freight, T, u1_price, u2_price, freight_price, extra_costs
+    ):
+
+        result.append(
+            price_basket_option_mc(
+            v1, v2, v_f, c12, c1f, c2f, 1.0, r, _T, route_days, mmbtu_start, mmbtu_end,
+            u1, u2, uf, int(N_paths), mc_seed=mc_seed, extra_costs=extra_cost,
+            big_jump_yearly_probability=big_jump_yearly_probability,
+            big_jump_size=big_jump_size,
+            small_jump_yearly_probability=small_jump_yearly_probability,
+            small_jump_size=small_jump_size
+            )
+        )
+
+    return [list(i) for i in result]
+
 
 
 @xw.func(call_in_wizard=False)

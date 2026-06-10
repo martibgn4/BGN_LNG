@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LNG on Water</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         max-width: 1100px; margin: 30px auto; padding: 0 20px; color: #111827; }
+  #search { padding: 8px 12px; font-size: 1em; width: 280px;
+             border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 8px; }
+  .hint { color: #6b7280; font-size: 0.9em; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+  <h1>LNG on Water by Country</h1>
+  <input id="search" type="text" placeholder="Filter countries..." />
+  <p class="hint">Click any column header (Vessels / Tonnes) to sort.</p>
+  <style type="text/css">
+#T_58b8e caption {
+  caption-side: top;
+  font-size: 1.3em;
+  font-weight: 600;
+  padding: 10px 0;
+  color: #111827;
+  text-align: left;
+}
+#T_58b8e th {
+  border: 1px solid #e5e7eb;
+  padding: 8px 14px;
+}
+#T_58b8e  td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 14px;
+}
+#T_58b8e thead tr:nth-child(1) th {
+  background-color: #1e3a8a;
+  color: white;
+  text-align: center;
+  font-weight: 600;
+}
+#T_58b8e thead tr:nth-child(2) th {
+  background-color: #3b82f6;
+  color: white;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.9em;
+  cursor: pointer;
+  user-select: none;
+}
+#T_58b8e thead tr:nth-child(2) th:hover {
+  background-color: #2563eb;
+}
+#T_58b8e tbody th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  text-align: left;
+}
+#T_58b8e tbody td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+#T_58b8e tbody tr:hover td {
+  background-color: #fef3c7 !important;
+}
+#T_58b8e tbody tr.totals-row th {
+  background-color: #1f2937 !important;
+  color: white;
+  font-weight: 700;
+  border-top: 2px solid #1f2937;
+}
+#T_58b8e  tbody tr.totals-row td {
+  background-color: #1f2937 !important;
+  color: white;
+  font-weight: 700;
+  border-top: 2px solid #1f2937;
+}
+#T_58b8e  {
+  border-collapse: collapse;
+  margin: 12px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+#T_58b8e_row0_col0, #T_58b8e_row0_col1, #T_58b8e_row0_col2, #T_58b8e_row0_col3, #T_58b8e_row0_col4, #T_58b8e_row0_col5 {
+  background-color: #08306b;
+  color: #f1f1f1;
+}
+#T_58b8e_row1_col0, #T_58b8e_row1_col1 {
+  background-color: #1460a8;
+  color: #f1f1f1;
+}
+#T_58b8e_row1_col2, #T_58b8e_row1_col3 {
+  background-color: #2070b4;
+  color: #f1f1f1;
+}
+#T_58b8e_row1_col4, #T_58b8e_row1_col5 {
+  background-color: #3787c0;
+  color: #f1f1f1;
+}
+#T_58b8e_row2_col0, #T_58b8e_row2_col1 {
+  background-color: #4090c5;
+  color: #f1f1f1;
+}
+#T_58b8e_row2_col2, #T_58b8e_row2_col3 {
+  background-color: #6aaed6;
+  color: #f1f1f1;
+}
+#T_58b8e_row2_col4, #T_58b8e_row2_col5 {
+  background-color: #abd0e6;
+  color: #000000;
+}
+#T_58b8e_row3_col0, #T_58b8e_row3_col1 {
+  background-color: #cee0f2;
+  color: #000000;
+}
+#T_58b8e_row3_col2, #T_58b8e_row3_col3 {
+  background-color: #c6dbef;
+  color: #000000;
+}
+#T_58b8e_row3_col4, #T_58b8e_row3_col5, #T_58b8e_row4_col2, #T_58b8e_row4_col3, #T_58b8e_row4_col4, #T_58b8e_row4_col5 {
+  background-color: #d6e6f4;
+  color: #000000;
+}
+#T_58b8e_row4_col0, #T_58b8e_row4_col1 {
+  background-color: #e3eef8;
+  color: #000000;
+}
+#T_58b8e_row5_col0, #T_58b8e_row5_col1, #T_58b8e_row5_col2, #T_58b8e_row5_col3, #T_58b8e_row5_col4, #T_58b8e_row5_col5 {
+  background-color: #f7fbff;
+  color: #000000;
+}
+</style>
+<table id="T_58b8e" id="lng-table" class="sortable">
+  <caption>LNG on Water by Country</caption>
+  <thead>
+    <tr>
+      <th class="index_name level0" >Period</th>
+      <th id="T_58b8e_level0_col0" class="col_heading level0 col0" colspan="2">>0 days</th>
+      <th id="T_58b8e_level0_col2" class="col_heading level0 col2" colspan="2">>20 days</th>
+      <th id="T_58b8e_level0_col4" class="col_heading level0 col4" colspan="2">>30 days</th>
+    </tr>
+    <tr>
+      <th class="index_name level1" >Metric</th>
+      <th id="T_58b8e_level1_col0" class="col_heading level1 col0" >Vessels</th>
+      <th id="T_58b8e_level1_col1" class="col_heading level1 col1" >Tonnes</th>
+      <th id="T_58b8e_level1_col2" class="col_heading level1 col2" >Vessels</th>
+      <th id="T_58b8e_level1_col3" class="col_heading level1 col3" >Tonnes</th>
+      <th id="T_58b8e_level1_col4" class="col_heading level1 col4" >Vessels</th>
+      <th id="T_58b8e_level1_col5" class="col_heading level1 col5" >Tonnes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th id="T_58b8e_level0_row0" class="row_heading level0 row0" >United States</th>
+      <td id="T_58b8e_row0_col0" class="data row0 col0" >52</td>
+      <td id="T_58b8e_row0_col1" class="data row0 col1" >3,640,000</td>
+      <td id="T_58b8e_row0_col2" class="data row0 col2" >15</td>
+      <td id="T_58b8e_row0_col3" class="data row0 col3" >1,050,000</td>
+      <td id="T_58b8e_row0_col4" class="data row0 col4" >7</td>
+      <td id="T_58b8e_row0_col5" class="data row0 col5" >490,000</td>
+    </tr>
+    <tr>
+      <th id="T_58b8e_level0_row1" class="row_heading level0 row1" >Qatar</th>
+      <td id="T_58b8e_row1_col0" class="data row1 col0" >45</td>
+      <td id="T_58b8e_row1_col1" class="data row1 col1" >3,150,000</td>
+      <td id="T_58b8e_row1_col2" class="data row1 col2" >12</td>
+      <td id="T_58b8e_row1_col3" class="data row1 col3" >840,000</td>
+      <td id="T_58b8e_row1_col4" class="data row1 col4" >5</td>
+      <td id="T_58b8e_row1_col5" class="data row1 col5" >350,000</td>
+    </tr>
+    <tr>
+      <th id="T_58b8e_level0_row2" class="row_heading level0 row2" >Australia</th>
+      <td id="T_58b8e_row2_col0" class="data row2 col0" >38</td>
+      <td id="T_58b8e_row2_col1" class="data row2 col1" >2,660,000</td>
+      <td id="T_58b8e_row2_col2" class="data row2 col2" >9</td>
+      <td id="T_58b8e_row2_col3" class="data row2 col3" >630,000</td>
+      <td id="T_58b8e_row2_col4" class="data row2 col4" >3</td>
+      <td id="T_58b8e_row2_col5" class="data row2 col5" >210,000</td>
+    </tr>
+    <tr>
+      <th id="T_58b8e_level0_row3" class="row_heading level0 row3" >Malaysia</th>
+      <td id="T_58b8e_row3_col0" class="data row3 col0" >22</td>
+      <td id="T_58b8e_row3_col1" class="data row3 col1" >1,540,000</td>
+      <td id="T_58b8e_row3_col2" class="data row3 col2" >6</td>
+      <td id="T_58b8e_row3_col3" class="data row3 col3" >420,000</td>
+      <td id="T_58b8e_row3_col4" class="data row3 col4" >2</td>
+      <td id="T_58b8e_row3_col5" class="data row3 col5" >140,000</td>
+    </tr>
+    <tr>
+      <th id="T_58b8e_level0_row4" class="row_heading level0 row4" >Russia</th>
+      <td id="T_58b8e_row4_col0" class="data row4 col0" >18</td>
+      <td id="T_58b8e_row4_col1" class="data row4 col1" >1,260,000</td>
+      <td id="T_58b8e_row4_col2" class="data row4 col2" >5</td>
+      <td id="T_58b8e_row4_col3" class="data row4 col3" >350,000</td>
+      <td id="T_58b8e_row4_col4" class="data row4 col4" >2</td>
+      <td id="T_58b8e_row4_col5" class="data row4 col5" >140,000</td>
+    </tr>
+    <tr>
+      <th id="T_58b8e_level0_row5" class="row_heading level0 row5" >Nigeria</th>
+      <td id="T_58b8e_row5_col0" class="data row5 col0" >14</td>
+      <td id="T_58b8e_row5_col1" class="data row5 col1" >980,000</td>
+      <td id="T_58b8e_row5_col2" class="data row5 col2" >3</td>
+      <td id="T_58b8e_row5_col3" class="data row5 col3" >210,000</td>
+      <td id="T_58b8e_row5_col4" class="data row5 col4" >1</td>
+      <td id="T_58b8e_row5_col5" class="data row5 col5" >70,000</td>
+    </tr>
+    <tr class="totals-row">
+      <th id="T_58b8e_level0_row6" class="row_heading level0 row6" >Total</th>
+      <td id="T_58b8e_row6_col0" class="data row6 col0" >189</td>
+      <td id="T_58b8e_row6_col1" class="data row6 col1" >13,230,000</td>
+      <td id="T_58b8e_row6_col2" class="data row6 col2" >50</td>
+      <td id="T_58b8e_row6_col3" class="data row6 col3" >3,500,000</td>
+      <td id="T_58b8e_row6_col4" class="data row6 col4" >20</td>
+      <td id="T_58b8e_row6_col5" class="data row6 col5" >1,400,000</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<script>
+(function() {
+  const table = document.getElementById('lng-table');
+  if (!table) return;
+
+  // --- Sorting ---
+  const subHeaders = table.querySelectorAll('thead tr:nth-child(2) th');
+  let sortState = { col: null, asc: false };
+
+  subHeaders.forEach((th, idx) => {
+    th.addEventListener('click', () => {
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('totals-row'));
+      const totalsRow = tbody.querySelector('tr.totals-row');
+
+      const asc = sortState.col === idx ? !sortState.asc : false;
+      sortState = { col: idx, asc };
+
+      rows.sort((a, b) => {
+        const av = parseFloat(a.cells[idx].innerText.replace(/,/g, '')) || 0;
+        const bv = parseFloat(b.cells[idx].innerText.replace(/,/g, '')) || 0;
+        return asc ? av - bv : bv - av;
+      });
+
+      rows.forEach(r => tbody.appendChild(r));
+      if (totalsRow) tbody.appendChild(totalsRow);
+
+      subHeaders.forEach(h => h.innerText = h.innerText.replace(/ [▲▼]$/, ''));
+      th.innerText += asc ? ' ▲' : ' ▼';
+    });
+  });
+
+  // --- Search filter ---
+  const search = document.getElementById('search');
+  search.addEventListener('input', () => {
+    const q = search.value.toLowerCase();
+    table.querySelectorAll('tbody tr').forEach(row => {
+      if (row.classList.contains('totals-row')) return;
+      const country = row.querySelector('th')?.innerText.toLowerCase() ?? '';
+      row.style.display = country.includes(q) ? '' : 'none';
+    });
+  });
+})();
+</script>
+</body>
+</html>

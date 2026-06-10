@@ -223,45 +223,56 @@ def plot_hh_tfu_jkm():
     tfu_quotes = BloombergExtractor(
         "TFU",
         start_year=26
-    ).retrieve_latest_bbg_values()
+    ).retrieve_latest_bbg_values("px_settle")
 
     hh_quotes = BloombergExtractor(
         "HH",
         start_year=26
-    ).retrieve_latest_bbg_values()
+    ).retrieve_latest_bbg_values("px_settle")
 
     jkm_quotes = BloombergExtractor(
         "JKM",
         start_year=26
     ).retrieve_latest_bbg_values()
 
+    jkm_settles = pd.read_csv("C:\\Marti\\ClaudeProjects\\data\\raw\\jkm_settlements\\master.csv")
+    last_date = jkm_settles.settlement_date.max()
+    last_date_as_date = datetime.strptime(last_date, "%Y-%m-%d").date()
+
+    settleimplied_tfu_date = datetime.strptime(tfu_quotes.time.mode().values[0], "%m/%d/%Y").date()
+
+    if last_date_as_date != settleimplied_tfu_date:
+        raise ValueError(f"Date mismatch when reading TFU and JKM settlements! Got TTF as {settleimplied_tfu_date} and JKM as {last_date_as_date}")
+
+    jkm_last_settles = jkm_settles[jkm_settles.settlement_date == last_date]
+    jkm_last_settles.strip_label = jkm_last_settles.strip_label.apply(lambda x: x[:3] + "_" + x[-2:])
+
     common_tenors = [t for t in hh_quotes.index if t in tfu_quotes.index]
 
-    date_tenors = [date_tenor_from_label(d) for d in common_tenors]
+    # date_tenors = [date_tenor_from_label(d) for d in common_tenors]
 
-    us_nwe_spread = tfu_quotes["last_price"] - 1.15 * hh_quotes["last_price"]
-    jkm_tfu_spread = jkm_quotes["last_price"] - tfu_quotes["last_price"]
+    us_nwe_spread = tfu_quotes["px_settle"] - 1.15 * hh_quotes["px_settle"]
+
+    tfu_tenors = [t for t in tfu_quotes.index]
+    jkm_tenors = [t for t in jkm_last_settles.strip_label]
+    common_tenors_tfu_jkm = [t for t in tfu_tenors if t in jkm_tenors]
+
+    spread_dict = {}
+    for t in common_tenors_tfu_jkm:
+        tfu_settle = tfu_quotes.loc[t].px_settle
+        jkm_settle = jkm_last_settles[jkm_last_settles.strip_label == t].settlement.values[0]
+        spread_dict[t] = jkm_settle - tfu_settle
+
+    jkm_tfu_spread = pd.Series(spread_dict)
+
+    common_tenors = [t for t in common_tenors if t in common_tenors_tfu_jkm]
+    date_tenors = [date_tenor_from_label(d) for d in common_tenors]
 
     us_nwe_spread = us_nwe_spread[common_tenors]
     us_nwe_spread.index = date_tenors
 
     jkm_tfu_spread = jkm_tfu_spread[common_tenors]
     jkm_tfu_spread.index = date_tenors
-
-    # # Plot
-    # plt.figure(figsize=(14, 9))
-    # plt.plot(us_nwe_spread.index, us_nwe_spread.values, color="tab:blue", linewidth=2, label="TTF - 115% HH")
-    # plt.plot(jkm_tfu_spread.index, jkm_tfu_spread.values, color="tab:orange", linewidth=2, label="JKM - TTF")
-    # plt.title("Spread Forward Curves", fontsize=26, loc='left', pad=25)
-    # plt.xlabel("Tenor", fontsize=26)
-    # plt.xticks(fontsize=26)
-    # plt.ylabel("USD/MMBtu", fontsize=26)
-    # plt.yticks(fontsize=26)
-    # plt.legend(loc="upper right", fontsize=26)
-    # plt.grid(True)
-    # plt.tight_layout()
-    # if not hide_show:
-    #     plt.show()
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=list(us_nwe_spread.index), y=list(us_nwe_spread.values),
@@ -557,6 +568,8 @@ def plot_nicely_baltic_freight(blng1_ticker, blng2_ticker, blng3_ticker, spark30
     )
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.droplevel(1)
+    # df.dropna(inplace=True)
+    df.fillna(method='ffill', inplace=True)
     df.dropna(inplace=True)
 
     fig = go.Figure()
@@ -929,7 +942,7 @@ def create_bgn_lng_report_grid(report_date):
         simplified_html,
         html_out_path=out_path,
         # sending_to="lng@bgn-int.com; vasileios.giannoutsos@bgn-int.com"
-        # sending_to="marti.fernandezreal@bgn-int.com; vasileios.giannoutsos@bgn-int.com"
+        sending_to="marti.fernandezreal@bgn-int.com; vasileios.giannoutsos@bgn-int.com"
     )
 
 def send_email(html, html_out_path, sending_to="marti.fernandezreal@bgn-int.com"):

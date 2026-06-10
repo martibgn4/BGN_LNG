@@ -66,7 +66,7 @@ def imports_by_region(df, start_date=None, end_date=None) -> pd.DataFrame:
     return agg
 
 
-def imports_origin_destination(df, start_date=None, end_date=None, index="Origin_Berthcountry") -> pd.DataFrame:
+def imports_origin_destination(df, start_date=None, end_date=None, index="Origin_Berthcountry", aggfunc="sum") -> pd.DataFrame:
     """Pivot of mtonnes flowing from each origin region to each destination region."""
     imp = df[df["Visit_Type"].str.lower() == "import"].copy()
 
@@ -77,7 +77,7 @@ def imports_origin_destination(df, start_date=None, end_date=None, index="Origin
         imp.pivot_table(index=index,
                         columns="Port_Region",
                         values="Qtymtonnes",
-                        aggfunc="sum",
+                        aggfunc=aggfunc,
                         fill_value=0)
         .round(2)
     )
@@ -124,7 +124,7 @@ def transit_by_origin(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-def build_recap(import_df, export_df, import_rolling_values=[1, 7, 30], od_index="Origin_Berthcountry"):
+def build_recap(import_df, export_df, import_rolling_values=[1, 7, 30], od_index="Origin_Berthcountry", aggfunc="sum"):
     from datetime import timedelta
     today = datetime.today().date()
     imports_summary_last_n_days = {}
@@ -141,7 +141,8 @@ def build_recap(import_df, export_df, import_rolling_values=[1, 7, 30], od_index
             import_df,
             start_date=today - timedelta(d),
             end_date=today, #- timedelta(1),
-            index=od_index
+            index=od_index,
+            aggfunc=aggfunc
         )
 
         imports_summary_last_n_days[d] = imports_summary
@@ -176,7 +177,7 @@ def hex_to_rgba(hex_color: str, alpha: float = 0.55) -> str:
     return f"rgba({r},{g},{b},{alpha})"
 
 
-def matrix_to_flows(flows_matrix: pd.DataFrame) -> pd.DataFrame:
+def matrix_to_flows(flows_matrix: pd.DataFrame, neg_magnitudes=True) -> pd.DataFrame:
     """Convert a wide origin x destination matrix into a long flow table.
 
     Strips any TOTAL row/column, drops zero/NaN entries, and returns a
@@ -194,7 +195,7 @@ def matrix_to_flows(flows_matrix: pd.DataFrame) -> pd.DataFrame:
             .rename("value")
             .reset_index())
     long.columns = ["origin", "destination", "value"]
-    long["value"] = pd.to_numeric(long["value"], errors="coerce")*(-1)
+    long["value"] = pd.to_numeric(long["value"], errors="coerce")*(-1 if neg_magnitudes else 1)
     long = long.dropna(subset=["value"])
 
     long = long[long["value"] > 0]
@@ -209,6 +210,7 @@ def sankey_from_matrix(
         scale_label: str = "M",
         title: str | None = None,
         region_or_country: str = "",
+        counting_vessels: bool = False,
 ) -> go.Figure:
     """Build a Plotly Sankey from a wide origin x destination matrix.
 
@@ -221,8 +223,9 @@ def sankey_from_matrix(
     scale_label  : prefix shown next to the unit ('M' for millions).
     title        : override the chart title; default builds one automatically.
     """
+    _decimals_to_show = 0 if counting_vessels else 1
     flows_matrix.columns = [c + "." for c in flows_matrix.columns]
-    flows = matrix_to_flows(flows_matrix)
+    flows = matrix_to_flows(flows_matrix, neg_magnitudes=not counting_vessels)
     if flows.empty:
         raise ValueError("Flow matrix is empty after cleaning — no flows to plot.")
 
@@ -234,9 +237,9 @@ def sankey_from_matrix(
 
     # Build node list and lookup
     node_labels = (
-            [f"<b>{o}</b> {origin_totals[o] / value_scale:.2f} {scale_label} {value_label}"
+            [f"<b>{o}</b> {origin_totals[o] / value_scale:.{_decimals_to_show}f} {scale_label} {value_label}"
              for o in origins] +
-            [f"{dest_totals[d] / value_scale:.2f} {scale_label} {value_label} <b>{d}</b>"
+            [f"{dest_totals[d] / value_scale:.{_decimals_to_show}f} {scale_label} {value_label} <b>{d}</b>"
              for d in dests]
     )
     idx = {**{o: i for i, o in enumerate(origins)},
@@ -252,7 +255,7 @@ def sankey_from_matrix(
     link_value = flows["value"].tolist()
     link_color = [hex_to_rgba(origin_colors[o], 0.55) for o in flows["origin"]]
     link_hover = [
-        f"{o} -> {d}: {v / value_scale:.2f} {scale_label} {value_label}"
+        f"{o} -> {d}: {v / value_scale:.{_decimals_to_show}f} {scale_label} {value_label}"
         for o, d, v in zip(flows["origin"], flows["destination"], flows["value"])
     ]
 
@@ -380,7 +383,8 @@ def get_bsrch_lng_figs(save_plots=False):
     _, od_matrix_last_n_days_region, _ = build_recap(
         imported_lng,
         exported_lng,
-        od_index="Origin_Berthregion"
+        od_index="Origin_Berthregion",
+        aggfunc="count"
     )
 
     _fig_country = sankey_from_matrix(
@@ -390,18 +394,19 @@ def get_bsrch_lng_figs(save_plots=False):
             value_scale = 1e6,
             scale_label = "Million MT",
             title = None,
-            region_or_country="import country"
+            region_or_country="export country"
         )
 
     _fig_region = sankey_from_matrix(
         od_matrix_last_n_days_region[30],
         days=30,
         value_label="",
-        value_scale=1e6,
-        scale_label="Million MT",
+        value_scale=1,
+        scale_label="Vessels",
         title=None,
-        region_or_country="import region"
-                                      )
+        region_or_country="export region (Vessel Count)",
+        counting_vessels=True,
+    )
 
 
     if save_plots:
