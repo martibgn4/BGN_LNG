@@ -11,18 +11,19 @@ class ForwardCurve:
     base_periods = ["Q1", "Q2", "Q3", "Q4", "SS", "WS", "Y"]
     def __init__(self, dict_tenor_to_price, pricing_date):
         tenors = [t for t in dict_tenor_to_price.keys()]
-
+        self.pricing_date = pricing_date
         self.monthly_quotes = {
             t: dict_tenor_to_price[t]
             for t in tenors
             if (is_tenor_month(t) and date_tenor_from_label(t)>pricing_date)
         }
-        non_monthly_quotes ={t: dict_tenor_to_price[t] for t in tenors if not is_tenor_month(t)}
+        non_monthly_quotes ={t: dict_tenor_to_price[t]
+                             for t in tenors
+                             if not is_tenor_month(t)}
 
         self._populate_quoted_shape(self.monthly_quotes)
         self._infer_monthly_quotes(non_monthly_quotes)
 
-        self.pricing_date = pricing_date
         def get_maturity_for_tenor(t):
             if isinstance(t, float):
                 return t
@@ -48,7 +49,7 @@ class ForwardCurve:
             for q, avg_period in provided_quotes.items():
                 months_inferred = tenor_to_monthly_strip(q)
                 for m in months_inferred:
-                    if m not in self.monthly_quotes:
+                    if m not in self.monthly_quotes and date_tenor_from_label(m)>self.pricing_date:
                         month_code = get_month_from_tenor(m)
                         ratio = self._ratio_dict[p_str][month_code]
                         self.monthly_quotes[m] = ratio * avg_period
