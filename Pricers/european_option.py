@@ -6,7 +6,7 @@ from scipy.optimize import newton
 from numpy import atleast_1d, exp, log, nan, sqrt, isnan, isinf, isneginf, divide
 import warnings
 
-from BGN_LNG.Utils.datetime_utils import time_between
+from Utils.datetime_utils import time_between
 
 N = norm.cdf
 N_dash = norm.pdf

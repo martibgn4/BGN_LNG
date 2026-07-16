@@ -89,7 +89,7 @@ def create_bgn_lng_report_grid(report_date):
     send_email(
         simplified_html,
         html_out_path=out_path_online,
-        # sending_to="lng@bgn-int.com; vasileios.giannoutsos@bgn-int.com"
+        sending_to="lng@bgn-int.com; vasileios.giannoutsos@bgn-int.com"
         # sending_to="marti.fernandezreal@bgn-int.com; vasileios.giannoutsos@bgn-int.com"
     )
 
