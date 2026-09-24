@@ -386,7 +386,9 @@ REQUESTED_SUMMARY = (
     "vol HH_M1,corr TTF_M/TTF_M1,corr TTF_M/HH_M,corr HH_M/HH_M1,option_value_mc,option_intrinsic,"
     "option_time_value_mc,option_value_usd_mc,option_value_kirk,extrinsic_mc,extrinsic_usd_mc,"
     "value_usd_mc,prob_m1_mc,corr_sens_usd_mc TTF_M/TTF_M1,corr_sens_usd_mc HH_M/HH_M1,"
-    "corr_sens_usd_mc TTF/HH all cross pairs").split(",")
+    "corr_sens_usd_mc TTF/HH all cross pairs").split(",") + [
+    f"option_delta_lots_mc {leg}" for leg in ("TTF_M", "TTF_M1", "HH_M", "HH_M1")] + [
+    f"vega_usd_mc {leg}" for leg in ("TTF_M", "TTF_M1", "HH_M", "HH_M1")]
 
 
 def test_trades_summary_is_the_requested_subset_with_units(tmp_path):
@@ -557,7 +559,9 @@ def test_brent_deal_weights_and_pricing(tmp_path):
         *price_job.SUMMARY_TERMS, "vol TTF_M", "vol TTF_M1", "vol Brent_M", "vol Brent_M1",
         "corr TTF_M/TTF_M1", "corr TTF_M/Brent_M", "corr Brent_M/Brent_M1", *price_job.SUMMARY_VALUES,
         "corr_sens_usd_mc TTF_M/TTF_M1", "corr_sens_usd_mc Brent_M/Brent_M1",
-        "corr_sens_usd_mc TTF/Brent all cross pairs"]
+        "corr_sens_usd_mc TTF/Brent all cross pairs",
+        *[f"option_delta_lots_mc {leg}" for leg in ("TTF_M", "TTF_M1", "Brent_M", "Brent_M1")],
+        *[f"vega_usd_mc {leg}" for leg in ("TTF_M", "TTF_M1", "Brent_M", "Brent_M1")]]
     # The Brent vol haircut applies to Brent only.
     cut = price_job.run({**MARKET_3, "pricing": {**PRICING, "Brent_vol_haircut": 0.5}}, [t_nd], snap, AS_OF)
     base_legs = res["legs"].set_index(["trade", "leg"])["vol"]
@@ -580,3 +584,30 @@ def test_missing_vol_profile_fails_loudly_instead_of_nan():
     empty = PROFILE.iloc[0:0]
     with pytest.raises(ValueError, match="vol profile"):
         horizon_vol(0.35, 58, 60, 30, empty)
+
+
+def test_trades_carry_per_leg_deltas_and_vegas(tmp_path):
+    snap = synthetic_calibration(tmp_path / "c")
+    res = price_job.run(MARKET, deal.parse_trades(TRADES, PRICING)[:2], snap, AS_OF)
+    tr = res["trades"].set_index("trade")
+    legs = res["legs"].set_index(["trade", "leg"])
+    for t in ("NovDec", "NovDec_lowcorr"):
+        for leg in ("TTF_M", "TTF_M1", "HH_M", "HH_M1"):
+            assert tr.loc[t, f"delta_lots_mc {leg}"] == pytest.approx(legs.loc[(t, leg), "lots_mc"])
+            assert tr.loc[t, f"option_delta_lots_mc {leg}"] == pytest.approx(legs.loc[(t, leg), "option_lots_mc"])
+            assert tr.loc[t, f"vega_usd_mc {leg}"] == pytest.approx(legs.loc[(t, leg), "vega_usd_per_pt_mc"])
+    # Selling HH / buying TTF: the whole delivery is long HH and short TTF lots.
+    assert tr.loc["NovDec", "delta_lots_mc HH_M"] + tr.loc["NovDec", "delta_lots_mc HH_M1"] > 0
+    assert tr.loc["NovDec", "delta_lots_mc TTF_M"] + tr.loc["NovDec", "delta_lots_mc TTF_M1"] < 0
+    # The option alone switches M into M+1: its deltas in each hub roughly net out.
+    opt_ttf = tr.loc["NovDec", "option_delta_lots_mc TTF_M"] + tr.loc["NovDec", "option_delta_lots_mc TTF_M1"]
+    deal_ttf = tr.loc["NovDec", "delta_lots_mc TTF_M"] + tr.loc["NovDec", "delta_lots_mc TTF_M1"]
+    assert abs(opt_ttf) < 0.2 * abs(deal_ttf)
+
+    units = price_job.trade_units(["delta_lots_mc TTF_M", "option_delta_lots_mc TTF_M", "vega_usd_mc TTF_M"],
+                                  0.01, 0.01)
+    assert units == ["futures lots, whole delivery (hedge = minus)",
+                     "futures lots, option only (hedge = minus)", "USD per +1 vol pt"]
+    summary = price_job.trades_summary(res["trades"])
+    assert "option_delta_lots_mc TTF_M" in summary and "vega_usd_mc HH_M1" in summary
+    assert "delta_lots_mc TTF_M" not in summary              # whole-delivery delta stays in trades.csv

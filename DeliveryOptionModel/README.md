@@ -10,7 +10,8 @@ The work is split into two jobs that communicate only through files:
 python calibrate.py            # Job 1: Bloomberg -> data/calibration/<date>/
 python price.py                # Job 2: files -> output/<timestamp>/   (no Bloomberg)
 python price.py --calib 2026-09-23_edited --only NovDec26,DecJan27 --as-of 2026-09-24
-python -m pytest tests -q      # 22 tests, no Bloomberg
+python diagnose.py             # plots of how the calibration data behaved
+python -m pytest tests -q      # 40 tests, no Bloomberg
 ```
 
 Config: `config/market.yaml` holds the hubs, calibration settings and engine
@@ -139,6 +140,36 @@ works; giving both a `sell.constant` and a `strike_usd_mmbtu` is an error.
 `vol Brent_M`, `corr TTF_M/Brent_M`, `corr_sens_usd_mc TTF/Brent all cross
 pairs`, and so on.
 
+### Diagnostics (how the calibration data behaved)
+
+Every calibration run ends by writing `<calibration>/diagnostics/`. To rebuild
+it for any calibration folder, run `python diagnose.py --calib 2026-09-24`.
+
+| file | shows |
+|---|---|
+| `index.md` | what each plot shows, plus findings computed from the data (vol sources per hub, correlation ranges, the year carrying the variance, the weakest month pairs, stale prints) |
+| `vol_term_structure.png` | ATM vol by delivery month per hub, marked live mid / settlement / filled, against the realised vol history gives the same maturity |
+| `vol_profile.png` | realised vol by days to expiry: the Samuelson shape behind the horizon adjustment and the vol fill |
+| `corr_term_structure.png` | M/M+1 correlation per hub and each cross-hub pair along the strip, weekly (used) against daily (diagnostic) |
+| `corr_<series>.png` | for every tenor pair, the pooled correlation broken down by calendar year, each year's share of the variance, days to expiry, and the month pair that supplied the data |
+| `data_quality.png` | sample size, window length and stale prints per pair |
+| `tables/*.csv` | the numbers behind every plot |
+
+**How the numbers are built.**
+- **Same sampling as the calibration.** The breakdowns re-run the calibration's
+  own sampling on the saved price history. For every pair, the pooled figure
+  equals the stored correlation exactly, and the year and month-pair slices
+  add back up to it (tested).
+- **Why the variance share matters.** A pooled correlation weighs each year by
+  its share of the variance. That is why 2022 (40-55% of TTF's variance)
+  shapes the long-dated numbers.
+
+**Saved history.** The calibration job saves the prices it used in
+`<calibration>/history/`. That is raw Bloomberg data, so `.gitignore` keeps it
+out of the repository. A calibration written before this existed is fetched
+from Bloomberg once, on the first `diagnose.py` run. `--no-fetch` fails
+instead of fetching, and `calibrate.py --no-diagnostics` skips the step.
+
 ## Job 2: pricing
 
 For each trade, the pricer:
@@ -214,7 +245,7 @@ any repair of a correlation matrix that isn't positive semi-definite.
 | file | contents |
 |---|---|
 | `trades.csv` | **`option_value_mc`**: the right to switch from M to M+1 (and to cancel, if allowed), against committing to M today; always ≥ 0, split into `option_intrinsic` + `option_time_value_mc`, with `option_value_usd_mc` and `option_stderr_mc`. **`value_mc`**: the whole delivery, PV(X_M) + option, which can be negative. Also the inputs actually used — `vol <leg>` for TTF/HH M and M+1 (horizon-adjusted, after overrides) and `corr <leg>/<leg>` for all six pairs (after overrides and PSD repair) — `value_kirk` / `value_bachelier` checks, `prob_m1_mc`, `prob_cancel_mc` and `corr_sens_usd_mc` |
-| `trades_summary.csv` | the headline subset of `trades.csv` (`SUMMARY_COLUMNS` in `price_job.py`): terms, vols and correlations used, option value MC/Kirk, time value, deal value, P(M+1) and the three correlation sensitivities; same units row |
+| `trades_summary.csv` | the headline subset of `trades.csv`: terms, vols and correlations used, option value (MC / Kirk), time value, deal value, P(M+1), correlation sensitivities, and per leg the option's delta in futures lots (`option_delta_lots_mc <leg>`, hedge = minus) and vega (`vega_usd_mc <leg>`, USD per +1 vol pt); 3 decimals, same units row. `trades.csv` also has the whole-delivery delta (`delta_lots_mc <leg>`). Legs differ by trade, so net risk by contract is in `portfolio.csv`, not a column sum |
 | `legs.csv` | inputs actually used per leg, `delta_per_mmbtu_mc`, `qty_native_mc`, `lots_mc` (hedge of the whole delivery), `option_lots_mc` (hedge of the option alone), `vega_usd_per_pt_mc` |
 | `portfolio.csv` | `lots_mc`, `option_lots_mc` and `vega_usd_per_pt_mc` summed per futures contract across all trades |
 | `grids.csv` | extrinsic against TTF M/M+1 correlation and vol scale, per trade; `method` says `kirk` or `mc` (MC when the trade can cancel) |

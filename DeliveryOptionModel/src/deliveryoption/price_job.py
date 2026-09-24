@@ -50,6 +50,13 @@ TRADE_UNITS = {
 }
 CORR_SENS_PREFIX = "corr_sens_usd_mc "
 VOL_PREFIX = "vol "            # + leg, e.g. "vol TTF_M1"
+# Per-leg risk columns (+ leg). Deltas are in futures lots of that leg's
+# contract, so the hedge is minus the number: the whole delivery (margin locked
+# in + option), and the option alone (what option_value_mc prices). Vega is the
+# same for both: the committed M margin carries no vol.
+DELTA_PREFIX = "delta_lots_mc "
+OPTION_DELTA_PREFIX = "option_delta_lots_mc "
+VEGA_PREFIX = "vega_usd_mc "
 CORR_PREFIX = "corr "          # + leg pair, e.g. "corr TTF_M/TTF_M1"
 
 
@@ -83,7 +90,12 @@ def summary_columns(columns) -> list[str]:
         corrs += [c for k in hubs[i + 1:] if (c := f"{CORR_PREFIX}{h}_M/{k}_M") in columns]
     sens = [f"{CORR_SENS_PREFIX}{h}_M/{h}_M1" for h in hubs]
     sens += [c for c in columns if c.startswith(CORR_SENS_PREFIX) and c.endswith("all cross pairs")]
-    return SUMMARY_TERMS + vols + corrs + SUMMARY_VALUES + sens
+    legs = [f"{h}_{tag}" for h in hubs for tag in ("M", "M1")]
+    # The summary reports the option, so its delta is the option's own hedge
+    # (trades.csv also has the whole-delivery delta).
+    deltas = [f"{OPTION_DELTA_PREFIX}{leg}" for leg in legs]
+    vegas = [f"{VEGA_PREFIX}{leg}" for leg in legs]
+    return SUMMARY_TERMS + vols + corrs + SUMMARY_VALUES + sens + deltas + vegas
 
 
 def leg_label(hub: str, weight: tuple, const: tuple) -> str:
@@ -122,10 +134,16 @@ def haircuts(pricing_cfg: dict, hubs) -> dict[str, dict]:
     return out
 
 
-def trade_units(columns, bump_corr: float) -> list[str]:
+def trade_units(columns, bump_corr: float, bump_vol: float = 0.01) -> list[str]:
     units = []
     for c in columns:
-        if c.endswith("_vol_haircut"):
+        if c.startswith(OPTION_DELTA_PREFIX):
+            units.append("futures lots, option only (hedge = minus)")
+        elif c.startswith(DELTA_PREFIX):
+            units.append("futures lots, whole delivery (hedge = minus)")
+        elif c.startswith(VEGA_PREFIX):
+            units.append(f"USD per +{bump_vol * 100:g} vol pt")
+        elif c.endswith("_vol_haircut"):
             units.append("multiplier on calibrated vols")
         elif c.endswith("_corr_haircut") and c[:-len("_corr_haircut")].count("_") == 1:
             units.append("multiplier on calibrated cross-hub corr (all 4 pairs)")
@@ -298,6 +316,13 @@ def price_deal(d: deal_mod.Deal, cfg: dict,
     legs["vega_usd_per_pt_mc"] = rk_mc["vega_mc"] * vol
     corr = pd.DataFrame(m.corr, names, names)
     legs["corr_used_M_M1"] = [corr.loc[f"{r.hub}_M", f"{r.hub}_M1"] for r in legs.itertuples()]
+
+    # Per-leg risk on the trade's own row (legs.csv keeps the full detail).
+    for r in legs.itertuples():
+        row[f"{DELTA_PREFIX}{r.leg}"] = r.lots_mc
+        row[f"{OPTION_DELTA_PREFIX}{r.leg}"] = r.option_lots_mc
+    for r in legs.itertuples():
+        row[f"{VEGA_PREFIX}{r.leg}"] = r.vega_usd_per_pt_mc
     return row, legs
 
 
@@ -351,7 +376,7 @@ def trades_summary(trades: pd.DataFrame) -> pd.DataFrame:
     return trades[cols].round({c: SUMMARY_DECIMALS for c in cols if c not in SUMMARY_TERMS})
 
 
-def write_trades_csv(path: Path, trades: pd.DataFrame, bump_corr: float):
+def write_trades_csv(path: Path, trades: pd.DataFrame, bump_corr: float, bump_vol: float = 0.01):
     """Header, then a units row, then the data.
 
     Read it back with pd.read_csv(path, skiprows=[1]); without skipping the
@@ -360,16 +385,16 @@ def write_trades_csv(path: Path, trades: pd.DataFrame, bump_corr: float):
     if trades.empty:
         trades.to_csv(path, index=False)
         return
-    units = pd.DataFrame([trade_units(trades.columns, bump_corr)], columns=trades.columns)
+    units = pd.DataFrame([trade_units(trades.columns, bump_corr, bump_vol)], columns=trades.columns)
     units.to_csv(path, index=False)
     trades.to_csv(path, index=False, header=False, mode="a")
 
 
 def write(folder: Path, result: dict, snap: snapshot.Snapshot, as_of: pd.Timestamp, market: dict):
     folder.mkdir(parents=True, exist_ok=True)
-    write_trades_csv(folder / "trades.csv", result["trades"], market["pricing"]["bump_corr"])
-    write_trades_csv(folder / "trades_summary.csv", trades_summary(result["trades"]),
-                     market["pricing"]["bump_corr"])
+    bumps = (market["pricing"]["bump_corr"], market["pricing"]["bump_vol"])
+    write_trades_csv(folder / "trades.csv", result["trades"], *bumps)
+    write_trades_csv(folder / "trades_summary.csv", trades_summary(result["trades"]), *bumps)
     result["legs"].to_csv(folder / "legs.csv", index=False)
     port = portfolio(result["legs"])
     port.to_csv(folder / "portfolio.csv", index=False)

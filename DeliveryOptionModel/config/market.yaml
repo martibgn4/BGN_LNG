@@ -61,7 +61,7 @@ calibration:
   # Filled rows are flagged in `note`; `atm_vol` stays blank.
   missing_vol_fill: samuelson
   fill_scale_months: 12
-  anchor_filter: all             # all | same_pair (only past pairs of the same calendar months)
+  anchor_filter: same_pair             # all | same_pair (only past pairs of the same calendar months)
   # Buckets (days to expiry) for the realised-vol profile.
   # Out to 5 years: long-dated CSOs live on the far end of this curve.
   vol_profile_buckets_days: [0, 30, 60, 90, 120, 180, 270, 365, 540, 730, 1095, 1460, 1825]

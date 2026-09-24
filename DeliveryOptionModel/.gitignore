@@ -1,2 +1,4 @@
 output/
 __pycache__/
+# Raw Bloomberg prices saved by the calibration job: licensed data, not for the repo.
+data/calibration/*/history/

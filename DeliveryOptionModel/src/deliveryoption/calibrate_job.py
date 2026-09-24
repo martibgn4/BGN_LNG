@@ -3,7 +3,8 @@
     python calibrate.py                     # pairs from trades.yaml + the strip
     python calibrate.py --strip-months 18
 
-Writes data/calibration/<as_of>/ (see snapshot.py for the file layout). Never
+Writes data/calibration/<as_of>/ (see snapshot.py for the file layout), the
+price history it used in history/, and diagnostics/ plots (diagnostics.py). Never
 overwrites: a second run on the same day gets a time suffix, so a folder that
 has been edited by hand is safe.
 """
@@ -17,7 +18,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from DeliveryOptionModel.src.deliveryoption import calibration, market_data, snapshot
+from DeliveryOptionModel.src.deliveryoption import calibration, diagnostics, market_data, snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
 RULE = "-" * 78
@@ -29,6 +30,8 @@ def main(argv=None):
     ap.add_argument("--trades", default=str(ROOT / "config" / "trades_2028_2031.yaml"))
     ap.add_argument("--strip-months", type=int, help="override calibration.strip_months")
     ap.add_argument("--no-strip", action="store_true", help="only the pairs in --trades")
+    ap.add_argument("--no-diagnostics", action="store_true",
+                    help="skip the plots in <calibration>/diagnostics/ (python diagnose.py later)")
     args = ap.parse_args(argv)
 
     market = yaml.safe_load(Path(args.market).read_text())
@@ -39,6 +42,13 @@ def main(argv=None):
         market["calibration"]["strip_months"] = 0
     folder = run(market, trades, as_of=pd.Timestamp.today().normalize())
     print(f"\nCalibration written to {folder}")
+    if not args.no_diagnostics:
+        # Diagnostics are a view on the calibration, not part of it: a plotting
+        # failure must not lose a finished calibration.
+        try:
+            print(f"Diagnostics written to {diagnostics.run(folder, fetch=False)}")
+        except Exception as e:                                  # noqa: BLE001
+            print(f"Diagnostics failed ({e}); rerun with: python diagnose.py --calib {folder.name}")
 
 
 def pairs_to_calibrate(market: dict, trades: dict, as_of: pd.Timestamp) -> list[tuple[pd.Period, pd.Period]]:
@@ -126,6 +136,7 @@ def run(market: dict, trades: dict, as_of: pd.Timestamp) -> Path:
                    meta={"created": pd.Timestamp.now().isoformat(timespec="seconds"),
                          "calibration": cal, "hubs": hub_specs,
                          "pairs": [calibration.pair_key(*p) for p in live_pairs]})
+    diagnostics.save_history(folder, px, expiry)
     _report(contracts, fx, profile, summary)
     return folder
 
