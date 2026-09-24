@@ -1,0 +1,216 @@
+# ---------------------------------------------------------------------------
+# features.yaml - how weather becomes a number a regression can use.
+#
+# The organising idea (SPEC 0): the LEVEL of forecast demand is in the price;
+# the REVISION is the news. Levels appear here only as anomaly controls.
+# ---------------------------------------------------------------------------
+
+# --- Degree days -------------------------------------------------------------
+#
+# The base temperature is a market convention, not a physical constant, and the
+# two conventions disagree. US gas uses 65F. European practice uses a 15.5C
+# base with an 18C reference (Eurostat), which is NOT 65F = 18.33C. Mixing them
+# silently would shift EU degree days by roughly 10% in shoulder season, so
+# each market names its own convention explicitly.
+degree_days:
+  us:
+    base_temperature_c: 18.333      # 65F, the NOAA/CME convention
+    convention: "noaa_65f"
+    hdd: true
+    cdd: true
+  eu:
+    base_temperature_c: 15.5        # Eurostat heating threshold
+    reference_temperature_c: 18.0   # HDD accrues to 18C once below the base
+    convention: "eurostat"
+    hdd: true
+    cdd: true
+  # Degree days are computed per grid point and THEN weighted. Computing them
+  # on an already-averaged temperature is wrong: max(0, base - mean(T)) is not
+  # mean(max(0, base - T)) because the function kinks at zero. The error is
+  # largest in shoulder season, which is where most of the trading days are.
+  compute_before_weighting: true
+
+# --- Climatological normals --------------------------------------------------
+#
+# Weather is only news relative to normal. Normals come from ERA5 over a fixed
+# window and are smoothed, because a raw day-of-year mean over 30 years is
+# itself noisy and its wiggles would enter the anomaly as fake signal.
+normals:
+  source: "era5_archive"
+  window_years: 30
+  window_end_year: 2025
+  # Day-of-year normals smoothed with a centred moving average. 15 days is the
+  # usual choice: long enough to kill sampling noise, short enough to keep the
+  # real seasonal shape through the shoulder months.
+  smoothing_window_days: 15
+  # 29 February is mapped to day 59 rather than given its own thin sample.
+  leap_day_policy: "map_to_feb28"
+  min_years_required: 20
+
+# --- Forecast revisions - the core feature block -----------------------------
+revisions:
+  # WHICH SPAN OF WEATHER a revision is aggregated over. Set to
+  # balance_of_month because of a structural constraint found against real data
+  # on 2026-09-07, not as a convenience:
+  #
+  # NG expires three business days before its delivery month starts, and this
+  # calendar rolls five business days before that, so the front contract always
+  # references a month beginning at least eight business days out. The archive
+  # caps lead at seven days. A contract-delivery-window revision for front NG
+  # is therefore empty ALWAYS - by construction, not for want of data.
+  #
+  #   contract_delivery  the contract's own month. The right object
+  #                      economically; needs leads of roughly 15+ days, so it
+  #                      becomes available only once the daily job has
+  #                      accumulated far leads that history cannot supply.
+  #   balance_of_month   tomorrow to month end. Works at leads 1-7, and is
+  #                      defensible on its own terms: near-term weather sets
+  #                      the storage draw, and the storage trajectory is what
+  #                      the front contract prices.
+  #   forecast_horizon   tomorrow to tomorrow + max lead. No calendar structure
+  #                      imposed; the most literal reading of "what changed".
+  window_mode: "balance_of_month"
+  # Consecutive issue dates differ by one day. A revision at a longer step is
+  # available too (a 2-day revision is less noisy but staler).
+  issue_steps_days: [1, 2, 5]
+
+  # Lead-time buckets. A revision to tomorrow and a revision to day 14 are
+  # different animals: the near one is nearly certain and mostly already
+  # traded, the far one is noisy and more likely to be news. Bucketing rather
+  # than using every lead separately keeps the design matrix small enough that
+  # ridge has something to work with.
+  #
+  # `historical: false` means the bucket CANNOT be backfilled. Open-Meteo's
+  # previous-run archive stops at lead 7 (verified 2026-09-07, see
+  # sources.yaml), so leads beyond that exist only from the day the daily job
+  # starts collecting. The backtest excludes them rather than quietly treating
+  # a missing far-lead revision as zero, which would read as "the 15-day
+  # forecast did not change" - a strong and false claim.
+  lead_buckets:
+    - {name: "d1_3",   min_lead: 1,  max_lead: 3,  historical: true}
+    - {name: "d4_7",   min_lead: 4,  max_lead: 7,  historical: true}
+    - {name: "d8_15",  min_lead: 8,  max_lead: 15, historical: false}
+    - {name: "d16_30", min_lead: 16, max_lead: 30, historical: false}
+
+  # COMMON-COVERAGE RULE (SPEC 3). A revision is computed only over target days
+  # present in BOTH issue dates. Without this, a forecast horizon rolling one
+  # day forward adds a brand-new target day and the aggregate jumps - which
+  # would be recorded as news when nothing was revised at all. This is the
+  # single easiest way to fabricate a signal in this project.
+  require_common_coverage: true
+  # Minimum share of the contract delivery window that must be covered by
+  # actual forecast (not normals) for the row to be usable.
+  min_coverage_fraction: 0.20
+
+  # Ensemble spread. Predicts VOLATILITY, not direction, and is kept out of the
+  # mean equation for that reason - it enters the variance model and as an
+  # interaction that scales position size.
+  ensemble:
+    enabled: true
+    spread_measure: "std_across_members"
+    # Change in spread is the interesting part: a forecast becoming less
+    # certain is itself an event.
+    include_spread_change: true
+
+# --- Gas features ------------------------------------------------------------
+gas_features:
+  # Revisions to gas-weighted degree days over the CONTRACT DELIVERY WINDOW,
+  # bucketed by lead. This is the main signal.
+  contract_window_hdd_revision: true
+  contract_window_cdd_revision: true
+  # Balance-of-month: the part of the front month not yet realised. Distinct
+  # from the delivery window once the front contract has rolled to next month.
+  balance_of_month_hdd_revision: true
+  # Level controls, as anomalies against normal. NOT the signal - present so
+  # the revision coefficient is not contaminated by a seasonal level effect.
+  hdd_anomaly_level: true
+  cdd_anomaly_level: true
+  # Wind matters two ways in Europe: it raises heating load through wind chill
+  # and it displaces gas in the power stack. The two have opposite signs, so
+  # the coefficient is expected small and possibly unstable. Carried for EU
+  # only, where the power-stack channel is material.
+  wind_anomaly:
+    enabled_for: ["eu_gas"]
+
+# --- Agriculture features ----------------------------------------------------
+#
+# Not degree days. The mechanism is crop stress inside a phenological window,
+# and OUTSIDE that window the same weather carries close to zero information.
+# Ungated ag weather features are the standard way to manufacture noise.
+agriculture_features:
+  precipitation_anomaly: true
+  heat_stress_days: true
+  soil_moisture_anomaly: true
+  # Accumulate over the window to date rather than reading a single day: a crop
+  # responds to cumulative moisture, not to Tuesday.
+  accumulate_within_window: true
+  # Heat stress thresholds, daily maximum temperature. Above these, yield loss
+  # per degree-day rises sharply rather than linearly.
+  heat_stress_threshold_c:
+    corn: 32.0            # pollination failure above roughly 32C
+    soybeans: 34.0        # more tolerant than corn
+    winter_wheat: 30.0    # grain-fill shrivelling
+
+# --- Crop calendar -----------------------------------------------------------
+#
+# Day-of-year windows per crop and hemisphere. `critical: true` windows are the
+# ones the model is allowed to trade; the others are carried as controls.
+# Dates are approximate and regional - Iowa silks about a week after Kansas -
+# and a per-region offset is the obvious Phase 5 refinement.
+crop_calendar:
+
+  corn:
+    northern:
+      - {name: "planting",    start: "04-20", end: "05-25", critical: false}
+      - {name: "vegetative",  start: "05-26", end: "07-04", critical: false}
+      # THE window. US corn is made or lost in about three weeks of July.
+      - {name: "pollination", start: "07-05", end: "08-05", critical: true}
+      - {name: "grain_fill",  start: "08-06", end: "09-10", critical: true}
+      - {name: "harvest",     start: "09-11", end: "11-05", critical: false}
+    southern:
+      - {name: "planting",    start: "09-15", end: "11-15", critical: false}
+      - {name: "pollination", start: "12-15", end: "01-31", critical: true}
+      - {name: "grain_fill",  start: "02-01", end: "03-10", critical: true}
+
+  soybeans:
+    northern:
+      - {name: "planting",    start: "05-01", end: "06-10", critical: false}
+      - {name: "vegetative",  start: "06-11", end: "07-25", critical: false}
+      # Soybeans are set later than corn: August rain makes the bean crop.
+      - {name: "pod_set",     start: "07-26", end: "08-20", critical: true}
+      - {name: "pod_fill",    start: "08-21", end: "09-15", critical: true}
+      - {name: "harvest",     start: "09-16", end: "11-10", critical: false}
+    southern:
+      - {name: "planting",    start: "09-20", end: "12-10", critical: false}
+      - {name: "pod_fill",    start: "12-20", end: "02-10", critical: true}
+      - {name: "harvest",     start: "02-11", end: "04-10", critical: false}
+
+  winter_wheat:
+    northern:
+      - {name: "establishment", start: "09-15", end: "11-15", critical: false}
+      # Dormancy: the risk here is a hard freeze WITHOUT snow cover, not cold
+      # as such. Modelled as a freeze-event feature rather than a mean anomaly.
+      - {name: "dormancy",      start: "11-16", end: "02-28", critical: false}
+      - {name: "greenup",       start: "03-01", end: "04-10", critical: false}
+      - {name: "jointing",      start: "04-11", end: "05-10", critical: true}
+      - {name: "heading_fill",  start: "05-11", end: "06-15", critical: true}
+      - {name: "harvest",       start: "06-16", end: "07-25", critical: false}
+
+  spring_wheat:
+    northern:
+      - {name: "planting",     start: "04-15", end: "05-25", critical: false}
+      - {name: "jointing",     start: "06-01", end: "06-30", critical: true}
+      - {name: "heading_fill", start: "07-01", end: "08-05", critical: true}
+      - {name: "harvest",      start: "08-06", end: "09-15", critical: false}
+
+# --- Feature hygiene ---------------------------------------------------------
+hygiene:
+  standardise: true
+  # Winsorise rather than drop. A genuine February 2021 cold snap is the most
+  # informative observation in the sample and deleting it as an outlier throws
+  # away exactly the event the model exists to catch.
+  winsorise_quantiles: [0.005, 0.995]
+  # A feature missing for a whole region-day is a data failure and raises. It
+  # is not filled with zero, which would read as "no revision" - a strong and
+  # false claim.
+  raise_on_missing: true

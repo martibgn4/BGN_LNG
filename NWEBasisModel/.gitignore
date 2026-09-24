@@ -1,0 +1,7 @@
+# Vintaged fetch cache and model output. Regenerate with `nwebasis fetch all`;
+# these are large, they restate, and a committed vintage is worse than none.
+data_cache/
+output/
+__pycache__/
+*.pyc
+.pytest_cache/

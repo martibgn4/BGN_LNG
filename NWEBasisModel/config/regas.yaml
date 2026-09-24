@@ -1,0 +1,86 @@
+# ---------------------------------------------------------------------------
+# regas.yaml - the cost of turning a DES NWE cargo into TTF gas.
+#
+# WHY THIS FILE EXISTS. The NWE basis is not a free-floating spread. Selling a
+# cargo DES NWE and selling the same energy at TTF differ by the cost of
+# getting through a terminal. That cost is the natural width of the discount
+# in a market where regas capacity is NOT scarce, and it is the anchor the
+# error-correction model reverts to. Get this stack wrong and the model's
+# long-run mean is wrong by exactly the same amount.
+#
+# STATUS: every number below is UNSET. They are not defaulted to plausible
+# values on purpose - a plausible-looking wrong tariff is worse than a missing
+# one, because it silently biases the anchor. `envelope.py` raises
+# RegasCostUnset if asked to build bounds while any required entry is null,
+# and the model then runs in `anchor: empirical` mode instead, which estimates
+# the anchor from the basis history rather than from cost. Both modes work;
+# the cost mode is the one that transfers across regimes.
+#
+# WHAT TO FILL IN. For each terminal, the all-in cost a third-party shipper
+# pays to unload one cargo and receive the gas at the connected hub, in
+# USD/MMBtu on the delivered cargo. Published regas tariffs are the bulk of
+# it; the rest is the part that never shows up in a tariff sheet.
+# ---------------------------------------------------------------------------
+
+units:
+  cost: "USD/MMBtu of delivered cargo"
+  note: >
+    Tariffs are usually published in EUR/MWh, EUR/kWh/d/y, or a per-slot fee.
+    Convert at the point of entry into this file and record the source and the
+    date of the tariff sheet, because tariffs are reset annually and a stale
+    tariff is a silent error.
+
+# Terminals that set the marginal NWE regas cost. These are the ones the Spark
+# terminal-slot feed also covers, so slot scarcity and cost line up terminal by
+# terminal. Weights are the share of NWE regas capacity each represents and are
+# used to build the capacity-weighted marginal cost; they are also unset.
+terminals:
+  gate:            {name: "Gate (Rotterdam)",   country: NL, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  zeebrugge:       {name: "Zeebrugge",          country: BE, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  grain_lng:       {name: "Isle of Grain",      country: GB, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  south_hook:      {name: "South Hook",         country: GB, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  dragon:          {name: "Dragon",             country: GB, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  montoir:         {name: "Montoir",            country: FR, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  dunkerque:       {name: "Dunkerque",          country: FR, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  brunsbuttel:     {name: "Brunsbuttel",        country: DE, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  wilhelmshaven:   {name: "Wilhelmshaven",      country: DE, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  wilhelmshaven_2: {name: "Wilhelmshaven 2",    country: DE, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+  eems:            {name: "EemsEnergyTerminal", country: NL, tariff: null, weight: null, tariff_source: null, tariff_date: null}
+
+# The parts of the stack that are not in the tariff. Each is a cost the seller
+# of a DES cargo bears and the TTF seller does not, so each widens the
+# no-arbitrage discount.
+adders:
+  boil_off_in_terminal:
+    value: null
+    note: "Cargo energy lost between ship's rail and hub delivery, as a fraction of cargo, priced at TTF."
+  port_and_pilotage:
+    value: null
+    note: "Port dues, tugs, pilotage per call, divided by cargo size."
+  send_out_ramp_penalty:
+    value: null
+    note: >
+      Terminals deliver sendout over days, not instantly. The seller is short
+      the intra-month TTF shape over the unload window. Zero is a defensible
+      value in a flat market and materially wrong in a steep one.
+  working_capital:
+    value: null
+    note: "Days between cargo payment and hub gas revenue, at the desk's funding rate."
+  slot_cost_when_capacity_free:
+    value: null
+    note: >
+      Marginal cost of a secondary-market slot in an uncongested month. This
+      is the floor of the slot term. When capacity is scarce, the slot term is
+      NOT this number - it is whatever the basis says it is, which is the
+      point of the regime split in model.yaml.
+
+# The 2022 episode is the reason this file cannot be the whole story. In
+# Nov-Dec 2022 the M+1 basis reached -10.52 USD/MMBtu against a cost stack
+# worth a small fraction of that. Cost sets the discount when slots are
+# available; when they are not, the discount is the shadow price of a slot and
+# has no cost ceiling. Recorded here so nobody later "fixes" the cost stack to
+# try to explain 2022.
+regime_note:
+  observed_extreme_basis: -10.52
+  observed_on: "2022-11 to 2022-12, M+1"
+  interpretation: "shadow price of scarce regas capacity, not a cost"

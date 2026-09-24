@@ -1,0 +1,100 @@
+# ---------------------------------------------------------------------------
+# conversions.yaml — the single source of truth for units.
+#
+# SPEC §5. Nothing in this file may be duplicated in a .py file.
+#
+# !! UNRESOLVED SPEC CONFLICT — read before changing anything here !!
+# SPEC §5 gives two reference conversions that disagree with each other:
+#     "1 bcm ~= 10.55 TWh (GCV)"   ->  10.55 kWh/m3
+#     "1 mcm/d ~= 11 GWh/d"        ->  11.00 kWh/m3
+# 1 bcm is exactly 1000 mcm, so these cannot both hold. The gap is 4.3%.
+# On a 1500 mcm/d winter balance that is ~65 mcm/d of pure unit error, which is
+# three times the 20 mcm/d reconciliation gap SPEC §8 says must trigger an alert.
+#
+# This file therefore defines ONE canonical GCV and derives everything from it.
+# `canonical_gcv_kwh_per_m3` below is the only place the number lives.
+# Awaiting trader sign-off on which value is intended (see phase1 notes).
+# ---------------------------------------------------------------------------
+
+internal_units:
+  flow: "mcm/d"          # every daily flow series, post-fetcher
+  energy: "TWh"          # storage inventory and seasonal aggregates
+  power: "GWh/d"         # intermediate only, never persisted
+
+# Default calorific value used when a series does not name a specific source.
+# 10.55 is the GIE/IEA convention for bcm<->TWh and is the value used by AGSI,
+# so it is chosen as canonical to make storage reconciliation exact.
+canonical_gcv_kwh_per_m3:
+  value: 10.55
+  basis: GCV
+  source: "GIE / IEA convention, 1 bcm = 10.55 TWh"
+  status: DEFAULT_UNVERIFIED
+
+# GCV -> NCV. SPEC §5: "the gap is ~10%".
+# For pipeline-spec natural gas the ratio is ~1.108 (methane: 55.5 / 50.0 MJ/kg).
+gcv_to_ncv_ratio:
+  value: 1.108
+  source: "CH4 gross/net heating value ratio, pipeline-spec gas"
+  status: DEFAULT_UNVERIFIED
+
+# Per-source calorific values, SPEC §5 "a Norwegian mcm != an Algerian mcm".
+# ALL of these are defaults awaiting verification. ENTSOG publishes per-point
+# tpTsoGCVMin / tpTsoGCVMax in MJ/nm3 which `gasbalance verify-cv` cross-checks
+# against this table — do not hand-edit without re-running that check.
+source_gcv_kwh_per_m3:
+  norway:      {value: 11.30, basis: GCV, status: DEFAULT_UNVERIFIED}
+  algeria:     {value: 11.30, basis: GCV, status: DEFAULT_UNVERIFIED}
+  qatar_lng:   {value: 11.70, basis: GCV, status: DEFAULT_UNVERIFIED}
+  us_lng:      {value: 11.20, basis: GCV, status: DEFAULT_UNVERIFIED}
+  azeri_tap:   {value: 11.00, basis: GCV, status: DEFAULT_UNVERIFIED}
+  nl_lgas:     {value:  9.77, basis: GCV, status: DEFAULT_UNVERIFIED}   # Groningen-quality L-gas
+  biomethane:  {value: 11.06, basis: GCV, status: DEFAULT_UNVERIFIED}   # grid-injection spec
+  ukcs:        {value: 11.00, basis: GCV, status: DEFAULT_UNVERIFIED}
+
+# Raw units a source publishes in. The fetcher MUST look the series up here.
+# SPEC §5: "Where a source publishes in kWh/d or GWh/d (ENTSOG does), convert,
+# don't assume." A series absent from this table is a hard error, not a default.
+source_units:
+  entsog:
+    physical_flow:        {raw_unit: "kWh/d", basis: GCV}
+    firm_technical:       {raw_unit: "kWh/d", basis: GCV}
+    renomination:         {raw_unit: "kWh/d", basis: GCV}
+  agsi:
+    gas_in_storage:       {raw_unit: "TWh",   basis: GCV}
+    injection:            {raw_unit: "GWh/d", basis: GCV}
+    withdrawal:           {raw_unit: "GWh/d", basis: GCV}
+    working_gas_volume:   {raw_unit: "TWh",   basis: GCV}
+    injection_capacity:   {raw_unit: "GWh/d", basis: GCV}
+    withdrawal_capacity:  {raw_unit: "GWh/d", basis: GCV}
+  # Bloomberg CGIE* family: GIE AGSI+ redistributed at country level. Units are
+  # stated in the Bloomberg security description itself and were verified by
+  # pulling real values on 2026-08-25; see config/bloomberg_series.yaml.
+  bloomberg:
+    gas_in_storage:       {raw_unit: "TWh",   basis: GCV}
+    injection:            {raw_unit: "GWh/d", basis: GCV}
+    withdrawal:           {raw_unit: "GWh/d", basis: GCV}
+    working_gas_volume:   {raw_unit: "TWh",   basis: GCV}
+    lng_inventory:        {raw_unit: "km3",   basis: GCV}
+    lng_send_out:         {raw_unit: "GWh/d", basis: GCV}
+  # BNEF LDZ monitor publishes directly in the internal flow unit.
+  bnef_ldz:
+    ldz_demand:                    {raw_unit: "mcm/d", basis: GCV}
+    ldz_demand_bnef_expected:      {raw_unit: "mcm/d", basis: GCV}
+    ldz_demand_normal_2016_2020:   {raw_unit: "mcm/d", basis: GCV}
+  alsi:
+    lng_inventory:        {raw_unit: "GWh",   basis: GCV}
+    send_out:             {raw_unit: "GWh/d", basis: GCV}
+    dtmi:                 {raw_unit: "GWh/d", basis: GCV}
+
+# Scale factors between energy units. Pure arithmetic, no gas physics.
+energy_scale_to_gwh:
+  kWh: 1.0e-6
+  MWh: 1.0e-3
+  GWh: 1.0
+  TWh: 1.0e+3
+
+volume_scale_to_mcm:
+  m3:   1.0e-6
+  km3:  1.0e-3
+  mcm:  1.0
+  bcm:  1.0e+3

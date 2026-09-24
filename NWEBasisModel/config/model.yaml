@@ -1,0 +1,124 @@
+# ---------------------------------------------------------------------------
+# model.yaml - estimation settings. Every number the estimator uses lives
+# here; tests/test_no_magic_numbers.py fails the build if a float literal
+# appears in a .py file.
+# ---------------------------------------------------------------------------
+
+# --- Sample and regimes ------------------------------------------------------
+#
+# The basis history splits into two markets, and pooling them is the single
+# biggest mistake available here. Fitted on everything from 2022-11-29 the
+# mean is -0.687 with a standard deviation of 1.294; fitted from 2023-07-01 it
+# is -0.388 with a standard deviation of 0.192. The full-sample number is not
+# a description of any market that has existed since - it is an average of a
+# capacity crisis and its absence.
+sample:
+  full_start: "2022-11-29"          # first Spark release of the basis contract
+  # Regime boundary. Chosen where the basis re-entered and stayed within the
+  # band explicable by regas cost. Sensitivity to this date is a required
+  # output of `nwebasis fit --regime-sensitivity`, not a hidden assumption.
+  stable_start: "2023-07-01"
+  # The pre-boundary sample is kept, never deleted. It is the stress scenario.
+  stress_window: {start: "2022-11-29", end: "2023-06-30"}
+
+regimes:
+  # A day is `scarce` when free NWE regas slots for the delivery month sit
+  # below this percentile of their own history. In `scarce` days the cost
+  # anchor does not bind and the model widens its interval rather than
+  # pretending to a point forecast it cannot make.
+  scarcity_percentile: 0.10
+  min_days_in_regime: 20
+
+# --- Anchor mode -------------------------------------------------------------
+# `cost`      - long-run mean comes from regas.yaml. Transfers across regimes.
+#               Requires the cost stack to be filled in.
+# `empirical` - long-run mean estimated from the basis itself. Always
+#               available, but cannot extrapolate to a cost structure that has
+#               not been observed.
+anchor:
+  mode: "empirical"                  # switch to "cost" once regas.yaml is filled
+  fallback_on_unset_cost: true
+
+# --- Layer 2: error-correction model -----------------------------------------
+#
+#   d(basis_t) = alpha * (basis_{t-1} - anchor_{t-1}) + sum_i beta_i * d(X_{t-i}) + e_t
+#
+# alpha is the reversion speed and is expected negative. The long-run anchor is
+# itself a function of the long_run block in features.yaml.
+ecm:
+  short_run_lags: 3
+  # Ridge penalty on the short-run block only. The features are collinear
+  # (freight levels correlate 0.93 across basins) and unpenalised OLS on them
+  # produces coefficients that flip sign between folds. The anchor terms are
+  # not penalised - they carry the economics.
+  ridge_lambda: 0.10
+  ridge_lambda_grid: [0.0, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0]
+  standardise_features: true
+  # Newey-West lag truncation for the standard errors. Daily data with a
+  # 5-day overlap in the differenced features needs at least the overlap.
+  hac_lags: 10
+
+# --- Layer 3: seasonal OU ----------------------------------------------------
+#
+# Fitted by exact-discretisation AR(1) on the de-seasonalised basis. Produces
+# the parameter set that drops straight into adhoc_scripts/NWE_option_pricer.py.
+#
+# Fitted values on 2023-07-01..2026-09-03, DE-SEASONALISED, for reference.
+# These are outputs, recorded so a re-fit that moves them a long way is
+# visible rather than silent:
+#
+#   tenor   phi      kappa_ann  sigma_ann  theta    half-life
+#   M+1     0.9782   5.55       0.522      -0.380    31 d
+#   M+2     0.9907   2.36       0.362      -0.384    74 d
+#   M+3     0.9938   1.57       0.278      -0.349   112 d
+#   M+4     0.9950   1.26       0.206      -0.312   139 d
+#   M+5     0.9936   1.61       0.220      -0.348   108 d
+#   M+6     0.9923   1.95       0.244      -0.373    89 d
+#
+# On the RAW (not de-seasonalised) M+1 series the same estimator gives kappa
+# 4.10, sigma 0.535, theta -0.371, half-life 43 d. The de-seasonalised numbers
+# are the ones to use: leaving the seasonal in pushes its variance into the
+# residual and biases sigma up while flattening kappa.
+#
+# adhoc_scripts/NWE_option_pricer.py currently assumes a single kappa 3.0
+# (half-life ~84 d), sigma 0.35 and mean -0.505 across every tenor. The fitted
+# term structure says reversion is roughly twice as fast as that at the front
+# and roughly half as fast by M+4, so one kappa cannot be right for both.
+ou:
+  business_days_per_year: 252
+  min_observations: 250
+  # Longest half-life the estimator will report. Beyond this the series is not
+  # distinguishable from a random walk on a sample this size: with ~800
+  # observations, a half-life of 250 days means the sample contains barely
+  # three reversions, and the estimate is driven by the drift that happens to
+  # be in it. A fit that lands above this raises rather than returning a
+  # confident-looking kappa that would price an option on nothing.
+  max_half_life_days: 250
+  # Estimate separately per delivery-month bucket rather than one kappa for
+  # the whole curve: prompt basis mean-reverts faster than deferred.
+  by_tenor: true
+
+# --- Backtest ---------------------------------------------------------------
+#
+# The benchmark is NOT persistence. The tradeable question is whether the
+# model beats the price you can actually hedge at, which is the Spark forward:
+# today's M+2 assessment is the market's forecast of next month's M+1.
+backtest:
+  scheme: "walk_forward"
+  initial_train_business_days: 250
+  refit_every_business_days: 21
+  min_test_business_days: 120
+  # For a fixed delivery month the forward and the random walk are the same
+  # number, so only one is carried - reporting both would pad the scorecard
+  # with a duplicate column and make the model look tested twice.
+  benchmarks: ["random_walk", "next_month_curve", "seasonal_mean"]
+  # A model that beats the forward on RMSE but loses money is not useful, so
+  # the report also carries the hit rate on the sign of (realised - forward)
+  # and the mean P&L of a unit position taken on the model's signal.
+  report_directional_hit_rate: true
+  signal_threshold_usd_per_mmbtu: 0.05
+
+# --- Output ------------------------------------------------------------------
+output:
+  fan_chart_quantiles: [0.05, 0.25, 0.50, 0.75, 0.95]
+  db_path: "output/nwebasis.duckdb"

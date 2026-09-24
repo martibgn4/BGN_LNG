@@ -1,0 +1,191 @@
+# ---------------------------------------------------------------------------
+# regions.yaml - the geography, and how it is weighted into a single number.
+#
+# An unweighted mean temperature over a country is not a demand signal. Gas
+# degree days are weighted by where the gas is BURNED; crop weather is weighted
+# by where the crop is GROWN. Everything here is that weighting.
+#
+# PROVENANCE. Every region carries `provenance`. `estimate` means the weights
+# were set from published production or population shares to the nearest
+# percent and have NOT been reconciled against a desk source. They are good
+# enough to build and test the pipeline on and are not good enough to trade a
+# real position on. `wxreturns audit-weights` lists every estimate so they can
+# be replaced deliberately rather than forgotten.
+#
+# For the EU gas set specifically, the repo already holds the right source:
+# 20260825-EuropeLocalDistributionZoneGasDemandMonitor.xlsx. Those LDZ shares
+# supersede the estimates below once extracted.
+#
+# Weights need not sum to exactly 1: the loader normalises and a test asserts
+# it. They are written close to 1 so a typo is visible by eye.
+# ---------------------------------------------------------------------------
+
+regions:
+
+  # =========================================================================
+  # NATURAL GAS - demand-weighted temperature composites
+  # =========================================================================
+
+  us_gas:
+    label: "US lower-48 gas-weighted composite"
+    kind: "gas"
+    provenance: "estimate"          # metro population shares, nearest 0.1%
+    # Population weighting is the industry convention and is what NOAA's own
+    # population-weighted degree days use. True GAS weighting tilts further
+    # north, because Houston burns little gas for heat and Chicago burns a
+    # great deal. Swapping in EIA residential consumption by state is the
+    # obvious upgrade and would move the composite colder in winter.
+    notes: >
+      Sensitivity to this weighting is a required Phase 2 output. If the signal
+      only exists under one weighting scheme it is not a signal.
+    points:
+      - {name: "New York",      lat: 40.71,  lon: -74.01,   weight: 0.100}
+      - {name: "Chicago",       lat: 41.88,  lon: -87.63,   weight: 0.090}
+      - {name: "Los Angeles",   lat: 34.05,  lon: -118.24,  weight: 0.075}
+      - {name: "Houston",       lat: 29.76,  lon: -95.37,   weight: 0.055}
+      - {name: "Dallas",        lat: 32.78,  lon: -96.80,   weight: 0.050}
+      - {name: "Washington DC", lat: 38.90,  lon: -77.04,   weight: 0.045}
+      - {name: "Atlanta",       lat: 33.75,  lon: -84.39,   weight: 0.045}
+      - {name: "Philadelphia",  lat: 39.95,  lon: -75.17,   weight: 0.042}
+      - {name: "Boston",        lat: 42.36,  lon: -71.06,   weight: 0.040}
+      - {name: "Miami",         lat: 25.76,  lon: -80.19,   weight: 0.040}
+      - {name: "Phoenix",       lat: 33.45,  lon: -112.07,  weight: 0.038}
+      - {name: "San Francisco", lat: 37.77,  lon: -122.42,  weight: 0.038}
+      - {name: "Detroit",       lat: 42.33,  lon: -83.05,   weight: 0.035}
+      - {name: "Seattle",       lat: 47.61,  lon: -122.33,  weight: 0.032}
+      - {name: "Minneapolis",   lat: 44.98,  lon: -93.27,   weight: 0.032}
+      - {name: "St Louis",      lat: 38.63,  lon: -90.20,   weight: 0.026}
+      - {name: "Denver",        lat: 39.74,  lon: -104.99,  weight: 0.026}
+      - {name: "Charlotte",     lat: 35.23,  lon: -80.84,   weight: 0.025}
+      - {name: "Cleveland",     lat: 41.50,  lon: -81.69,   weight: 0.025}
+      - {name: "Nashville",     lat: 36.16,  lon: -86.78,   weight: 0.025}
+      - {name: "Pittsburgh",    lat: 40.44,  lon: -80.00,   weight: 0.022}
+      - {name: "Kansas City",   lat: 39.10,  lon: -94.58,   weight: 0.022}
+      - {name: "Indianapolis",  lat: 39.77,  lon: -86.16,   weight: 0.022}
+      - {name: "Milwaukee",     lat: 43.04,  lon: -87.91,   weight: 0.018}
+      - {name: "Salt Lake City",lat: 40.76,  lon: -111.89,  weight: 0.016}
+      - {name: "Oklahoma City", lat: 35.47,  lon: -97.52,   weight: 0.016}
+
+  eu_gas:
+    label: "NW+S Europe LDZ-weighted composite"
+    kind: "gas"
+    provenance: "estimate"          # REPLACE from the LDZ demand monitor xlsx
+    # Country weights approximate residential/commercial (LDZ) gas demand
+    # share, which is the weather-sensitive part of the load. Industrial and
+    # power burn respond to weather differently and are deliberately excluded
+    # from this composite - power burn is a separate CDD/wind story.
+    points:
+      - {name: "Germany",     lat: 51.16, lon: 10.45, weight: 0.260}
+      - {name: "United Kingdom", lat: 52.36, lon: -1.17, weight: 0.190}
+      - {name: "Italy",       lat: 43.00, lon: 12.00, weight: 0.160}
+      - {name: "France",      lat: 46.60, lon: 2.35,  weight: 0.130}
+      - {name: "Netherlands", lat: 52.13, lon: 5.29,  weight: 0.070}
+      - {name: "Poland",      lat: 52.12, lon: 19.40, weight: 0.050}
+      - {name: "Spain",       lat: 40.30, lon: -3.70, weight: 0.050}
+      - {name: "Belgium",     lat: 50.64, lon: 4.67,  weight: 0.040}
+      - {name: "Czechia",     lat: 49.80, lon: 15.47, weight: 0.030}
+      - {name: "Austria",     lat: 47.68, lon: 13.35, weight: 0.020}
+
+  # =========================================================================
+  # AGRICULTURE - production-share weighted growing regions
+  # =========================================================================
+
+  us_corn_belt:
+    label: "US corn production belt"
+    kind: "agriculture"
+    provenance: "estimate"          # USDA state production shares, rounded
+    points:
+      - {name: "Iowa",         lat: 42.03, lon: -93.58,  weight: 0.19}
+      - {name: "Illinois",     lat: 40.04, lon: -89.20,  weight: 0.17}
+      - {name: "Nebraska",     lat: 41.49, lon: -99.90,  weight: 0.13}
+      - {name: "Minnesota",    lat: 44.70, lon: -94.69,  weight: 0.11}
+      - {name: "Indiana",      lat: 40.27, lon: -86.13,  weight: 0.08}
+      - {name: "South Dakota", lat: 44.30, lon: -99.44,  weight: 0.07}
+      - {name: "Kansas",       lat: 38.50, lon: -98.38,  weight: 0.06}
+      - {name: "Ohio",         lat: 40.42, lon: -82.91,  weight: 0.06}
+      - {name: "Wisconsin",    lat: 44.50, lon: -89.50,  weight: 0.05}
+      - {name: "Missouri",     lat: 38.46, lon: -92.29,  weight: 0.05}
+      - {name: "Michigan",     lat: 43.33, lon: -84.54,  weight: 0.03}
+
+  us_soy_belt:
+    label: "US soybean production belt"
+    kind: "agriculture"
+    provenance: "estimate"
+    points:
+      - {name: "Illinois",     lat: 40.04, lon: -89.20,  weight: 0.15}
+      - {name: "Iowa",         lat: 42.03, lon: -93.58,  weight: 0.14}
+      - {name: "Minnesota",    lat: 44.70, lon: -94.69,  weight: 0.11}
+      - {name: "Indiana",      lat: 40.27, lon: -86.13,  weight: 0.09}
+      - {name: "Nebraska",     lat: 41.49, lon: -99.90,  weight: 0.09}
+      - {name: "Ohio",         lat: 40.42, lon: -82.91,  weight: 0.08}
+      - {name: "Missouri",     lat: 38.46, lon: -92.29,  weight: 0.08}
+      - {name: "South Dakota", lat: 44.30, lon: -99.44,  weight: 0.07}
+      - {name: "North Dakota", lat: 47.53, lon: -99.78,  weight: 0.07}
+      - {name: "Arkansas",     lat: 34.80, lon: -91.50,  weight: 0.06}
+      - {name: "Kansas",       lat: 38.50, lon: -98.38,  weight: 0.06}
+
+  us_hrw_wheat:
+    label: "US hard red winter wheat belt"
+    kind: "agriculture"
+    provenance: "estimate"
+    points:
+      - {name: "Kansas",       lat: 38.50, lon: -98.38,  weight: 0.35}
+      - {name: "Oklahoma",     lat: 35.57, lon: -97.51,  weight: 0.15}
+      - {name: "Texas Panhandle", lat: 35.22, lon: -101.83, weight: 0.12}
+      - {name: "Colorado East", lat: 39.06, lon: -102.62, weight: 0.12}
+      - {name: "Nebraska",     lat: 41.49, lon: -99.90,  weight: 0.10}
+      - {name: "Montana",      lat: 47.05, lon: -109.63, weight: 0.10}
+      - {name: "South Dakota", lat: 44.30, lon: -99.44,  weight: 0.06}
+
+  us_spring_wheat:
+    label: "US hard red spring wheat belt"
+    kind: "agriculture"
+    provenance: "estimate"
+    points:
+      - {name: "North Dakota", lat: 47.53, lon: -99.78,  weight: 0.50}
+      - {name: "Montana",      lat: 47.05, lon: -109.63, weight: 0.22}
+      - {name: "Minnesota NW", lat: 47.90, lon: -96.60,  weight: 0.13}
+      - {name: "South Dakota", lat: 44.30, lon: -99.44,  weight: 0.10}
+      - {name: "Idaho",        lat: 44.07, lon: -114.74, weight: 0.05}
+
+  brazil_soy:
+    label: "Brazil soybean belt"
+    kind: "agriculture"
+    provenance: "estimate"          # CONAB state production shares
+    # Southern hemisphere: the critical window is December-February, i.e. the
+    # feature is live when the US belt is dormant. features.yaml keeps the two
+    # calendars separate for exactly this reason.
+    points:
+      - {name: "Mato Grosso",       lat: -12.64, lon: -55.42, weight: 0.28}
+      - {name: "Parana",            lat: -24.89, lon: -51.55, weight: 0.14}
+      - {name: "Rio Grande do Sul", lat: -29.75, lon: -53.23, weight: 0.13}
+      - {name: "Goias",             lat: -15.93, lon: -49.84, weight: 0.10}
+      - {name: "Mato Grosso do Sul",lat: -20.77, lon: -54.79, weight: 0.10}
+      - {name: "Minas Gerais",      lat: -18.51, lon: -44.55, weight: 0.08}
+      - {name: "Bahia West",        lat: -12.15, lon: -45.80, weight: 0.07}
+      - {name: "Sao Paulo",         lat: -22.19, lon: -48.79, weight: 0.05}
+      - {name: "Santa Catarina",    lat: -27.24, lon: -50.22, weight: 0.05}
+
+  argentina_grains:
+    label: "Argentina corn and soybean belt"
+    kind: "agriculture"
+    provenance: "estimate"
+    points:
+      - {name: "Buenos Aires", lat: -36.68, lon: -60.56, weight: 0.35}
+      - {name: "Cordoba",      lat: -31.42, lon: -63.60, weight: 0.28}
+      - {name: "Santa Fe",     lat: -31.00, lon: -61.00, weight: 0.22}
+      - {name: "Entre Rios",   lat: -32.06, lon: -59.20, weight: 0.08}
+      - {name: "La Pampa",     lat: -36.62, lon: -64.29, weight: 0.07}
+
+  eu_wheat:
+    label: "EU milling wheat belt (MATIF deliverable)"
+    kind: "agriculture"
+    provenance: "estimate"
+    # Weighted towards France because MATIF is a French milling wheat contract
+    # with French delivery points, not a pan-EU average.
+    points:
+      - {name: "France North", lat: 49.50, lon: 2.50,  weight: 0.55}
+      - {name: "Germany",      lat: 51.80, lon: 10.00, weight: 0.20}
+      - {name: "Poland",       lat: 52.12, lon: 19.40, weight: 0.10}
+      - {name: "United Kingdom", lat: 52.36, lon: -1.17, weight: 0.08}
+      - {name: "Romania",      lat: 44.60, lon: 25.50, weight: 0.07}

@@ -1,0 +1,162 @@
+# ---------------------------------------------------------------------------
+# sources.yaml - every external identifier the model touches.
+#
+# PROVENANCE. Every Spark contract id and endpoint below was listed from the
+# live API with the desk's own credentials on 2026-09-04 and the payload shape
+# inspected before being written down. Nothing here is guessed. The Bloomberg
+# block is the exception and is marked as such: those tickers are carried over
+# from `Data/lng_report/config.py` and `GasImbalanceModel/config/`, where they
+# are already in production use, but the JKM history depth has NOT been
+# verified from this machine - see `status` fields.
+# ---------------------------------------------------------------------------
+
+spark:
+  # Forward slashes on purpose: Windows accepts them and YAML does not have to
+  # escape them, so the path cannot be broken by a backslash escape again.
+  credentials_path: "C:/Marti/python_tests_2/BGN_LNG/adhoc_scripts/client_credentials.csv"
+  api_base_url: "https://api.sparkcommodities.com"
+
+  # --- the target and its outright twin ---
+  contracts:
+    nwe_basis_monthly:
+      id: "sparknwe-fin-monthly"
+      price_key: "usdPerMMBtu"
+      history_from: "2022-11-29"     # verified: 946 releases to 2026-09-03
+      status: VERIFIED
+    nwe_des_monthly:
+      id: "sparknwe-des-fin-monthly"
+      price_key: "usdPerMMBtu"
+      history_from: "2022-11-29"
+      status: VERIFIED
+    swe_basis_monthly:
+      # South West Europe. Not a driver - a congestion tell. When Iberian
+      # regas fills, cargoes that would have gone to SWE push north and the
+      # NWE-SWE basis spread moves before the NWE basis does.
+      id: "sparkswe-fin-monthly"
+      price_key: "usdPerMMBtu"
+      status: LISTED_NOT_PULLED
+
+  # --- freight ---
+  freight:
+    atlantic_spot:
+      id: "spark30s"
+      price_key: "usdPerDay"
+      history_from: "2019-07-30"     # verified: 1305 releases
+      status: VERIFIED
+    pacific_spot:
+      id: "spark25s"
+      price_key: "usdPerDay"
+      history_from: "2019-07-30"
+      status: VERIFIED
+    atlantic_ffa_monthly:
+      id: "spark30ffa-monthly"
+      price_key: "usdPerDay"
+      status: IN_PRODUCTION_USE     # used by daily_market_data_reporting.py
+    pacific_ffa_monthly:
+      id: "spark25ffa-monthly"
+      price_key: "usdPerDay"
+      status: IN_PRODUCTION_USE
+    vessel_type: "174-2stroke"
+
+  # --- netbacks: the east-west arbitrage, already freight-adjusted by Spark ---
+  #
+  # This is the single most useful endpoint for this model. One call returns,
+  # per load month: the TTF price, the NWE netback basis, the NE Asia netback
+  # basis, the route cost to each basin, and neaMinusNwe - the arb itself, in
+  # USD/MMBtu against TTF. Verified 2026-09-04 on Sabine Pass via COGH.
+  #
+  # `via-point` is REQUIRED. Without it the endpoint returns an empty data
+  # list and no error, which is a silent-failure trap: the fetcher asserts a
+  # non-empty payload rather than passing an empty frame downstream.
+  netbacks:
+    endpoint: "/v1.0/netbacks/"
+    reference_endpoint: "/v1.0/netbacks/reference-data/"
+    history_from: "2021-09-01"       # verified: 1262 releases
+    status: VERIFIED
+    # US Gulf is the marginal flexible supply that chooses between basins, so
+    # it is the arb that actually sets the NWE basis. The other 34 FOB ports
+    # the API offers are either contractually committed or not swing.
+    fob_ports:
+      sabine_pass:    {uuid: "003dec0a-ce8f-41db-8c24-4d7ef6addf70", via_point: "cogh"}
+      corpus_christi: {uuid: "0030c461-9a63-403d-8f53-9327ea773517", via_point: "cogh"}
+    fields:
+      arb: "neaMinusNwe.ttfBasis.usdPerMMBtu"
+      nwe_netback_basis: "nwe.ttfBasis.usdPerMMBtu"
+      nea_netback_basis: "nea.ttfBasis.usdPerMMBtu"
+      route_cost_nwe: "nweMeta.routeCost.usdPerMMBtu"
+      route_cost_nea: "neaMeta.routeCost.usdPerMMBtu"
+      ttf_price: "nweMeta.ttfPrice.usdPerMMBtu"
+      jkm_price: "neaMeta.desLngPrice.usdPerMMBtu"
+
+  # --- regas congestion: unsold slot counts by terminal and delivery month ---
+  #
+  # Verified 2026-09-04 on Isle of Grain: 699 daily rows from 2023-11-28, with
+  # columns Total, M+0..M+12, M>12 and the start date of each bucket. A count
+  # of AVAILABLE slots, so a FALLING count is a TIGHTENING market.
+  terminal_slots:
+    list_endpoint: "/beta/terminal-slots/terminals/"
+    detail_endpoint: "/beta/terminal-slots/terminals/{uuid}/"
+    history_from: "2023-11-28"       # NWE terminals; later for some others
+    status: VERIFIED
+    accept_header: "text/csv"
+
+bloomberg:
+  # Reached with xbbg from a logged-in Terminal. Not callable from this
+  # session, so nothing below has been executed here.
+  library: "xbbg"
+  pinned_version: "0.12.2"           # 1.x returns polars and breaks .empty
+  settle_field: "px_settle"
+  settle_date_field: "px_settle_last_dt"
+
+  curves:
+    ttf:
+      # ICE Endex TTF. TZT is EUR/MWh, TMR is the USD/MMBtu quote. The model
+      # wants USD/MMBtu; TZT + EURUSD is kept as the cross-check because that
+      # is the path daily_market_data_reporting.py already trusts.
+      monthly_root_eur: "TZT"
+      monthly_root_usd: "TMR"
+      status: IN_PRODUCTION_USE
+    jkm:
+      monthly_root: "JKL"
+      status: UNVERIFIED_HISTORY_DEPTH
+      note: >
+        Production JKM on this desk comes from a manually-maintained CSV built
+        from settlement screenshots (JKM_MASTER_PATH in
+        Data/lng_report/daily_market_data_reporting.py). That is fine for a
+        daily table and unusable for fitting: it has no vintage and unknown
+        gaps. Either confirm JKL Comdty carries clean daily history back to
+        2022-11, or the model takes JKM from the Spark netback payload
+        (neaMeta.desLngPrice) instead, which is verified.
+
+  storage:
+    # GIE AGSI+ redistributed by Bloomberg at country level. Already proven
+    # working in GasImbalanceModel - values verified there on 2026-08-25.
+    status: VERIFIED_IN_SIBLING_PROJECT
+    aggregate:
+      inventory:  "CGIEEUST Index"    # TWh
+      capacity:   "CGIEEUWG Index"    # TWh
+      injection:  "CGIEEUIN Index"    # GWh/d
+      withdrawal: "CGIEEUWI Index"    # GWh/d
+    country_prefix: "CGIE"
+    country_suffixes: {inventory: "ST", capacity: "WG", injection: "IN", withdrawal: "WI"}
+    # Bloomberg says GB where ENTSOG says UK.
+    nwe_countries: ["GB", "NL", "BE", "FR", "DE", "DK", "AT"]
+
+  lng_terminals:
+    # GIE ALSI, again via Bloomberg. Terminal inventory and sendout are the
+    # observable half of regas congestion; slot counts are the priced half.
+    status: IDENTIFIED_NOT_PULLED
+    europe_inventory: "LNGATLIN Index"   # 1000 m3
+    europe_sendout:   "LNGATLSO Index"   # GWh/d
+
+kpler:
+  # The desk holds a Kpler subscription; this session has no key, so the
+  # fetcher raises. It never returns synthetic cargo data.
+  status: CREDENTIALS_REQUIRED
+  credential_env_var: "KPLER_API_KEY"
+  required_series:
+    lng_on_water_global:       "total laden LNG afloat, daily, MMBtu"
+    lng_on_water_atlantic:     "same, Atlantic basin only"
+    floating_storage_over_20d: "vessels laden >20 days - deliberate float, not transit"
+    nwe_arrivals_forward:      "scheduled arrivals into NWE terminals by ETA week"
+    us_exports:                "US Gulf liftings, daily"

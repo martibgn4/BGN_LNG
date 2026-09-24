@@ -1,0 +1,153 @@
+# ---------------------------------------------------------------------------
+# features.yaml - the design matrix.
+#
+# Each feature states what it is, which source it needs, and - importantly -
+# whether it is available today. `requires` names a source block in
+# sources.yaml; if that source cannot be fetched, the feature is dropped and
+# the drop is logged and reported, never silently zero-filled.
+#
+# EMPIRICAL NOTE that shaped this file. On 2023-07-01..2026-09-03 the
+# correlation between the M+1 basis and Atlantic spot freight is +0.00 in
+# LEVELS and +0.38 in 5-day CHANGES. Freight therefore enters the short-run
+# (differenced) block and not the long-run anchor. Putting it in levels would
+# have added a variable with no long-run information and a t-statistic
+# manufactured by two trending series.
+# ---------------------------------------------------------------------------
+
+# --- Long-run block: what the basis reverts TO. -----------------------------
+# These enter the cointegrating relation. They must be things that can
+# plausibly move the equilibrium discount, not things that merely move with it.
+long_run:
+
+  delivery_month_seasonal:
+    kind: categorical
+    source: derived
+    requires: [spark.contracts.nwe_basis_monthly]
+    description: >
+      Twelve dummies on the DELIVERY month, not the observation month. The
+      empirical seasonal on 2023-07+ runs from -0.24 (July delivery) to -0.57
+      (March delivery), a 0.33 USD/MMBtu range. For comparison, the hand-set
+      nwe_seasonals in adhoc_scripts/NWE_option_pricer.py span 0.045.
+    available: true
+
+  regas_slot_scarcity:
+    kind: continuous
+    source: spark.terminal_slots
+    requires: [spark.terminal_slots]
+    transform: "log1p of free slots in the matching delivery month, summed over NWE terminals"
+    expected_sign: positive
+    description: >
+      More free slots -> easier to place a cargo -> narrower discount (basis
+      up, toward zero). This is the variable that carries the 2022 regime: it
+      is the observable proxy for the shadow price of capacity.
+    available: true
+    history_from: "2023-11-28"
+
+  storage_headroom:
+    kind: continuous
+    source: bloomberg.storage
+    requires: [bloomberg.storage]
+    transform: "(capacity - inventory) / capacity, EU aggregate, and the NWE subset"
+    expected_sign: positive
+    description: >
+      Headroom is where a surplus cargo goes when the market is long. No
+      headroom in late injection season and the marginal cargo has nowhere to
+      land, so the discount widens. Include days-to-full at the current
+      injection rate: the level matters less than the time left.
+    available: false
+    blocked_by: "needs a Bloomberg pull from the Terminal; tickers verified in GasImbalanceModel"
+
+  ttf_time_spread:
+    kind: continuous
+    source: bloomberg.curves.ttf
+    requires: [bloomberg.curves.ttf]
+    transform: "M+2 minus M+1 TTF, USD/MMBtu, and the Sum-Win spread"
+    expected_sign: positive
+    description: >
+      Contango pays someone to hold gas and absorbs length, which supports the
+      prompt basis. Backwardation does the opposite. Available from the Spark
+      netback payload as a fallback (nweMeta.ttfPrice across load months),
+      which is why this feature is not hard-blocked.
+    available: partial
+    fallback: "spark.netbacks.fields.ttf_price"
+
+  lng_on_water:
+    kind: continuous
+    source: kpler
+    requires: [kpler]
+    transform: "Atlantic-basin laden volume, 14d mean, divided by NWE regas capacity"
+    expected_sign: negative
+    description: >
+      The length that has to find a home. Divided by regas capacity because
+      the same tonnage afloat means something different against 200 mcm/d of
+      spare regas than against 20. Split out floating storage held >20 days:
+      that is a positioning signal, not transit.
+    available: false
+    blocked_by: "KPLER_API_KEY not present in this environment"
+
+# --- Short-run block: what moves the basis WEEK TO WEEK. --------------------
+# These enter differenced. They explain deviations from the anchor and decay.
+short_run:
+
+  east_west_arb:
+    kind: continuous
+    source: spark.netbacks
+    requires: [spark.netbacks]
+    field: "arb"
+    transform: "level and 5-day change of neaMinusNwe.ttfBasis from the US Gulf"
+    expected_sign: negative
+    description: >
+      The cleanest driver in the set, and already freight-adjusted by Spark.
+      When Asia's netback beats Europe's, the marginal US cargo sails east and
+      Europe must richen to keep supply, so a rising arb narrows the discount.
+      Sign is stated against neaMinusNwe as published: more negative = NWE wins.
+    available: true
+
+  atlantic_freight:
+    kind: continuous
+    source: spark.freight.atlantic_spot
+    requires: [spark.freight]
+    transform: "5-day change in spark30s, USD/day"
+    expected_sign: positive
+    empirical_corr_5d_change: 0.377
+    description: >
+      Enters in changes only - see the header note. Freight in levels carries
+      no long-run information about the basis in this sample.
+    available: true
+
+  freight_basin_spread:
+    kind: continuous
+    source: spark.freight
+    requires: [spark.freight]
+    transform: "5-day change in (spark25s - spark30s)"
+    expected_sign: negative
+    empirical_corr_5d_change: -0.152
+    available: true
+
+  swe_nwe_spread:
+    kind: continuous
+    source: spark.contracts.swe_basis_monthly
+    requires: [spark.contracts.swe_basis_monthly]
+    transform: "SWE basis minus NWE basis, same delivery month, level and change"
+    description: >
+      Southern European congestion pushes cargoes north. This spread tends to
+      move first because Iberian regas fills before NWE does.
+    available: true
+
+  weather_forecast_revision:
+    kind: continuous
+    source: none_yet
+    requires: []
+    transform: "change in NWE population-weighted HDD forecast, day 6-15 window"
+    description: >
+      Not wired. Listed because it is the largest identified gap after Kpler:
+      the basis reacts to forecast REVISIONS within the day, and without them
+      a meaningful share of daily variance is unmodelled noise. GasImbalanceModel
+      needs the same series, so it should be built once and shared.
+    available: false
+    blocked_by: "no weather feed configured in either project"
+
+# Features are lagged by this many business days before entering the model, so
+# a forecast made on day t uses only data published on or before day t. Spark
+# releases in the London afternoon; a same-day feature would be lookahead.
+publication_lag_business_days: 1

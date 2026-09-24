@@ -1,0 +1,86 @@
+# ---------------------------------------------------------------------------
+# bloomberg_series.yaml — Bloomberg tickers for gas fundamentals.
+#
+# PROVENANCE. These were not guessed. They were discovered on 2026-08-25 by
+# querying Bloomberg's own //blp/instruments search from this machine, and each
+# one was then verified by pulling 2025-01-13..2025-01-19 through `blp.bdh` and
+# checking that the values returned are of the right magnitude.
+#
+# The CGIE family is Bloomberg's redistribution of GIE AGSI+ at COUNTRY level.
+# Its units are stated in the Bloomberg description itself, e.g.
+#   "Germany Gas Inventory (Daily,TWh,GIE)"
+#   "Germany Gas Withdrawal (Daily,GWh/d,GIE)"
+# which is why `conversions.yaml` can declare them without assumption. If a
+# description ever disagrees with the declared unit there, that is a hard error
+# and the fetcher raises rather than converting.
+#
+# Verification evidence, 2025-01-15 (mid-winter):
+#   CGIEEUST  690.99 TWh inventory vs CGIEEUWG 1147.64 TWh capacity = ~60% full
+#   CGIEEUWI  8810 GWh/d withdrawal = 8.81 TWh/d
+#   CGIEDEST  160.59 TWh vs 251.51 TWh capacity = ~64% full
+# ---------------------------------------------------------------------------
+
+# ENTSOG/perimeter country key -> Bloomberg GIE country code.
+# NOTE: Bloomberg uses GB where ENTSOG uses UK. Mapped explicitly so the two
+# vocabularies never leak into each other.
+country_code_map:
+  UK: GB
+  NL: NL
+  BE: BE
+  FR: FR
+  DE: DE
+  DK: DK
+  AT: AT
+  CZ: CZ
+
+# Countries inside the ring that have NO storage and therefore no CGIE ticker.
+# Listed so their absence is a declared fact rather than a silent gap: the
+# reconciliation treats these as expected-zero, not as missing data.
+countries_without_storage:
+  IE: "Kinsale depleted and closed; Ireland has no working gas storage"
+  LU: "no storage; BeLux storage sits in the Belgian series"
+
+# Storage series. Suffix appended to CGIE<country code>.
+# `series_id` must match a series declared under `bloomberg:` in conversions.yaml.
+storage_series:
+  ST:
+    series_id: gas_in_storage
+    description_contains: "Inventory"
+    expect_unit: "TWh"
+  IN:
+    series_id: injection
+    description_contains: "Injection"
+    expect_unit: "GWh/d"
+  WI:
+    series_id: withdrawal
+    description_contains: "Withdrawal"
+    expect_unit: "GWh/d"
+  WG:
+    series_id: working_gas_volume
+    description_contains: "Technical Capacity"
+    expect_unit: "TWh"
+
+# Aggregate published by GIE directly. Used as an independent cross-check on
+# the sum of the country series, NOT as an input to the balance - SPEC 8 wants
+# the reconciliation gap visible, and summing to a published total is the check.
+aggregate:
+  europe_inventory: "CGIEEUST Index"
+  europe_injection: "CGIEEUIN Index"
+  europe_withdrawal: "CGIEEUWI Index"
+  europe_capacity: "CGIEEUWG Index"
+
+# ALSI equivalents, for Phase 4. Units are in the Bloomberg descriptions:
+#   LNGATLIN  "Europe LNG Inventory (Daily,1000 m3,GIE)"
+#   LNGATLSO  "Europe LNG Send-Out (Daily,GWh/d,GIE)"
+# Declared here now so the identifiers are recorded; not fetched in Phase 1.
+lng_series:
+  europe_lng_inventory:
+    ticker: "LNGATLIN Index"
+    expect_unit: "km3"      # Bloomberg says "1000 m3"
+  europe_lng_sendout:
+    ticker: "LNGATLSO Index"
+    expect_unit: "GWh/d"
+
+# Saved BSRCH searches. Empty until BIKEYs are supplied from the Terminal -
+# a BIKEY cannot be derived from outside, so none is invented here.
+series: {}

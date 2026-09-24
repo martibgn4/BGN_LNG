@@ -1,0 +1,295 @@
+# ---------------------------------------------------------------------------
+# features.yaml - the feature set, grouped into families.
+#
+# WHY FAMILIES. The sibling StockPicker learned this the expensive way: six
+# correlated momentum columns are one idea getting six votes, and blending 50
+# raw features diluted the few that carried signal until the composite scored
+# worse than its best single input. Features here are declared inside a family
+# and the linear model can be told to score families rather than columns.
+#
+# roll_note: NG1/JKL1/TMR1 are generic 1st futures. On a roll day the level
+# steps by the calendar spread, which is a real jump in a return series and a
+# fake one in a spread. Every price-derived feature below is built from the
+# LEVEL of a spread (JKM-HH etc.), never from the return of a generic, for
+# that reason. Freight itself is a physical assessment and does not roll, so
+# freight returns are safe.
+# ---------------------------------------------------------------------------
+
+families:
+
+  # --- 1. the arb complex -------------------------------------------------
+  #
+  # This is the economic core. Freight is derived demand: a ship earns what
+  # the cargo can pay to move, so the wider the delivered-price spread over
+  # the FOB source, the more a charterer will bid for tonnage. JKM-HH is the
+  # US-to-Asia arb (the long-haul, tonne-mile heavy trade), TTF-HH the
+  # US-to-Europe arb (short-haul), and JKM-TTF decides WHICH of the two the
+  # marginal US cargo takes. A widening JKM-TTF sends cargo the long way and
+  # is the cleanest single freight-demand signal in the set.
+  arb:
+    levels:
+      jkm_minus_hh:  {left: "jkm",     right: "henry_hub"}
+      ttf_minus_hh:  {left: "ttf_usd", right: "henry_hub"}
+      jkm_minus_ttf: {left: "jkm",     right: "ttf_usd"}
+    # Changes over these windows, in USD/MMBtu. Level and change both matter:
+    # the level says how much freight can be paid, the change says who is
+    # repositioning now.
+    change_windows_bd: [1, 5, 10, 21]
+    # Z-score of the level against its own trailing window, so "wide arb" is
+    # judged against recent history rather than against 2022.
+    zscore_window_bd: 252
+
+  # --- 2. freight's own past ----------------------------------------------
+  #
+  # Freight is strongly autocorrelated and mean-reverting within a regime.
+  # These are the features most likely to dominate a short-horizon fit, and
+  # the ones a random-walk benchmark already contains - so the model only
+  # earns its keep if it beats them, not if it uses them.
+  freight_own:
+    returns_windows_bd: [1, 2, 3, 5, 10, 21]
+    realised_vol_windows_bd: [10, 21, 63]
+    # Distance from a trailing mean, in trailing standard deviations. The
+    # mean-reversion term.
+    zscore_window_bd: [21, 63, 252]
+    # Atlantic minus Pacific, in USD/day and as a ratio. When the basins
+    # diverge, ships reposition and the gap closes - a spread this wide is
+    # itself a forecast that one side moves.
+    basin_spread: true
+    # Window for the z-score of the derived basin ratio. Declared separately
+    # from zscore_window_bd above, which is a list applied to the price level.
+    derived_zscore_window_bd: 252
+
+  # --- 3. LNG on water ----------------------------------------------------
+  #
+  # Cargo afloat 20+ days is cargo not on a direct voyage. It is simultaneously
+  # tonne-mile demand already committed (ships are busy) and market length
+  # (cargo with nowhere to go). Those two push freight in OPPOSITE directions,
+  # which is why both the level and the rate of change are carried: a rising
+  # afloat count with a widening arb is tightness, a rising afloat count with
+  # a collapsing arb is a glut using ships as storage.
+  on_water:
+    series: [afloat_20d_volume, afloat_20d_vessels, afloat_30d_volume,
+             afloat_30d_vessels, afloat_20d_usa, afloat_20d_qatar,
+             afloat_20d_australia, afloat_20d_nigeria, afloat_20d_russia,
+             afloat_20d_other]
+    # Raw dailies are noisy; a week-average is the honest resolution.
+    smooth_window_bd: 5
+    change_windows_bd: [5, 10, 21]
+    zscore_window_bd: 252
+    # 30-day afloat as a share of 20-day afloat. Rising share = cargo sitting
+    # rather than sailing = deliberate floating storage.
+    ratio_30d_over_20d: true
+    # US share of afloat vessels. The US is the swing long-haul supplier, so
+    # its share is a tonne-mile mix indicator independent of total volume.
+    usa_share_of_total: true
+    # Window for the z-scores of the two derived shares above.
+    derived_zscore_window_bd: 252
+
+  # --- 4. routing / tonne-miles -------------------------------------------
+  #
+  # Same cargo, different ship-days. A USG->Asia cargo via Panama is ~30 days;
+  # via the Cape it is ~45. When Panama and Suez close, effective fleet supply
+  # falls without a single ship leaving the water. Daily transit counts are
+  # small integers (often 0), so only rolling sums and mix shares are used.
+  routing:
+    series: [transits_panama, transits_suez, transits_cogh, transits_nsr]
+    rolling_sum_windows_bd: [21, 63]
+    # Share of total transits taking the long way round. The tonne-mile proxy.
+    long_route_share: {numerator: [transits_cogh], denominator: [transits_panama, transits_suez, transits_cogh]}
+    change_windows_bd: [21]
+
+  # --- 5. supply pulse ----------------------------------------------------
+  us_exports:
+    series: [us_lng_exports]
+    smooth_window_bd: 5
+    change_windows_bd: [5, 21]
+    zscore_window_bd: 252
+
+  # --- 5b. tonne-miles: the ship-day denominator ---------------------------
+  #
+  # This family exists because the first version of this model was all
+  # cargo-side and had no measure of how hard the fleet was working. A direct
+  # fleet count would be ideal and is not available (see sources.yaml `fleet`:
+  # the VESL* family died on 2021-10-15). But over a 1-to-15 business-day
+  # horizon the fleet is effectively FIXED - deliveries run a few ships a
+  # month against ~600 in service - so what actually moves the supply/demand
+  # balance at this horizon is how many ship-days the trade pattern demands.
+  #
+  # That is tonne-miles, and it is computable: AHOY gives daily tons by
+  # origin-destination leg, and each leg has a voyage length.
+  #
+  # Three constructions, deliberately ordered from least to most assumption:
+  #
+  #   long_haul_share   distance-FREE. Share of Americas liftings going to
+  #                     Asia rather than to Europe/Med/Americas. Needs no
+  #                     distance table at all, so it cannot be wrong about
+  #                     distances. It ranged 0.19 (2025) to 0.33 (2024).
+  #
+  #   avg_haul_nm       tonne-miles divided by tons: the average voyage length
+  #                     of a ton shipped. This is the cleanest single number
+  #                     for "how many ship-days is a ton consuming".
+  #
+  #   tonne_miles       the level. Scales with volume AND distance.
+  #
+  # The distances below are APPROXIMATE standard routing distances in nautical
+  # miles from the US Gulf, one way. They are not surveyed figures and should
+  # not be quoted as such. They are fit for this purpose because the features
+  # are used as changes and z-scores of a ratio: a 10% error in a constant
+  # distance shifts the level of the index and very nearly cancels out of its
+  # change, which is what the model reads.
+  tonne_miles:
+    legs:
+      flow_amer_to_nwe:   {distance_nm: 4900}
+      flow_amer_to_med:   {distance_nm: 5100}
+      flow_amer_to_amer:  {distance_nm: 5800}
+      # The two Asian legs are routing-dependent, which is the whole point of
+      # the Panama/Suez/Cape transit data. A USG->Japan cargo is ~9,300 nm
+      # through Panama and ~15,600 nm round the Cape: the same cargo, nearly
+      # twice the ship-days. `distance_nm` is the direct-routing default;
+      # `distance_nm_long` is the Cape alternative.
+      flow_amer_to_nasia: {distance_nm: 9300, distance_nm_long: 15600}
+      flow_amer_to_sasia: {distance_nm: 9500, distance_nm_long: 11700}
+    # When true, the Asian legs are interpolated between the direct and long
+    # distances using the OBSERVED Cape-of-Good-Hope share from the routing
+    # family, rather than assuming a fixed routing. This is the one place the
+    # routing data becomes a quantity rather than an indicator.
+    routing_adjusted: true
+    # Daily legs are cargo-level and mostly zero - AHOYAMSA is zero on 72% of
+    # days. Everything is built on rolling sums for that reason; a percentage
+    # change off a zero base is an infinity, not a feature.
+    rolling_sum_windows_bd: [21, 63]
+    change_windows_bd: [5, 21]
+    zscore_window_bd: 252
+
+  # --- 5c. fleet utilisation proxies ---------------------------------------
+  #
+  # Two ratios that say how much of the moving fleet is NOT available to lift
+  # the next cargo. Both are supply-side in the only sense available here.
+  utilisation:
+    # Cargo afloat 20+ days as a share of what the world is shipping. Rising =
+    # a larger share of the fleet is sitting on cargo rather than turning it
+    # over, which removes tonnage from the spot market.
+    afloat_over_exports: true
+    # Global exports and imports: the gross work the fleet is being asked to
+    # do, and the gap between them (cargo loaded but not yet discharged).
+    series: [exports_global, imports_global, imports_nwe, imports_nasia,
+             exports_qatar]
+    rolling_sum_windows_bd: [21, 63]
+    change_windows_bd: [5, 21]
+    zscore_window_bd: 252
+
+  # --- 5d. the Baltic traded routes ----------------------------------------
+  #
+  # IKA1 = BLNG1 (Australia->Japan), IKD1 = BLNG2 (US Gulf->Continent),
+  # IKI1 = BLNG3 (US Gulf->Japan). BLNG2 is the SAME route as the Spark30S
+  # target, so IKD1 is an independent, exchange-settled read on the very thing
+  # being forecast.
+  #
+  # Why this family is interesting and not just another price: the Spark
+  # assessment has AR(1) = +0.44 while IKD1 has -0.07. The traded contract is
+  # the unsmoothed twin of the assessment, and the GAP between them is
+  # therefore a direct measure of how far the assessment has yet to travel.
+  # Measured before fitting, the log(IKD1/Spark30S) basis correlates with the
+  # subsequent Spark30S change at -0.25 (h=1), -0.27 (h=5), -0.17 (h=10),
+  # -0.10 (h=15), all significant.
+  #
+  # The sign is NEGATIVE, which is not the "assessment catches up to the
+  # traded price" story it was built to test - a positive basis precedes the
+  # assessment falling further, not rising. Recorded as measured rather than
+  # reinterpreted until the sign makes sense, and it may simply be proxying
+  # "spot is low relative to its own recent range", which frt__z21 already
+  # carries. Whether it adds anything ON TOP of freight's own lags is the
+  # question the backtest answers.
+  #
+  # ROLL. These are generic 1st futures. 60-69% of their large daily moves
+  # fall in the three days either side of a month turn, against 27% of all
+  # days and 35% for the Spark assessment - that concentration is the
+  # contract rolling, not the market moving. Raw returns are therefore NOT
+  # used. Levels, cross-sectional spreads and roll-masked returns only.
+  baltic:
+    series:
+      blng1_aus_jpn: {}
+      blng2_usg_cont: {}
+      blng3_usg_jpn: {}
+    # The leg that shares a route with the target. Its basis to Spark30S is
+    # the feature this family exists for.
+    same_route_as_target: "blng2_usg_cont"
+    basis_to_spot: true
+    # BLNG3 over BLNG1: the east-west freight spread in traded space, the
+    # traded counterpart of frt__basin_ratio.
+    east_west_spread: {numerator: "blng3_usg_jpn", denominator: "blng1_aus_jpn"}
+    # Calendar days either side of a month turn on which a return is discarded
+    # as a probable roll. Deliberately generous: losing a real move costs a
+    # little signal, keeping a fake one teaches the model a lie.
+    roll_mask_days: 3
+    return_windows_bd: [1, 5, 10]
+    zscore_window_bd: 252
+    change_windows_bd: [5, 10]
+    # These series begin 2024-02, two years into the model sample. Before that
+    # every column here is NaN and the walk-forward's median imputer fills it
+    # with a constant, which is honest but uninformative - the model simply has
+    # no Baltic information in 2022-23. The focused comparison on the window
+    # where the data actually exists is `lngfreight baltic-test`.
+    baltic_sample_start: "2024-02-01"
+    # Training window for that focused comparison. Shorter than the main
+    # backtest's 378 because the restricted sample is only ~665 days total;
+    # it is the default for `baltic-test --min-train` and is stated in the
+    # command's output, since it makes those numbers non-comparable to the
+    # headline table.
+    baltic_test_min_train_bd: 252
+
+  # --- 6. the freight curve -----------------------------------------------
+  #
+  # The FFA curve is the market's own forecast and the thing a position can
+  # actually be put on against. M+1 over spot is the carry the market is
+  # paying, and steep contango into winter has historically preceded spot
+  # catching up. Also used as a benchmark in backtest.yaml - a feature that
+  # is also a benchmark must beat it, not merely echo it.
+  curve:
+    ffa_tenors: ["M+0", "M+1", "M+2", "M+3"]
+    spot_vs_m1_ratio: true
+    m1_vs_m3_slope: true
+    change_windows_bd: [1, 5, 10]
+
+  # --- 7. seasonality ------------------------------------------------------
+  #
+  # Freight has a genuine and large winter peak - cargoes lengthen, floating
+  # storage builds, tonnage tightens into Q4. Encoded as smooth harmonics
+  # rather than 12 month dummies: with ~4 years of daily data, month dummies
+  # would burn 11 degrees of freedom on four observations each.
+  seasonal:
+    fourier_order: 2
+    day_of_week: true
+
+# ---------------------------------------------------------------------------
+# Leakage controls, applied to every family above without exception.
+# ---------------------------------------------------------------------------
+leakage:
+  # Each feature is shifted by its source's publication_lag_days from
+  # sources.yaml BEFORE any window is computed. Rolling a window over
+  # unshifted data and shifting afterwards leaks the newest observation into
+  # every window that contains it.
+  apply_publication_lag: true
+
+  # Extra business days of delay applied on top of every publication lag.
+  #
+  # Default 0, because the per-source lags in sources.yaml were each measured
+  # rather than assumed and are already set conservatively (Bloomberg prices
+  # at 1 even though two of the four print same-day). The knob exists so the
+  # whole result can be re-run one day slower - `lngfreight lag-sensitivity`
+  # does exactly that, and a model whose skill only survives at 0 is a model
+  # that is racing the tape rather than forecasting.
+  extra_safety_lag_bd: 0
+
+  # The Spark freight assessment is published same day (lag 0, verified: the
+  # release dated 2026-09-17 was retrievable on 2026-09-17). The model is
+  # therefore allowed to use today's print, which is also the base of the
+  # target return - the same number the random-walk benchmark gets. Denying
+  # it to the model while granting it to the benchmark would not be
+  # conservative, it would just be an unfair comparison.
+  freight_spot_visible_same_day: true
+
+  # Never standardise, z-score or impute using statistics from the full
+  # sample. Every trailing statistic is causal by construction and the
+  # walk-forward refits scalers inside each training window only.
+  causal_statistics_only: true

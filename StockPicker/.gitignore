@@ -1,0 +1,8 @@
+# Bloomberg-derived data caches -- large, regenerable, and licensed data that
+# should not be committed. Rebuild with:
+#   python -m StockPicker.scripts.build_universe
+#   python -m StockPicker.scripts.ingest_history
+cache/
+reports/
+__pycache__/
+*.pyc

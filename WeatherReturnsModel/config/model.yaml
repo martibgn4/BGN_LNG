@@ -1,0 +1,126 @@
+# ---------------------------------------------------------------------------
+# model.yaml - estimation and evaluation. Every number the estimator uses is
+# here; tests/test_no_magic_numbers.py fails the build on a float literal in a
+# .py file.
+# ---------------------------------------------------------------------------
+
+sample:
+  # Bounded by the Open-Meteo previous-run archive, not by the price history,
+  # which goes back decades. The binding constraint on this project is how far
+  # back we can know what the forecast SAID, and that was probed against the
+  # live API on 2026-09-07: null at 2021-03-01, complete at 2021-06-01.
+  #
+  # This leaves roughly four years and four heating seasons. Four winters is a
+  # thin sample for a seasonal signal, and it is the reason the walk-forward
+  # below reserves so much of it for training. Any claim resting on fewer than
+  # three independent winters should be read as a hypothesis.
+  start: "2021-06-01"
+  min_observations: 500
+  # Heating seasons available, stated so a scorecard can be read against it.
+  # This is the honest denominator for a winter gas signal, not the row count.
+  independent_winters_available: 4
+
+# --- Estimator ---------------------------------------------------------------
+ridge:
+  # Chosen by walk-forward CV over this grid, never by in-sample fit.
+  lambda_grid: [0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0]
+  default_lambda: 1.0
+  standardise_features: true
+  # The intercept is not penalised and is not the interesting parameter. A
+  # non-zero fitted intercept on a return series is a claim about drift, which
+  # weather has no business making, so it is reported and watched.
+  fit_intercept: true
+
+# --- The overlapping-returns problem (SPEC 6) --------------------------------
+#
+# Daily sampling of an h-day return gives h-fold overlap. Naive t-stats are
+# inflated by roughly sqrt(h): at h=30 that is a factor of 5.5, which turns
+# noise into a 3-sigma result. All three defences below are mandatory.
+inference:
+  # Newey-West truncation. Must be at least the horizon; the rule of thumb
+  # adds a margin for the residual autocorrelation the overlap does not
+  # explain.
+  hac_lag_rule: "horizon_plus_margin"
+  hac_extra_lags: 5
+  # Stationary block bootstrap (Politis-Romano). Mean block length scales with
+  # the horizon so blocks span the overlap.
+  bootstrap:
+    enabled: true
+    draws: 2000
+    block_length_multiplier: 2.0
+    seed: 20260907
+  # Reported next to nominal N on every scorecard. N_eff = N / h is the crude
+  # version and is the one used, deliberately: it is conservative and it is
+  # easy to check by hand.
+  report_effective_n: true
+  # Two-sided normal quantile for reported intervals. 1.96 is 95%.
+  # Intervals on the hit rate are computed at EFFECTIVE N, not nominal: at
+  # nominal N a 52% hit rate over a thousand overlapping observations looks
+  # decisive, and at the thirty-odd independent ones it rests on it does not.
+  confidence_z: 1.959963984540054
+
+# --- Walk-forward ------------------------------------------------------------
+backtest:
+  scheme: "walk_forward"
+  initial_train_business_days: 750     # about three years
+  refit_every_business_days: 21
+  min_test_business_days: 250
+  # PURGE AND EMBARGO. With an h-day return, the last h training observations
+  # overlap the first test observation and leak. Purging drops them; the
+  # embargo adds a further gap for feature autocorrelation. Omitting this is
+  # the second-easiest way to fabricate a signal here, after the coverage bug.
+  purge_business_days: "horizon"
+  embargo_business_days: 5
+
+  # THE benchmark is zero. Under an efficient market a futures price is a
+  # martingale, so "no forecast" is the honest competitor and a positive OOS R2
+  # against it is the whole claim. The others are diagnostic only.
+  benchmarks:
+    - "zero"                # the real test
+    - "seasonal_mean"       # sanity floor
+    - "momentum_5d"         # is the weather signal just price momentum?
+
+  # Reported per commodity, slot and horizon.
+  metrics:
+    - "oos_r2_vs_zero"
+    - "directional_hit_rate"
+    - "information_coefficient"
+    - "net_pnl_per_unit"
+    - "sharpe_annualised"
+  # Costs are charged on position CHANGE, using targets.yaml costs.
+  charge_transaction_costs: true
+
+# --- Signal to position ------------------------------------------------------
+signal:
+  # Below this the forecast is treated as no signal and no position is taken.
+  # Expressed in return units, so 0.002 is a 20bp expected move.
+  min_abs_forecast_return: 0.002
+  # Position is proportional to forecast, clipped. Not Kelly: the parameter
+  # uncertainty here is far too large to size on a point estimate.
+  position_scaling: "linear_clipped"
+  max_position_units: 1.0
+  # Scale down when the ensemble disagrees. This is the one place spread enters
+  # the trading rule, and it enters as size, never as direction.
+  scale_by_inverse_spread: true
+  spread_scaling_floor: 0.25
+
+# --- Volatility model --------------------------------------------------------
+#
+# The secondary and, on the honest prior, more likely to work. Forecast
+# uncertainty predicting realised volatility is a far weaker claim than
+# forecast revisions predicting direction, and weaker claims are likelier true.
+volatility:
+  enabled: true
+  target: "realised_vol_forward"
+  realised_vol_window_days: 10
+  annualisation_days: 252
+  predictors: ["ensemble_spread", "spread_change", "hdd_anomaly_abs"]
+
+# --- Output ------------------------------------------------------------------
+output:
+  db_path: "output/wxreturns.duckdb"
+  scorecard_path: "output/scorecard.csv"
+  # Reported with every result. A scorecard without these two is not a result.
+  always_report:
+    - "effective_n"
+    - "net_of_costs"

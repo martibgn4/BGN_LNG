@@ -1,0 +1,35 @@
+[project]
+name = "wxreturns"
+version = "0.1.0"
+description = "Weather-driven return forecasting for natural gas and agricultural futures"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "pyarrow>=17",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+]
+
+# Estimation is numpy-only on purpose. Ridge, the Newey-West sandwich and the
+# stationary block bootstrap are all written out here, so every coefficient
+# traces to an expression in the source rather than to a library default. Same
+# choice as NWEBasisModel, and it means this package runs in the
+# GasImbalanceModel venv unchanged.
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+bloomberg = ["xbbg==0.12.2"]   # 1.x returns polars and breaks .empty
+
+[project.scripts]
+wxreturns = "wxreturns.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wxreturns"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

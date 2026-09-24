@@ -1,0 +1,193 @@
+# ---------------------------------------------------------------------------
+# sources.yaml - where data comes from, and what may be believed about it.
+#
+# Every endpoint here was reached from this machine on 2026-09-07. The
+# `verified` flags are not decoration: a fetcher refuses to build a ticker
+# marked `verified: false` rather than pulling a plausible-looking series that
+# is actually something else.
+# ---------------------------------------------------------------------------
+
+open_meteo:
+  # CC-BY-4.0. The free tier is NON-COMMERCIAL. Desk use needs the paid tier
+  # (api.open-meteo.com -> customer-api.open-meteo.com plus an apikey). This is
+  # a licensing decision for the desk; the client reads the key from
+  # OPEN_METEO_API_KEY and runs against the free host when it is unset.
+  api_key_env_var: "OPEN_METEO_API_KEY"
+  timezone: "UTC"          # never local time: DST would silently shift a day
+  request_timeout_seconds: 60
+  max_retries: 4
+  backoff_seconds: 2.0
+  # Free tier is rate limited. Regions are batched into one call by passing
+  # comma-separated coordinates, which is far cheaper than one call per point.
+  max_points_per_request: 25
+  min_seconds_between_requests: 1.2
+
+  endpoints:
+    # ARCHIVED FORECASTS AS ISSUED. The reason this project uses Open-Meteo at
+    # all. Depth is model-dependent; 2016+ for the older global models.
+    historical_forecast: "https://historical-forecast-api.open-meteo.com/v1/forecast"
+    # ERA5 / ERA5-Land reanalysis - the actuals, and the basis for normals.
+    archive: "https://archive-api.open-meteo.com/v1/archive"
+    # Live deterministic run.
+    forecast: "https://api.open-meteo.com/v1/forecast"
+    # Per-member ensemble, for spread.
+    ensemble: "https://ensemble-api.open-meteo.com/v1/ensemble"
+
+  # `available_after_hours` is hours after the nominal run time (00z) at which
+  # the run is actually downloadable. Features are stamped with the first
+  # market close at or after issue_time + this lag. An error of one session
+  # here produces a backtest that looks tradeable and is not.
+  models:
+    ecmwf_ifs025:
+      label: "ECMWF IFS 0.25deg"
+      available_after_hours: 8
+      max_lead_days: 15
+      archive_from: "2024-11-01"     # 0.25deg archive is recent; see ifs04 below
+      preferred: true
+    ecmwf_ifs04:
+      label: "ECMWF IFS 0.4deg"
+      available_after_hours: 8
+      max_lead_days: 15
+      archive_from: "2017-01-01"
+      preferred: false
+    gfs_seamless:
+      label: "NOAA GFS"
+      available_after_hours: 5
+      max_lead_days: 16
+      archive_from: "2021-03-23"
+      preferred: false
+    icon_seamless:
+      label: "DWD ICON"
+      available_after_hours: 5
+      max_lead_days: 7
+      archive_from: "2022-11-25"
+      preferred: false
+
+  # Ensemble members, for spread. `max_lead_days` is the count of NON-NULL days
+  # measured against the API on 2026-09-07, NOT the length of the time axis.
+  #
+  # The distinction cost an hour and is worth recording. Every one of these
+  # models returns a 35-day axis when asked for one, and pads it with nulls
+  # past its real horizon. Reading the axis length says GEFS 0.25 gives 35
+  # days; counting non-nulls says it gives 10. Anything sizing a position off a
+  # 30-day spread from gfs025 would be sizing off nothing at all.
+  #
+  #   model            axis  members  non-null days
+  #   gfs05              35       30       34
+  #   gfs_seamless       35       30       34
+  #   gfs025             35       30       10
+  #   ecmwf_ifs025       35       50       14
+  #   icon_seamless      35       39        7
+  #   bom_access_global  35       17        0
+  ensemble_models:
+    gfs05:
+      label: "NOAA GEFS 0.5deg"
+      members: 31
+      max_lead_days: 34        # the ONLY member set reaching a 30-day horizon
+      default: true
+    ecmwf_ifs025:
+      label: "ECMWF ENS"
+      members: 51
+      max_lead_days: 14        # better model, shorter reach - use inside 2 weeks
+      default: false
+    gfs025:
+      label: "NOAA GEFS 0.25deg"
+      members: 31
+      max_lead_days: 10        # short-range only despite advertising 35
+      default: false
+    icon_seamless:
+      label: "DWD ICON EPS"
+      members: 39
+      max_lead_days: 7
+      default: false
+
+  # A response whose usable depth falls this far short of what was requested is
+  # a source failure, not a short forecast. Without the check the fetcher drops
+  # the nulls and returns a confident-looking panel that is silently truncated.
+  ensemble_min_usable_fraction: 0.8
+
+  # --- Previous model runs: how history is reconstructed -------------------
+  #
+  # THE MECHANISM THIS PROJECT RUNS ON, and its limits were probed against the
+  # live API on 2026-09-07 rather than read off documentation.
+  #
+  # Appending `_previous_dayN` to an HOURLY variable returns what the run from
+  # N days earlier said for that same target hour. Crucially it works against
+  # the multi-year historical-forecast archive, not just the live endpoint, so
+  # a revision panel can be reconstructed for past years instead of only
+  # collected going forward.
+  #
+  # Measured at Chicago for 2025-01-05..09, mean 2m temperature:
+  #     analysis            -6.29 C
+  #     previous_day1       -7.32 C
+  #     previous_day5       -5.51 C
+  # Distinct values, full non-null coverage. It is genuinely a different run,
+  # not the analysis relabelled.
+  #
+  # TWO HARD LIMITS, both verified:
+  #   1. N runs 1..7. `previous_day8` and beyond return all-null, not an error.
+  #   2. The archive starts between 2021-03-01 (null) and 2021-06-01 (full).
+  #
+  # So historical revisions exist for leads 1-7 from mid-2021. Leads beyond 7 -
+  # the d8_15 and d16_30 buckets - CANNOT be backfilled and can only be
+  # accumulated by running the daily job from today. That is a real constraint
+  # on the project, not a temporary gap, and features.yaml marks those buckets
+  # `historical: false` so a backtest cannot silently include them.
+  previous_runs:
+    max_lead_days: 7
+    archive_verified_from: "2021-06-01"
+    # Hourly-only. `temperature_2m_mean_previous_day1` is rejected as an
+    # invalid daily variable; daily aggregates are built client-side from the
+    # hourly series.
+    hourly_only: true
+    suffix_template: "_previous_day{n}"
+
+  # Daily variables requested. Names are Open-Meteo's own.
+  daily_variables:
+    gas:
+      - "temperature_2m_mean"
+      - "temperature_2m_max"
+      - "temperature_2m_min"
+      - "wind_speed_10m_max"        # wind is demand-relevant (chill) and
+                                    # supply-relevant where gas sets the margin
+    agriculture:
+      - "temperature_2m_max"
+      - "temperature_2m_min"
+      - "temperature_2m_mean"
+      - "precipitation_sum"
+      - "et0_fao_evapotranspiration"
+
+  # Soil moisture is hourly-only on Open-Meteo and is aggregated to a daily
+  # mean client-side. Kept separate so a gas-only pull does not request it.
+  hourly_variables:
+    agriculture:
+      - "soil_moisture_0_to_7cm"
+      - "soil_moisture_7_to_28cm"
+
+google_weather:
+  # Google Maps Platform Weather API. LIVE FORECASTS ONLY - no archive of past
+  # issues, which is why it cannot be the primary source (SPEC 1.1). Wired up
+  # as a cross-check on today's run and as a fallback if Open-Meteo is down.
+  api_key_env_var: "GOOGLE_WEATHER_API_KEY"
+  endpoints:
+    daily_forecast: "https://weather.googleapis.com/v1/forecast/days:lookup"
+  max_forecast_days: 10
+  request_timeout_seconds: 30
+  # Hard stop. Serving the CURRENT run in response to a past issue_date would
+  # be undetectable lookahead, so the fetcher raises instead.
+  supports_historical_issue: false
+
+bloomberg:
+  pinned_version: "0.12.2"     # 1.x returns polars and breaks .empty
+  settle_field: "PX_LAST"
+  volume_field: "PX_VOLUME"
+  open_interest_field: "OPEN_INT"
+  # xbbg lowercases returned field names. Handled in the fetcher, noted here
+  # because it has cost time in two sibling projects already.
+  fields_returned_lowercase: true
+  # Generic-to-contract resolution. blp.fut_ticker(root, dt, freq) answers
+  # "which contract was front on that date", which is the only honest way to
+  # build a roll calendar for history.
+  roll_resolution:
+    method: "fut_ticker"
+    frequency: "M"

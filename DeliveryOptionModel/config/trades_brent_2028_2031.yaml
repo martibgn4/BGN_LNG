@@ -1,0 +1,73 @@
+# ---------------------------------------------------------------------------
+# trades_brent_2028_2031.yaml - one M / M+1 CSO for every M from Jan-2028 to
+# Nov-2031 (47 trades), selling on Brent instead of HH.
+#
+# Margin per natural delivery month m (USD/MMBtu):
+#   X_m = (w_m * Brent_m + 1.5) - TTF_m
+#   w_m = 0.166 for 2028 months, 0.132 for 2029-2031 months
+# Brent_m is the ICE Brent contract m+2 (the prompt during month m); see
+# contract_month_offset in market.yaml. Each CSO carries its own two months'
+# weights [w_M, w_M1]: Dec-28/Jan-29 is 0.166 vs 0.132.
+#
+# Leg form (any hub in market.yaml's registry, weight / constant scalar or
+# [M, M+1]):   sell: {underlying: Brent, weight: 0.166, constant: 1.5}
+#
+#   python calibrate.py --trades config/trades_brent_2028_2031.yaml
+#   python price.py     --trades config/trades_brent_2028_2031.yaml
+# ---------------------------------------------------------------------------
+
+defaults:
+  volume_mmbtu: 3600000
+  buy:  {underlying: TTF, weight: 1.0}
+  can_cancel: false
+  decision_date: null            # earliest fixing of M's legs (TTF: end of M-1)
+  pay_lag_days: 20
+
+trades:
+  - {id: BRT_Jan28_Feb28, months: ["2028-01", "2028-02"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Feb28_Mar28, months: ["2028-02", "2028-03"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Mar28_Apr28, months: ["2028-03", "2028-04"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Apr28_May28, months: ["2028-04", "2028-05"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_May28_Jun28, months: ["2028-05", "2028-06"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Jun28_Jul28, months: ["2028-06", "2028-07"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Jul28_Aug28, months: ["2028-07", "2028-08"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Aug28_Sep28, months: ["2028-08", "2028-09"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Sep28_Oct28, months: ["2028-09", "2028-10"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Oct28_Nov28, months: ["2028-10", "2028-11"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Nov28_Dec28, months: ["2028-11", "2028-12"], sell: {underlying: Brent, weight: 0.166, constant: 1.5}}
+  - {id: BRT_Dec28_Jan29, months: ["2028-12", "2029-01"], sell: {underlying: Brent, weight: [0.166, 0.132], constant: 1.5}}
+  - {id: BRT_Jan29_Feb29, months: ["2029-01", "2029-02"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Feb29_Mar29, months: ["2029-02", "2029-03"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Mar29_Apr29, months: ["2029-03", "2029-04"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Apr29_May29, months: ["2029-04", "2029-05"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_May29_Jun29, months: ["2029-05", "2029-06"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jun29_Jul29, months: ["2029-06", "2029-07"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jul29_Aug29, months: ["2029-07", "2029-08"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Aug29_Sep29, months: ["2029-08", "2029-09"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Sep29_Oct29, months: ["2029-09", "2029-10"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Oct29_Nov29, months: ["2029-10", "2029-11"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Nov29_Dec29, months: ["2029-11", "2029-12"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Dec29_Jan30, months: ["2029-12", "2030-01"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jan30_Feb30, months: ["2030-01", "2030-02"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Feb30_Mar30, months: ["2030-02", "2030-03"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Mar30_Apr30, months: ["2030-03", "2030-04"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Apr30_May30, months: ["2030-04", "2030-05"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_May30_Jun30, months: ["2030-05", "2030-06"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jun30_Jul30, months: ["2030-06", "2030-07"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jul30_Aug30, months: ["2030-07", "2030-08"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Aug30_Sep30, months: ["2030-08", "2030-09"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Sep30_Oct30, months: ["2030-09", "2030-10"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Oct30_Nov30, months: ["2030-10", "2030-11"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Nov30_Dec30, months: ["2030-11", "2030-12"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Dec30_Jan31, months: ["2030-12", "2031-01"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jan31_Feb31, months: ["2031-01", "2031-02"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Feb31_Mar31, months: ["2031-02", "2031-03"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Mar31_Apr31, months: ["2031-03", "2031-04"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Apr31_May31, months: ["2031-04", "2031-05"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_May31_Jun31, months: ["2031-05", "2031-06"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jun31_Jul31, months: ["2031-06", "2031-07"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Jul31_Aug31, months: ["2031-07", "2031-08"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Aug31_Sep31, months: ["2031-08", "2031-09"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Sep31_Oct31, months: ["2031-09", "2031-10"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Oct31_Nov31, months: ["2031-10", "2031-11"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}
+  - {id: BRT_Nov31_Dec31, months: ["2031-11", "2031-12"], sell: {underlying: Brent, weight: 0.132, constant: 1.5}}

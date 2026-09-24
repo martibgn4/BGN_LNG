@@ -1,0 +1,1440 @@
+_provenance:
+  source: ENTSOG Transparency Platform /operatorpointdirections
+  fetched_at: '2026-08-25T15:26:30.146712'
+  run_id: edc8d1c6fe6f
+  config_hash: dfcb698a834d2500
+  perimeter: NW Europe first cut
+  note: GENERATED FILE - do not hand-edit. Re-run gasbalance resolve-points.
+role_counts:
+  internal_node: 722
+  outside: 616
+  storage: 425
+  internal: 312
+  crossing: 87
+  lng_entry: 50
+  production: 41
+points:
+- point_key: ITP-00043
+  point_label: Mosonmagyarovar
+  operator_key: AT-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: AT
+  adjacent_country: HU
+  has_data: true
+- point_key: ITP-00062
+  point_label: Baumgarten (Gas Connect Austria)
+  operator_key: AT-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: AT
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00079
+  point_label: Murfeld (AT) / Ceršak (SI)
+  operator_key: AT-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: AT
+  adjacent_country: SI
+  has_data: true
+- point_key: ITP-00162
+  point_label: Baumgarten (WAG)
+  operator_key: AT-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: AT
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00043
+  point_label: Mosonmagyarovar
+  operator_key: AT-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: AT
+  adjacent_country: HU
+  has_data: true
+- point_key: ITP-00062
+  point_label: Baumgarten (Gas Connect Austria)
+  operator_key: AT-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: AT
+  adjacent_country: SK
+  has_data: false
+- point_key: ITP-00079
+  point_label: Murfeld (AT) / Ceršak (SI)
+  operator_key: AT-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: AT
+  adjacent_country: SI
+  has_data: true
+- point_key: ITP-00162
+  point_label: Baumgarten (WAG)
+  operator_key: AT-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: AT
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00255
+  point_label: Petrzalka
+  operator_key: AT-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: AT
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00037
+  point_label: Baumgarten (TAG)
+  operator_key: AT-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: AT
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00040
+  point_label: Tarvisio (IT) / Arnoldstein (AT)
+  operator_key: AT-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: AT
+  adjacent_country: IT
+  has_data: true
+- point_key: ITP-00037
+  point_label: Baumgarten (TAG)
+  operator_key: AT-TSO-0003
+  direction: exit
+  role: crossing
+  tso_country: AT
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00040
+  point_label: Tarvisio (IT) / Arnoldstein (AT)
+  operator_key: AT-TSO-0003
+  direction: exit
+  role: crossing
+  tso_country: AT
+  adjacent_country: IT
+  has_data: true
+- point_key: LNG-00017
+  point_label: Zeebrugge LNG
+  operator_key: BE-LSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: BE
+  adjacent_country: BE
+  has_data: false
+- point_key: ITP-00106
+  point_label: Zeebrugge ZPT
+  operator_key: BE-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: BE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: LNG-00017
+  point_label: Zeebrugge LNG
+  operator_key: BE-TSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: BE
+  adjacent_country: BE
+  has_data: true
+- point_key: ITP-00106
+  point_label: Zeebrugge ZPT
+  operator_key: BE-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: BE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: LNG-00017
+  point_label: Zeebrugge LNG
+  operator_key: BE-TSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: BE
+  adjacent_country: BE
+  has_data: true
+- point_key: ITP-00051
+  point_label: Lanžhot
+  operator_key: CZ-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: CZ
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00158
+  point_label: Cieszyn (PL) / Český Těšín (CZ)
+  operator_key: CZ-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: CZ
+  adjacent_country: PL
+  has_data: true
+- point_key: ITP-00051
+  point_label: Lanžhot
+  operator_key: CZ-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: CZ
+  adjacent_country: SK
+  has_data: true
+- point_key: ITP-00158
+  point_label: Cieszyn (PL) / Český Těšín (CZ)
+  operator_key: CZ-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: CZ
+  adjacent_country: PL
+  has_data: true
+- point_key: LNG-00075
+  point_label: Baltic Energy Gate (Port) (DE)
+  operator_key: DE-LSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: LNG-00079
+  point_label: 'Baltic Energy Gate '
+  operator_key: DE-LSO-0004
+  direction: exit
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: LNG-00079
+  point_label: 'Baltic Energy Gate '
+  operator_key: DE-LSO-0004
+  direction: exit
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: LNG-00060
+  point_label: BRUNSBUETTEL HAFEN (FSRU) (DE)
+  operator_key: DE-LSO-0005
+  direction: exit
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: LNG-00083
+  point_label: Wilhelmshaven, LNG-Zone
+  operator_key: DE-LSO-0005
+  direction: exit
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00021
+  point_label: 'Schneeren '
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00155
+  point_label: Nowega Zone Production
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00221
+  point_label: Voigtei (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00222
+  point_label: Dötlingen Production (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00223
+  point_label: Frenswegen (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00224
+  point_label: Böstlingen (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00225
+  point_label: Barrien (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00226
+  point_label: Gr. Giesen HHW (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00227
+  point_label: Lehringen (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00228
+  point_label: Rehden Production (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: PRD-00229
+  point_label: Unterlüss Production (DE)
+  operator_key: DE-PSO-0001
+  direction: exit
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: false
+- point_key: ITP-00096
+  point_label: Mallnow
+  operator_key: DE-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: PL
+  has_data: true
+- point_key: ITP-00247
+  point_label: Greifswald / NEL
+  operator_key: DE-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: false
+- point_key: ITP-00251
+  point_label: Greifswald / OPAL
+  operator_key: DE-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: false
+- point_key: ITP-00501
+  point_label: Lubmin II
+  operator_key: DE-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00665
+  point_label: Greifswald PiP
+  operator_key: DE-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: LNG-00079
+  point_label: 'Baltic Energy Gate '
+  operator_key: DE-TSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00240
+  point_label: Aggregated Production DE (GASCADE)
+  operator_key: DE-TSO-0001
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00096
+  point_label: Mallnow
+  operator_key: DE-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: PL
+  has_data: true
+- point_key: ITP-00075
+  point_label: Emden (NPT) (Thyssengas)
+  operator_key: DE-TSO-0002
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00105
+  point_label: Emden (EPT1) (Thyssengas)
+  operator_key: DE-TSO-0002
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: PRD-00202
+  point_label: Aggregate Production H-Gas (Thyssengas)
+  operator_key: DE-TSO-0002
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00203
+  point_label: Aggregate Production L-Gas (Thyssengas)
+  operator_key: DE-TSO-0002
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00075
+  point_label: Emden (NPT) (Thyssengas)
+  operator_key: DE-TSO-0002
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00105
+  point_label: Emden (EPT1) (Thyssengas)
+  operator_key: DE-TSO-0002
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00497
+  point_label: GCP GAZ-SYSTEM/ONTRAS
+  operator_key: DE-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: PL
+  has_data: true
+- point_key: ITP-00501
+  point_label: Lubmin II
+  operator_key: DE-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: PRD-00198
+  point_label: Aggregate Production (ONTRAS) (DE)
+  operator_key: DE-TSO-0003
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00497
+  point_label: GCP GAZ-SYSTEM/ONTRAS
+  operator_key: DE-TSO-0003
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: PL
+  has_data: true
+- point_key: ITP-00081
+  point_label: Emden (EPT1) (GUD)
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00086
+  point_label: Emden (NPT) (GUD)
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00188
+  point_label: Dornum / NETRA (GUD)
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00491
+  point_label: Greifswald / GUD
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00501
+  point_label: Lubmin II
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: LNG-00060
+  point_label: BRUNSBUETTEL HAFEN (FSRU) (DE)
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: LNG-00078
+  point_label: STADE HAFEN (FSRU) - LNG
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00167
+  point_label: Production (DE) (GUD) H-Gas-Summe Produktion
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00168
+  point_label: Production (DE) (GUD) L-Gas-Summe Produktion
+  operator_key: DE-TSO-0005
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00081
+  point_label: Emden (EPT1) (GUD)
+  operator_key: DE-TSO-0005
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00086
+  point_label: Emden (NPT) (GUD)
+  operator_key: DE-TSO-0005
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00188
+  point_label: Dornum / NETRA (GUD)
+  operator_key: DE-TSO-0005
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00294
+  point_label: Wallbach
+  operator_key: DE-TSO-0007
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00294
+  point_label: Wallbach
+  operator_key: DE-TSO-0007
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00544
+  point_label: VIP Germany-CH
+  operator_key: DE-TSO-0007
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00294
+  point_label: Wallbach
+  operator_key: DE-TSO-0007
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00294
+  point_label: Wallbach
+  operator_key: DE-TSO-0007
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00544
+  point_label: VIP Germany-CH
+  operator_key: DE-TSO-0007
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: PRD-00021
+  point_label: 'Schneeren '
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00155
+  point_label: Nowega Zone Production
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00221
+  point_label: Voigtei (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00222
+  point_label: Dötlingen Production (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00223
+  point_label: Frenswegen (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00224
+  point_label: Böstlingen (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00225
+  point_label: Barrien (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00226
+  point_label: Gr. Giesen HHW (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00227
+  point_label: Lehringen (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00228
+  point_label: Rehden Production (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00229
+  point_label: Unterlüss Production (DE)
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00234
+  point_label: Nowega Aggregation Production
+  operator_key: DE-TSO-0008
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00080
+  point_label: Emden (EPT1) (OGE)
+  operator_key: DE-TSO-0009
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00126
+  point_label: Dornum / NETRA (OGE)
+  operator_key: DE-TSO-0009
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00525
+  point_label: Dornum GASPOOL
+  operator_key: DE-TSO-0009
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: LNG-00083
+  point_label: Wilhelmshaven, LNG-Zone
+  operator_key: DE-TSO-0009
+  direction: entry
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: PRD-00200
+  point_label: Production (OGE) (DE)
+  operator_key: DE-TSO-0009
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00080
+  point_label: Emden (EPT1) (OGE)
+  operator_key: DE-TSO-0009
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00126
+  point_label: Dornum / NETRA (OGE)
+  operator_key: DE-TSO-0009
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00525
+  point_label: Dornum GASPOOL
+  operator_key: DE-TSO-0009
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00228
+  point_label: RC Basel
+  operator_key: DE-TSO-0014
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00229
+  point_label: RC Thayngen-Fallentor
+  operator_key: DE-TSO-0014
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: PRD-00243
+  point_label: Aggregated Production (terranets bw)
+  operator_key: DE-TSO-0014
+  direction: entry
+  role: production
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00228
+  point_label: RC Basel
+  operator_key: DE-TSO-0014
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00229
+  point_label: RC Thayngen-Fallentor
+  operator_key: DE-TSO-0014
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00250
+  point_label: Greifswald / GOAL
+  operator_key: DE-TSO-0015
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00251
+  point_label: Greifswald / OPAL
+  operator_key: DE-TSO-0016
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00247
+  point_label: Greifswald / NEL
+  operator_key: DE-TSO-0017
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: LNG-00075
+  point_label: Baltic Energy Gate (Port) (DE)
+  operator_key: DE-TSO-0017
+  direction: entry
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00297
+  point_label: Greifswald / Fluxys Deutschland
+  operator_key: DE-TSO-0018
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00501
+  point_label: Lubmin II
+  operator_key: DE-TSO-0018
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: LNG-00079
+  point_label: 'Baltic Energy Gate '
+  operator_key: DE-TSO-0018
+  direction: entry
+  role: lng_entry
+  tso_country: DE
+  adjacent_country: DE
+  has_data: true
+- point_key: ITP-00297
+  point_label: Greifswald / Fluxys Deutschland
+  operator_key: DE-TSO-0018
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00501
+  point_label: Lubmin II
+  operator_key: DE-TSO-0018
+  direction: exit
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00454
+  point_label: Greifswald / LBTG
+  operator_key: DE-TSO-0020
+  direction: entry
+  role: crossing
+  tso_country: DE
+  adjacent_country: RU
+  has_data: true
+- point_key: ITP-00630
+  point_label: North Sea Entry
+  operator_key: DK-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: DK
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-10009
+  point_label: Faxe
+  operator_key: DK-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: DK
+  adjacent_country: PL
+  has_data: true
+- point_key: ITP-10009
+  point_label: Faxe
+  operator_key: DK-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: DK
+  adjacent_country: PL
+  has_data: true
+- point_key: LNG-00047
+  point_label: Dunkerque LNG
+  operator_key: FR-LSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: BE
+  has_data: false
+- point_key: LNG-00047
+  point_label: Dunkerque LNG
+  operator_key: FR-LSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: LNG-00047
+  point_label: Dunkerque LNG
+  operator_key: FR-LSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: BE
+  has_data: false
+- point_key: LNG-00047
+  point_label: Dunkerque LNG
+  operator_key: FR-LSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: LNG-00024
+  point_label: Montoir de Bretagne
+  operator_key: FR-LSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: LNG-00025
+  point_label: Fos Tonkin
+  operator_key: FR-LSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: LNG-00024
+  point_label: Montoir de Bretagne
+  operator_key: FR-LSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: LNG-00025
+  point_label: Fos Tonkin
+  operator_key: FR-LSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: LNG-00020
+  point_label: Fos Cavaou
+  operator_key: FR-LSO-0004
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: LNG-00020
+  point_label: Fos Cavaou
+  operator_key: FR-LSO-0004
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: false
+- point_key: ITP-00018
+  point_label: Larrau
+  operator_key: FR-TSO-0002
+  direction: entry
+  role: crossing
+  tso_country: FR
+  adjacent_country: ES
+  has_data: true
+- point_key: ITP-00033
+  point_label: Biriatou (FR) / Irun (ES)
+  operator_key: FR-TSO-0002
+  direction: entry
+  role: crossing
+  tso_country: FR
+  adjacent_country: ES
+  has_data: true
+- point_key: ITP-00304
+  point_label: VIP PIRINEOS
+  operator_key: FR-TSO-0002
+  direction: entry
+  role: crossing
+  tso_country: FR
+  adjacent_country: ES
+  has_data: true
+- point_key: PRD-00330
+  point_label: TEREGA Biomethane Production Pool
+  operator_key: FR-TSO-0002
+  direction: entry
+  role: production
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: ITP-00018
+  point_label: Larrau
+  operator_key: FR-TSO-0002
+  direction: exit
+  role: crossing
+  tso_country: FR
+  adjacent_country: ES
+  has_data: true
+- point_key: ITP-00033
+  point_label: Biriatou (FR) / Irun (ES)
+  operator_key: FR-TSO-0002
+  direction: exit
+  role: crossing
+  tso_country: FR
+  adjacent_country: ES
+  has_data: true
+- point_key: ITP-00304
+  point_label: VIP PIRINEOS
+  operator_key: FR-TSO-0002
+  direction: exit
+  role: crossing
+  tso_country: FR
+  adjacent_country: ES
+  has_data: true
+- point_key: ITP-00039
+  point_label: Oltingue (FR) / Rodersdorf (CH)
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: FR
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00039
+  point_label: Oltingue (FR) / Rodersdorf (CH)
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: FR
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00045
+  point_label: Dunkerque
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: FR
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00281
+  point_label: Jura
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: crossing
+  tso_country: FR
+  adjacent_country: CH
+  has_data: true
+- point_key: LNG-00003
+  point_label: Dunkerque LNG / PEG North
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00024
+  point_label: Montoir de Bretagne
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00029
+  point_label: Fos (Tonkin/Cavaou)
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00029
+  point_label: Fos (Tonkin/Cavaou)
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00029
+  point_label: Fos (Tonkin/Cavaou)
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00071
+  point_label: Le Havre (FR)
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: PRD-00331
+  point_label: GRTgaz aggregated producers (FR)
+  operator_key: FR-TSO-0003
+  direction: entry
+  role: production
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: ITP-00039
+  point_label: Oltingue (FR) / Rodersdorf (CH)
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: crossing
+  tso_country: FR
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00039
+  point_label: Oltingue (FR) / Rodersdorf (CH)
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: crossing
+  tso_country: FR
+  adjacent_country: CH
+  has_data: true
+- point_key: ITP-00281
+  point_label: Jura
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: crossing
+  tso_country: FR
+  adjacent_country: CH
+  has_data: true
+- point_key: LNG-00003
+  point_label: Dunkerque LNG / PEG North
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00024
+  point_label: Montoir de Bretagne
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00029
+  point_label: Fos (Tonkin/Cavaou)
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00029
+  point_label: Fos (Tonkin/Cavaou)
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00029
+  point_label: Fos (Tonkin/Cavaou)
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00071
+  point_label: Le Havre (FR)
+  operator_key: FR-TSO-0003
+  direction: exit
+  role: lng_entry
+  tso_country: FR
+  adjacent_country: FR
+  has_data: true
+- point_key: LNG-00027
+  point_label: Gate Terminal (I)
+  operator_key: NL-LSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: false
+- point_key: LNG-00027
+  point_label: Gate Terminal (I)
+  operator_key: NL-LSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: false
+- point_key: LNG-00068
+  point_label: Eems Energy Terminal
+  operator_key: NL-LSO-0002
+  direction: entry
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: false
+- point_key: LNG-00068
+  point_label: Eems Energy Terminal
+  operator_key: NL-LSO-0002
+  direction: exit
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: false
+- point_key: ITP-00160
+  point_label: Emden (EPT1) (GTS)
+  operator_key: NL-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: NL
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00161
+  point_label: Emden (NPT) (GTS)
+  operator_key: NL-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: NL
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: LNG-00027
+  point_label: Gate Terminal (I)
+  operator_key: NL-TSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: true
+- point_key: LNG-00068
+  point_label: Eems Energy Terminal
+  operator_key: NL-TSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: true
+- point_key: PRD-00196
+  point_label: Production (NL)
+  operator_key: NL-TSO-0001
+  direction: entry
+  role: production
+  tso_country: NL
+  adjacent_country: NL
+  has_data: true
+- point_key: PRD-00268
+  point_label: Production Green Gas (NL)
+  operator_key: NL-TSO-0001
+  direction: entry
+  role: production
+  tso_country: NL
+  adjacent_country: NL
+  has_data: true
+- point_key: ITP-00160
+  point_label: Emden (EPT1) (GTS)
+  operator_key: NL-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: NL
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00161
+  point_label: Emden (NPT) (GTS)
+  operator_key: NL-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: NL
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: LNG-00027
+  point_label: Gate Terminal (I)
+  operator_key: NL-TSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: true
+- point_key: LNG-00068
+  point_label: Eems Energy Terminal
+  operator_key: NL-TSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: NL
+  adjacent_country: NL
+  has_data: true
+- point_key: PRD-00196
+  point_label: Production (NL)
+  operator_key: NL-TSO-0001
+  direction: exit
+  role: production
+  tso_country: NL
+  adjacent_country: NL
+  has_data: true
+- point_key: LNG-00008
+  point_label: Isle of Grain
+  operator_key: UK-LSO-0001
+  direction: exit
+  role: lng_entry
+  tso_country: UK
+  adjacent_country: UK
+  has_data: false
+- point_key: LNG-00049
+  point_label: Milford Haven
+  operator_key: UK-LSO-0002
+  direction: exit
+  role: lng_entry
+  tso_country: UK
+  adjacent_country: UK
+  has_data: false
+- point_key: LNG-00049
+  point_label: Milford Haven
+  operator_key: UK-LSO-0004
+  direction: exit
+  role: lng_entry
+  tso_country: UK
+  adjacent_country: UK
+  has_data: false
+- point_key: ITP-00022
+  point_label: St. Fergus
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: UK
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00091
+  point_label: Easington
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: crossing
+  tso_country: UK
+  adjacent_country: 'NO'
+  has_data: true
+- point_key: ITP-00284
+  point_label: Theddlethorpe
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: production
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: LNG-00007
+  point_label: Teesside
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: production
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: LNG-00008
+  point_label: Isle of Grain
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: LNG-00049
+  point_label: Milford Haven
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: LNG-00049
+  point_label: Milford Haven
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: lng_entry
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: PRD-00151
+  point_label: Barrow
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: production
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: PRD-00152
+  point_label: Burton Point
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: production
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: PRD-00156
+  point_label: Bacton (UKCS)
+  operator_key: UK-TSO-0001
+  direction: entry
+  role: production
+  tso_country: UK
+  adjacent_country: UK
+  has_data: true
+- point_key: ITP-00022
+  point_label: St. Fergus
+  operator_key: UK-TSO-0001
+  direction: exit
+  role: crossing
+  tso_country: UK
+  adjacent_country: 'NO'
+  has_data: false

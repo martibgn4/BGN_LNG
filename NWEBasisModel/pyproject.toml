@@ -1,0 +1,34 @@
+[project]
+name = "nwebasis"
+version = "0.1.0"
+description = "Forecasting model for the NWE LNG basis to TTF"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "pyarrow>=17",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+]
+
+# Estimation is numpy-only on purpose. Ridge, HAC standard errors and the OU
+# fit are all closed form here, so the model has no statsmodels or sklearn
+# dependency and every coefficient can be traced to an expression in the
+# source. It also means the package runs in the GasImbalanceModel venv as is.
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+bloomberg = ["xbbg==0.12.2"]   # 1.x returns polars and breaks .empty
+
+[project.scripts]
+nwebasis = "nwebasis.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nwebasis"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

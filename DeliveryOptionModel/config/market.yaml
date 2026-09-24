@@ -1,0 +1,101 @@
+# ---------------------------------------------------------------------------
+# market.yaml - hubs, calibration settings and pricing-engine settings.
+# Shared by both jobs. Trades live in trades.yaml.
+# ---------------------------------------------------------------------------
+
+# Hub registry. A trade's sell / buy hub must be one of these.
+# Price in native units x FX rate x mult = USD/MMBtu.
+hubs:
+  TTF:
+    future_root: TZT             # ICE Endex TTF, EUR/MWh
+    option_root: FJS             # TTF options live on FJS; TZT has no OPT_CHAIN
+    fx: "EUR Curncy"             # EURUSD
+    mult: 0.29307107             # 1 / 3.412141633 MMBtu per MWh
+  HH:
+    future_root: NG              # NYMEX Henry Hub, USD/MMBtu
+    option_root: NG
+    fx: null
+    mult: 1.0
+  Brent:
+    future_root: CO              # ICE Brent, USD/bbl, 1,000 bbl lots
+    option_root: CO              # CO options: IVOL_MID near, IVOL_LAST to ~2030
+    fx: null
+    mult: 1.0                    # USD/bbl as quoted; the trade's weight (e.g.
+                                 # 0.166) turns it into USD/MMBtu
+    # Futures month pricing a cargo delivered in m. ICE Brent contract X
+    # expires at the end of X-2, so the prompt Brent DURING delivery month m
+    # is contract m+2 (a Nov-28 cargo prices on COF29). Contracts that average
+    # Brent over earlier months (e.g. 3-0-1) are not modelled: averaging would
+    # lower the effective vol.
+    contract_month_offset: 2
+
+rate: 0.04                       # flat USD rate for discounting to payment dates
+
+# FX forwards, one outright per delivery month: '<root><tenor> BGN Curncy'
+# quotes pips over spot; linear in time between tenors, flat past the last.
+# Matters long-dated: EUR5Y is ~+800 pips (~7%) over spot on 2026-09-23.
+fx_forwards:
+  "EUR Curncy":
+    spot: "EUR BGN Curncy"
+    root: EUR
+    pips_per_unit: 10000
+    tenors: {1M: 1, 2M: 2, 3M: 3, 6M: 6, 9M: 9, 12M: 12, 18M: 18,
+             2Y: 24, 3Y: 36, 4Y: 48, 5Y: 60, 6Y: 72, 7Y: 84}
+
+calibration:
+  output_dir: data/calibration
+  # Consecutive pairs (M, M+1) calibrated from next month onward, on top of
+  # every pair used in trades.yaml.
+  strip_months: 12
+  lookback_months: 48            # anchor months for the pair correlations
+  return_days: 5                 # weekly: kills the TTF/NG close asynchrony
+  # Correlation window, calendar days before the anchor's fixing:
+  # [0, max(days from today to M's fixing, min_window_days)]
+  min_window_days: 45
+  # Where Bloomberg has no vol (NG beyond Apr-27, TTF beyond Aug-30 on this
+  # terminal, 2026-09-23):
+  # samuelson = realised vol-by-maturity curve x a per-hub scale fitted to the
+  #             hub's `fill_scale_months` longest-dated market vols;
+  # previous  = carry the last earlier month of that hub;
+  # none      = leave blank (a trade needing it then fails).
+  # Filled rows are flagged in `note`; `atm_vol` stays blank.
+  missing_vol_fill: samuelson
+  fill_scale_months: 12
+  anchor_filter: all             # all | same_pair (only past pairs of the same calendar months)
+  # Buckets (days to expiry) for the realised-vol profile.
+  # Out to 5 years: long-dated CSOs live on the far end of this curve.
+  vol_profile_buckets_days: [0, 30, 60, 90, 120, 180, 270, 365, 540, 730, 1095, 1460, 1825]
+
+pricing:
+  output_dir: output
+  # implied:   each leg's vol from contracts.csv as is.
+  # samuelson: that vol rescaled to the trade's horizon using the vol profile
+  #            (strips M+1's front-month period out). Per-trade overridable.
+  vol_horizon: samuelson
+  # Haircuts on the calibration, per hub; 1.0 = as calibrated.
+  # <HUB>_vol_haircut  multiplies that hub's vols (after the horizon
+  #                    adjustment): 0.8 prices at 80% of the vol.
+  # <HUB>_corr_haircut multiplies that hub's M/M+1 correlation. CAUTION: below
+  #                    1 the months decorrelate and the option is worth MORE
+  #                    (0.95 takes 0.985 to 0.936, ~4x the spread variance).
+  #                    To be conservative on an owned option use > 1 (1.01 ->
+  #                    0.995); a result beyond 1 is an error.
+  # A trade's vol_scale multiplies on top; absolute per-trade vol / corr
+  # overrides are taken as given. For one run: --ttf-vol-haircut 0.8 etc.
+  TTF_vol_haircut: 0.5
+  HH_vol_haircut: 0.5
+  TTF_corr_haircut: 1.0
+  HH_corr_haircut: 1.0
+  TTF_HH_corr_haircut: 1.5
+  Brent_vol_haircut: 1.0
+  Brent_corr_haircut: 1.0
+  TTF_Brent_corr_haircut: 1.0
+  HH_Brent_corr_haircut: 1.0
+  n_paths: 200000
+  seed: 20260923
+  bump_vol: 0.01                 # one vol point
+  bump_corr: 0.01
+  grid:                          # delete to skip
+    corr_legs: [TTF_M, TTF_M1]
+    corr: [0.80, 0.85, 0.90, 0.93, 0.95, 0.97, 0.99]
+    vol_scale: [0.75, 1.0, 1.25]

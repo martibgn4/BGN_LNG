@@ -1,0 +1,124 @@
+# ---------------------------------------------------------------------------
+# perimeter.yaml — SPEC §7 Phase 1. Hand-maintained.
+#
+# This file defines the RING. The concrete list of interconnection points is
+# NOT hand-written: it is resolved from the live ENTSOG point registry into
+# config/generated/perimeter_points.yaml by
+#     gasbalance resolve-points
+# so that every point key is traceable to a source and a fetch timestamp.
+# Edit the country lists here; never hand-edit the generated file.
+# ---------------------------------------------------------------------------
+
+name: "NW Europe first cut"
+spec_perimeter: "EU27+UK+CH"   # SPEC §1 target; this run is the reduced first cut
+
+# Countries INSIDE the ring. Two-letter ENTSOG country keys.
+inside:
+  - "UK"
+  - "IE"
+  - "NL"
+  - "BE"
+  - "LU"    # BeLux is a single balancing zone with BE (Balansys). Excluding LU
+          # would turn an internal zone boundary into a perimeter crossing.
+  - "FR"
+  - "DE"
+  - "DK"
+  - "AT"
+  - "CZ"
+
+# Countries explicitly OUTSIDE the ring, listed so that a new ENTSOG country
+# key appearing in the registry raises rather than being silently treated as
+# outside. `gasbalance resolve-points` fails on any country in neither list.
+outside:
+  - "NO"    # supply source, never inside the demand ring
+  - "CH"    # in the SPEC §1 perimeter, outside this first cut
+  - "IT"
+  - "SM"   # San Marino: Italian enclave, supplied through IT
+  - "ES"
+  - "PT"
+  - "PL"
+  - "SK"
+  - "HU"
+  - "SI"
+  - "HR"
+  - "RO"
+  - "BG"
+  - "GR"
+  - "SE"
+  - "FI"
+  - "EE"
+  - "LV"
+  - "LT"
+  - "RU"
+  - "UA"
+  - "BY"
+  - "MD"
+  - "TR"
+  - "RS"
+  - "BA"
+  - "MK"
+  - "LY"
+  - "MA"
+  - "TN"
+
+# Point categories that constitute a perimeter ENTRY or EXIT when the reporting
+# TSO is inside the ring. Values are ENTSOG `pointType` strings, enumerated
+# exhaustively against the live registry - an unlisted type raises rather than
+# dropping silently out of the balance.
+#
+# The "ExtEU" variants are not exotic: the UK became ExtEU after Brexit, so a
+# large share of the NW Europe ring carries those labels.
+perimeter_point_types:
+  crossing:
+    - "Cross-Border Transmission IP within EU"
+    - "Cross-Border Transmission IP between EU and Non-EU (import)"
+    - "Cross-Border Transmission IP between EU and Non-EU"
+    - "Cross-Border Transmission IP between EU and ExtEU"
+    - "Cross-Border Transmission IP between ExtEU and Non-EU (import)"
+    - "Cross-Border Transmission IP Non-EU"
+  lng_entry:
+    - "LNG Entry point"
+    - "LNG Entry point ExtEU"
+  production:
+    - "Aggregated production point - TP"
+    - "Aggregated production point - TP ExtEU"
+    - "Aggregated production point - SysDev"
+  storage:
+    - "Storage point"
+    - "Storage point ExtEU"
+    - "Cross-Border Storage IP within EU"
+    - "Storage IP Non-EU"
+
+# Point types INTERNAL to a country. These never enter the balance as perimeter
+# flows: a trading point or a final-consumer aggregate is a node inside the
+# ring, not a molecule crossing it.
+internal_point_types:
+  - "Trading Point"
+  - "Trading Point Ext-EU"
+  - "Transmission Point"
+  - "Transmission Point ExtEU"
+  - "Distribution Point"
+  - "Distribution Point ExtEU"
+  - "Aggregated Point - Final Consumers"
+  - "Aggregated Point - Final Consumers ExtEU"
+
+# ---------------------------------------------------------------------------
+# Reconciliation tolerances. SPEC §7 Phase 1 asks for "no unexplained gaps",
+# which is not achievable literally against ENTSOG: the two sides of an IP are
+# reported by two TSOs and routinely disagree. These are the thresholds at
+# which a gap stops being noise and becomes a finding. AWAITING TRADER SIGN-OFF.
+# ---------------------------------------------------------------------------
+tolerances:
+  # Per-point, per-day disagreement between the two reporting sides of an IP.
+  point_daily_abs_mcm: 0.5
+  point_daily_rel: 0.02
+  # Net sum of all INTERNAL flows across the ring. Must be ~zero by construction.
+  internal_net_abs_mcm: 0.5
+  # Aggregate perimeter gap as a share of total daily throughput.
+  perimeter_daily_rel: 0.01
+  # SPEC §8: a systematic gap of this size means a bug, not noise.
+  alert_systematic_gap_mcm_per_d: 20.0
+
+# Points to exclude entirely, with a reason. Empty until evidence justifies one.
+# Never add an entry here to make a reconciliation pass — SPEC §11.
+exclusions: []

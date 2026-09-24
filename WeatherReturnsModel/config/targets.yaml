@@ -1,0 +1,164 @@
+# ---------------------------------------------------------------------------
+# targets.yaml - the contracts, how they roll, and what is being predicted.
+#
+# `verified` means the Bloomberg root has been confirmed to return data from a
+# Terminal. The fetcher REFUSES an unverified root rather than pulling a
+# plausible-looking series that turns out to be a different contract - the same
+# rule NWEBasisModel applies to its curve strips.
+# ---------------------------------------------------------------------------
+
+# --- Prediction problem ------------------------------------------------------
+
+horizons_business_days: [1, 5, 10, 21, 30]
+
+# Which point on the curve. "front" is the generic 1, "front1" the generic 2.
+# Deeper slots are reachable but the weather signal is expected to die quickly
+# with tenor - deferred gas is a storage and supply story, not a weather one.
+slots:
+  front:  {generic: 1, label: "M1"}
+  front1: {generic: 2, label: "M2"}
+
+# Log returns. Gas prices are strictly positive and occasionally spike 40% in a
+# session; arithmetic returns make the spike dominate every regression it
+# appears in. Negative prices would break this, which is a real concern for WTI
+# and not for any contract traded here.
+return_type: "log"
+
+# Close-to-close. See SPEC 9.5: the forecast revision is traded long before the
+# close, so a daily model measures a decayed signal. Recorded as a known
+# limitation rather than a modelling choice.
+price_field: "settle"
+
+# --- Transaction costs -------------------------------------------------------
+#
+# A signal that survives in-sample and dies at one tick of cost is not a
+# signal. Costs are charged on every position CHANGE in the backtest, not per
+# day held. Values are one-way, in fractions of price.
+costs:
+  default_one_way: 0.00025
+  by_commodity:
+    NG:  0.00040       # widest of the set; one tick on a 3.00 handle is ~0.03%
+    C:   0.00025
+    S:   0.00020
+    W:   0.00035
+    KW:  0.00050       # thinner than Chicago wheat
+    CA:  0.00040
+    TTF: 0.00030
+
+# --- Contracts ---------------------------------------------------------------
+
+contracts:
+
+  NG:
+    label: "NYMEX Henry Hub natural gas"
+    bloomberg_root: "NG"
+    yellow_key: "Comdty"
+    verified: true            # Utils/pull_daily_data_bbg.py pulls NG1 Comdty
+    asset_class: "gas"
+    region: "us_gas"
+    # All twelve months trade and are liquid. The delivery window IS the
+    # calendar month, which is what makes gas the clean case: the contract
+    # references a well-defined month of weather.
+    contract_months: ["F","G","H","J","K","M","N","Q","U","V","X","Z"]
+    expiry_rule: "n_business_days_before_month_start"
+    expiry_offset_business_days: 3
+    delivery_window: "contract_month"
+    price_unit: "USD/MMBtu"
+    # Weather sensitivity is seasonal and the model should not pretend
+    # otherwise. Summer NG is a power-burn/CDD story with different dynamics.
+    primary_season: {start_month: 11, end_month: 3}
+
+  TTF:
+    label: "ICE Endex Dutch TTF natural gas"
+    bloomberg_root: "TZT"
+    yellow_key: "Comdty"
+    # NOT VERIFIED. The root is the plausible one but has not been confirmed
+    # from a Terminal, and Data/lng_report builds TTF tickers by its own route.
+    # Confirm with blp.bdp("TZT1 Comdty", "name") before enabling.
+    verified: false
+    asset_class: "gas"
+    region: "eu_gas"
+    contract_months: ["F","G","H","J","K","M","N","Q","U","V","X","Z"]
+    expiry_rule: "n_business_days_before_month_start"
+    expiry_offset_business_days: 2
+    delivery_window: "contract_month"
+    price_unit: "EUR/MWh"
+    primary_season: {start_month: 10, end_month: 3}
+
+  C:
+    label: "CBOT corn"
+    bloomberg_root: "C "         # trailing space is part of the Bloomberg root
+    yellow_key: "Comdty"
+    verified: false
+    asset_class: "agriculture"
+    region: "us_corn_belt"
+    southern_region: "argentina_grains"
+    crop: "corn"
+    contract_months: ["H","K","N","U","Z"]
+    expiry_rule: "business_day_before_fifteenth"
+    delivery_window: "crop_year"
+    price_unit: "USc/bushel"
+
+  S:
+    label: "CBOT soybeans"
+    bloomberg_root: "S "
+    yellow_key: "Comdty"
+    verified: false
+    asset_class: "agriculture"
+    region: "us_soy_belt"
+    southern_region: "brazil_soy"
+    crop: "soybeans"
+    contract_months: ["F","H","K","N","Q","U","X"]
+    expiry_rule: "business_day_before_fifteenth"
+    delivery_window: "crop_year"
+    price_unit: "USc/bushel"
+
+  W:
+    label: "CBOT soft red winter wheat"
+    bloomberg_root: "W "
+    yellow_key: "Comdty"
+    verified: false
+    asset_class: "agriculture"
+    region: "us_hrw_wheat"
+    crop: "winter_wheat"
+    contract_months: ["H","K","N","U","Z"]
+    expiry_rule: "business_day_before_fifteenth"
+    delivery_window: "crop_year"
+    price_unit: "USc/bushel"
+
+  KW:
+    label: "KC hard red winter wheat"
+    bloomberg_root: "KW"
+    yellow_key: "Comdty"
+    verified: false
+    asset_class: "agriculture"
+    region: "us_hrw_wheat"
+    crop: "winter_wheat"
+    contract_months: ["H","K","N","U","Z"]
+    expiry_rule: "business_day_before_fifteenth"
+    delivery_window: "crop_year"
+    price_unit: "USc/bushel"
+
+  CA:
+    label: "Euronext MATIF milling wheat"
+    bloomberg_root: "CA"
+    yellow_key: "Comdty"
+    verified: false
+    asset_class: "agriculture"
+    region: "eu_wheat"
+    crop: "winter_wheat"
+    contract_months: ["H","K","U","Z"]
+    expiry_rule: "exchange_calendar"      # MATIF does not follow the CBOT rule
+    delivery_window: "crop_year"
+    price_unit: "EUR/tonne"
+
+# --- Roll --------------------------------------------------------------------
+roll:
+  # Step off the front this many business days before its last trade date.
+  # Returns are NEVER computed across a roll; the chained series stitches
+  # within-contract returns only.
+  days_before_expiry: 5
+  # Cross-check the constructed calendar against what was actually front,
+  # resolved from Bloomberg. A mismatch is a bug, not a rounding difference.
+  validate_against_fut_ticker: true
+  validation_sample_dates: 40

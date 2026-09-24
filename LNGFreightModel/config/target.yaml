@@ -1,0 +1,59 @@
+# ---------------------------------------------------------------------------
+# target.yaml - what is being predicted, and on what calendar.
+# ---------------------------------------------------------------------------
+
+target:
+  # Spark30S: Atlantic round voyage (US Gulf -> Continent), 174k cbm 2-stroke,
+  # assessed in USD per charter day. This is the desk's working freight number
+  # and the one the spark30ffa curve settles against, so a forecast of it is
+  # directly comparable to a hedgeable price.
+  primary: "spark30_spot"
+  secondary: "spark25_spot"      # Pacific, modelled with the same pipeline
+
+  # Predict the LOG CHANGE, not the level.
+  #
+  # Freight spends years at 20k and months at 200k - the 2022 mean was 207k
+  # against 40k in 2025. A level model fitted across that is fitted mostly to
+  # the regime it saw most of. The log change is closer to stationary, and it
+  # is also the quantity a position cares about.
+  transform: "log_change"
+
+  # Business days ahead. 1d / 1w / 2w / 3w as asked.
+  horizons_bd: [1, 5, 10, 15]
+
+pipeline:
+  # Sources are pulled from well before the modelled sample so the trailing
+  # 252-day windows are already full on the first modelled day, rather than
+  # burning a year of the sample warming up.
+  history_start: "2018-01-01"
+  # How long a cached panel stays usable before a re-pull. Half a day: the
+  # freight assessment updates once daily.
+  cache_max_age_hours: 12.0
+
+calendar:
+  # Spark releases on business days; Bloomberg LNG fundamentals are calendar
+  # daily. Everything is resampled onto a business-day grid.
+  frequency: "B"
+
+  # Sample start. The Spark assessment exists from 2019-07-30 but is WEEKLY
+  # until 2022-01, which cannot support a 1-day target at all. Starting in
+  # 2022 keeps every horizon meaningful and still spans the 2022 spike, the
+  # 2025 trough and the 2026 recovery - three genuinely different regimes.
+  start: "2022-01-03"
+  end: null                      # null = most recent release
+
+staleness:
+  # The freight assessment has real gaps: a weekly-only stretch from
+  # 2023-06-27 to 2023-12-19, and a 14-day hole over new year 2023/24.
+  #
+  # Forward-filling through those and then differencing would manufacture
+  # runs of exactly-zero returns and teach the model that freight does not
+  # move. Instead the series is forward-filled for feature construction ONLY,
+  # every row carries the age of the quote it is built on, and a target is
+  # formed only when BOTH ends of the horizon are genuine fresh prints.
+  #
+  # Consequence, stated plainly: h=1 loses most of the weekly stretch while
+  # h=5 keeps it, so the four horizons are fitted on different sample sizes.
+  # The backtest reports n per horizon for exactly this reason.
+  max_forward_fill_bd: 10
+  require_fresh_both_ends: true

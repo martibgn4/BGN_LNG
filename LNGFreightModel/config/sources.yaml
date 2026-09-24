@@ -1,0 +1,287 @@
+# ---------------------------------------------------------------------------
+# sources.yaml - every external identifier this model touches.
+#
+# PROVENANCE. Every ticker and contract id below was executed against the live
+# source from this machine on 2026-09-17 and the returned payload inspected
+# before being written down. `status` records what was actually observed.
+# Nothing here is guessed, and the two families that came back unentitled are
+# recorded as such rather than quietly dropped.
+#
+# PUBLICATION LAG is the load-bearing field. Measured on 2026-09-17 by asking
+# each series for its most recent observation: futures settle same day, the
+# Bloomberg LNG fundamentals publish one day back, canal transits two. A
+# feature is only visible to the model at origin t if obs_date <= t - lag.
+# Getting this wrong is the single easiest way to inflate a freight backtest,
+# because on-water and transit data describe a world the market has already
+# seen by the time it prints.
+# ---------------------------------------------------------------------------
+
+spark:
+  credentials_path: "C:/Marti/python_tests_2/BGN_LNG/adhoc_scripts/client_credentials.csv"
+
+  # The API pages by release COUNT, not by date, so the pull asks for more
+  # releases than exist and takes what comes back. Spark30S is ~1315 releases;
+  # this ceiling has headroom for several more years before it needs raising.
+  max_releases: 4000
+
+  freight:
+    atlantic_spot:
+      id: "spark30s"
+      price_key: "usdPerDay"
+      vessel: "174-2stroke"
+      history_from: "2019-07-30"
+      status: VERIFIED          # 1315 releases to 2026-09-17
+      publication_lag_days: 0   # release dated 2026-09-17 was present on 2026-09-17
+      # Frequency is NOT constant. Weekly 2019-07 to 2021-12, daily from
+      # 2022-01, then a weekly-only stretch 2023-06 to 2023-12-19, daily
+      # again from 2024-01-02. The feature builder tracks staleness per
+      # observation instead of forward-filling blind; see target.yaml.
+      daily_from: "2024-01-02"
+    pacific_spot:
+      id: "spark25s"
+      price_key: "usdPerDay"
+      vessel: "174-2stroke"
+      history_from: "2019-07-30"
+      status: VERIFIED          # 1315 releases, same cadence as spark30s
+      publication_lag_days: 0
+
+  ffa:
+    atlantic_monthly:
+      id: "spark30ffa-monthly"
+      price_key: "usdPerDay"
+      status: VERIFIED          # M+0..M+n by release date, inspected 2026-09-17
+      publication_lag_days: 1   # latest release seen on 2026-09-17 was dated 2026-09-16
+    pacific_monthly:
+      id: "spark25ffa-monthly"
+      price_key: "usdPerDay"
+      status: IN_PRODUCTION_USE
+      publication_lag_days: 1
+
+bloomberg:
+  library: "xbbg"
+  settle_field: "px_last"
+  # env_local carries xbbg 0.10.3 and answered correctly on 2026-09-17. The
+  # 0.12.2 pin recorded elsewhere in this repo is about avoiding 1.x, which
+  # returns polars and breaks `.empty`; 0.10.3 sits below that break.
+  environment: "C:/Marti/python_tests_2/env_local"
+
+  # --- outright prices: the spread complex that drives arb and so freight ---
+  prices:
+    # Lag 1, not 0. On the 2026-09-17 probe NG1 and TZT1 had already printed
+    # 09-17 but JKL1 and TMR1 had not - settlement posts after the close and
+    # not every contract at the same moment. Taking the whole block at 1 costs
+    # a day of information and removes a same-day race the desk could not
+    # actually win. `freight-lag-sensitivity` re-runs at 0 to show what that
+    # conservatism costs.
+    henry_hub:  {ticker: "NG1 Comdty",  unit: "USD/MMBtu", history_from: "2016-01-04", status: VERIFIED, publication_lag_days: 1}
+    ttf_usd:    {ticker: "TMR1 Comdty", unit: "USD/MMBtu", history_from: "2018-08-07", status: VERIFIED, publication_lag_days: 1}
+    ttf_eur:    {ticker: "TZT1 Comdty", unit: "EUR/MWh",   history_from: "2016-01-04", status: VERIFIED, publication_lag_days: 1}
+    jkm:        {ticker: "JKL1 Comdty", unit: "USD/MMBtu", history_from: "2016-01-04", status: VERIFIED, publication_lag_days: 1}
+    # Generic 1st futures roll. Levels are continuous enough for a spread,
+    # but a roll day puts an artificial jump in the *return*. Spread features
+    # are therefore built from levels; see features.yaml roll_note.
+
+  # --- Baltic LNG freight futures: the only freight Bloomberg serves here ---
+  # These ARE the desk's Baltic route reads - IKA1 = BLNG1, IKD1 = BLNG2,
+  # IKI1 = BLNG3 - and they are the substitute for the unentitled BLNG*174
+  # assessment tickers recorded under `unentitled` below.
+  #
+  # BLNG2 (IKD1) is US Gulf -> Continent: the SAME route Spark30S assesses.
+  # That makes it a second, independent read on this model's own target, and
+  # the most useful series in this block by a distance.
+  #
+  # Two properties measured on 2026-09-17, both of which drive how they are
+  # used in features.yaml:
+  #
+  #   AR(1) of daily log return:  IKD1 = -0.07,  Spark30S = +0.44
+  #     The traded contract has essentially no serial correlation while the
+  #     assessment has a great deal. IKD1 is the UNSMOOTHED version of the
+  #     same route, which is exactly what this project's headline finding is
+  #     about.
+  #
+  #   Large moves clustering at the month turn: IKD1 2.53x baseline,
+  #   IKA1 2.28x, IKI1 2.22x, against Spark30S at 1.29x.
+  #     These are generic 1st futures and that concentration is the ROLL, not
+  #     the market. Raw returns of these series are unusable; features use
+  #     levels, spreads and roll-masked returns only.
+  freight_futures:
+    blng1_aus_jpn:  {ticker: "IKA1 Comdty", unit: "USD/day", history_from: "2024-02-01", status: VERIFIED, publication_lag_days: 1}
+    blng2_usg_cont: {ticker: "IKD1 Comdty", unit: "USD/day", history_from: "2024-01-29", status: VERIFIED, publication_lag_days: 1}
+    blng3_usg_jpn:  {ticker: "IKI1 Comdty", unit: "USD/day", history_from: "2024-02-01", status: VERIFIED, publication_lag_days: 1}
+    # 660 rows each - two and a half years, starting 2024-02. The model sample
+    # starts 2022-01, so these are absent for the first two years of it. That
+    # is handled explicitly, not by silent imputation: see the
+    # `baltic_sample_start` note in features.yaml.
+    history_note: "starts 2024-02, two years after the model sample"
+
+  # --- LNG on water. The feature the sibling NWE model is blocked on. ---
+  #
+  # Bloomberg redistributes this directly, so no Kpler key is required: laden
+  # volume and vessel count by how long the cargo has been afloat, daily and
+  # calendar-dated back to 2017-01-01. Volume is metric tons of LNG, counts
+  # are vessels. ">= 20 days afloat" is the useful cut: a normal USG-to-Europe
+  # transit is under 20 days, so this series is cargo that is NOT on a direct
+  # voyage - floating storage, slow steaming, or a cargo still looking for a
+  # home. That is tonne-mile demand and market length in one number.
+  on_water:
+    status: VERIFIED            # 3546 rows, 2017-01-01 -> 2026-09-16, daily
+    publication_lag_days: 1
+    series:
+      afloat_20d_volume:    {ticker: "LNGG20DT Index", unit: "t LNG"}
+      afloat_20d_vessels:   {ticker: "LNGG20DC Index", unit: "vessels"}
+      afloat_30d_volume:    {ticker: "LNGG30DT Index", unit: "t LNG"}
+      afloat_30d_vessels:   {ticker: "LNGG30DC Index", unit: "vessels"}
+      afloat_20d_usa:       {ticker: "LNGG20DU Index", unit: "vessels"}
+      afloat_20d_qatar:     {ticker: "LNGG20DQ Index", unit: "vessels"}
+      afloat_20d_australia: {ticker: "LNGG20DA Index", unit: "vessels"}
+      afloat_20d_nigeria:   {ticker: "LNGG20DN Index", unit: "vessels"}
+      afloat_20d_russia:    {ticker: "LNGG20DR Index", unit: "vessels"}
+      afloat_20d_other:     {ticker: "LNGG20DO Index", unit: "vessels"}
+
+  # --- routing: laden transits per chokepoint, the tonne-mile swing ---
+  #
+  # A cargo routed round the Cape instead of through Suez is the same cargo
+  # consuming far more ship-days. Daily counts are small integers and lumpy,
+  # so features are rolling sums and a routing MIX, never the raw count.
+  routing:
+    status: VERIFIED            # 2840 rows, 2018-12-04 -> 2026-09-15, daily
+    publication_lag_days: 2     # latest obs on 2026-09-17 was 2026-09-15
+    series:
+      transits_panama: {ticker: "LNGGTRPA Index", unit: "vessels"}
+      transits_suez:   {ticker: "LNGGTRSU Index", unit: "vessels"}
+      transits_cogh:   {ticker: "LNGGTRCA Index", unit: "vessels"}
+      transits_nsr:    {ticker: "LNGGTRNS Index", unit: "vessels"}
+
+  # --- supply: US liftings, the marginal Atlantic tonne-mile generator ---
+  supply:
+    status: VERIFIED            # 3546 rows, 2017-01-01 -> 2026-09-16, daily
+    publication_lag_days: 1
+    series:
+      us_lng_exports: {ticker: "AHOYEXUS Index", unit: "t LNG/day"}
+
+  # --- trade flows by origin-destination pair: the tonne-mile engine --------
+  #
+  # AHOY JOURNEY publishes daily LNG flow in metric tons on an origin ->
+  # destination-region basis, and it is the closest thing this Terminal has to
+  # a fleet-employment measure. A ton moving Americas -> North Asia occupies a
+  # ship for roughly three times as long as the same ton moving Americas ->
+  # NWE, so the MIX of these flows is what sets how many ship-days the market
+  # is consuming - which is the denominator the first version of this model
+  # was missing.
+  #
+  # Verified 2026-09-17: every series 3546 rows, 2017-01-01 -> 2026-09-16,
+  # daily. Cross-check performed before use: the five Americas legs sum to
+  # 1.08x AHOYEXUS, which is right, because Americas includes Canadian,
+  # Mexican, Peruvian and Trinidadian liftings as well as US ones.
+  #
+  # CAUTION, and it drives the feature design: the individual daily legs are
+  # cargo-level and therefore mostly zero (AHOYAMSA is zero on 72% of days).
+  # Only rolling sums and shares of these are usable; a raw daily value or a
+  # percentage change off a zero base is noise or an infinity.
+  flows:
+    status: VERIFIED
+    publication_lag_days: 1
+    series:
+      flow_amer_to_nwe:    {ticker: "AHOYAMEU Index", unit: "t LNG/day"}
+      flow_amer_to_nasia:  {ticker: "AHOYAMNA Index", unit: "t LNG/day"}
+      flow_amer_to_sasia:  {ticker: "AHOYAMSA Index", unit: "t LNG/day"}
+      flow_amer_to_med:    {ticker: "AHOYAMMD Index", unit: "t LNG/day"}
+      flow_amer_to_amer:   {ticker: "AHOYAMAM Index", unit: "t LNG/day"}
+      exports_global:      {ticker: "AHOYEXTL Index", unit: "t LNG/day"}
+      exports_qatar:       {ticker: "AHOYEXQA Index", unit: "t LNG/day"}
+      imports_global:      {ticker: "AHOYIMTL Index", unit: "t LNG/day"}
+      imports_nwe:         {ticker: "AHOYIMEU Index", unit: "t LNG/day"}
+      imports_nasia:       {ticker: "AHOYIMNA Index", unit: "t LNG/day"}
+
+  # --- fleet supply: IDENTIFIED, DISCONTINUED, NOT USABLE ------------------
+  #
+  # The obvious answer to "how many ships are there" is the VESL* family,
+  # "Vessel Fleet Status LNG Tanker": VESLLNIS total in service, VESLLNDW DWT
+  # in service, VESLLNOO on order, VESLLNUC under construction, VESLLNLA
+  # launched, VESLLNBU broken up, VESLLNTC in timecharter, VESLLNPC percentage
+  # orderbook.
+  #
+  # It is DEAD. Weekly, 2014-01-03 to 2021-10-15, and nothing since - checked
+  # 2026-09-17. This is not an LNG-specific outage: VESLAFIS (Aframax),
+  # VESLCTPC (containership), VESLVLBU (VLCC) and VESLSZTC (Suezmax) all stop
+  # on exactly the same date, so the whole vendor feed was switched off. The
+  # sample for this model starts 2022-01-03, so the series is unusable even as
+  # a partial overlay.
+  #
+  # Recorded so that the next person to go looking for fleet counts does not
+  # repeat the search and does not mistake the empty tail for a bug.
+  #
+  # The practical consequence is smaller than it first appears. Over a 1-to-15
+  # business-day horizon the LNG fleet is fixed: newbuilds are scheduled years
+  # ahead and deliveries are a handful of ships a month against ~600 in
+  # service. What varies at this horizon is how many ship-days the trade
+  # pattern DEMANDS, which is what the flows block above measures, and how
+  # many ships are tied up not carrying anything, which is what the on_water
+  # block measures.
+  fleet:
+    status: DISCONTINUED_2021_10_15
+    last_observation: "2021-10-15"
+    frequency: "weekly"
+    tickers:
+      in_service:         "VESLLNIS Index"
+      dwt_in_service:     "VESLLNDW Index"
+      on_order:           "VESLLNOO Index"
+      under_construction: "VESLLNUC Index"
+      launched:           "VESLLNLA Index"
+      broken_up:          "VESLLNBU Index"
+      in_timecharter:     "VESLLNTC Index"
+      pct_orderbook:      "VESLLNPC Index"
+
+  # --- route shipping costs: LIVE BUT TOO SLOW -----------------------------
+  #
+  # Poten publishes per-route LNG shipping cost in USD/MMBtu: POTNGUSC US Gulf
+  # to UK, POTNGJSC to Japan, POTNGSSC to Spain, POTNGCSC to China, POTNQCSC
+  # Qatar to China. Genuinely useful economics and an independent read on the
+  # same routes Spark assesses.
+  #
+  # Not used: MONTHLY, 121 observations from 2017-04-28, and the last print is
+  # 2026-03-31 - roughly six months stale as of 2026-09-17. A monthly series
+  # cannot inform a 1-to-15 business-day forecast, and a stale one cannot
+  # inform a live prediction at all. Revisit if the cadence ever changes.
+  route_costs:
+    status: TOO_LOW_FREQUENCY
+    frequency: "monthly"
+    last_observation: "2026-03-31"
+    tickers:
+      usg_to_uk:    "POTNGUSC Index"
+      usg_to_japan: "POTNGJSC Index"
+      usg_to_spain: "POTNGSSC Index"
+      usg_to_china: "POTNGCSC Index"
+      qatar_to_china: "POTNQCSC Index"
+
+  # --- identified and NOT usable from this Terminal ---
+  #
+  # Both resolve to a real security - `name` comes back - but px_last is NaN
+  # and last_update_dt is empty, which is an entitlement wall, not an outage.
+  # Recorded so nobody re-derives them and assumes a bug.
+  unentitled:
+    status: RESOLVES_BUT_NO_DATA   # checked 2026-09-17
+    # RESOLVED 2026-09-17: do not use these. The desk's Baltic route reads are
+    # the IKA1/IKD1/IKI1 futures in the `freight_futures` block above, which
+    # are entitled and carry the same three routes. These assessment tickers
+    # are kept here only so the next search does not mistake them for a gap.
+    baltic_spot_assessments:
+      blng1_spot: "BLNG1174 Index"   # -> use IKA1 Comdty
+      blng2_spot: "BLNG2174 Index"   # -> use IKD1 Comdty
+      blng3_spot: "BLNG3174 Index"   # -> use IKI1 Comdty
+    platts_freight:
+      atlantic_two_stroke: "NALF0210 Index"
+      pacific_two_stroke:  "NALF020C Index"
+      atlantic_ballast:    "NALF0151 Index"
+    note: >
+      The Baltic routes are covered by IKA1/IKD1/IKI1 and are now used as
+      features - see the `baltic` family in features.yaml. Only the Platts
+      block remains genuinely unavailable, and Spark covers the same need.
+
+kpler:
+  status: NOT_REQUIRED
+  note: >
+    The sibling NWEBasisModel lists Kpler on-water as its top blocking gap.
+    For this model that gap is closed by the Bloomberg LNGG* family above,
+    which is daily from 2017 and needs no extra credential. Kpler would still
+    add per-route voyage detail that LNGG* aggregates away.

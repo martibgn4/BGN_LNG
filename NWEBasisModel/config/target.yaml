@@ -1,0 +1,48 @@
+# ---------------------------------------------------------------------------
+# target.yaml - what exactly we are forecasting, and in which direction.
+#
+# SIGN CONVENTION. Fixed here once, and nowhere else in the codebase.
+#
+#     basis = DES_NWE - TTF        (USD/MMBtu)
+#
+# so a NEGATIVE basis is a DISCOUNT of NWE to TTF. This is the convention
+# Spark publishes `sparknwe-fin-monthly` in (verified 2026-09-04: the M+2 point
+# on the 2026-09-03 release reads -0.375), and it is the same convention as
+# `adhoc_scripts/NWE_option_pricer.py`, whose NWE_MEAN = -0.505 is a basis.
+#
+# The word "discount" in conversation means -basis, a positive number. Code
+# never uses that form: everything downstream of the fetcher is a basis.
+# ---------------------------------------------------------------------------
+
+target:
+  name: nwe_basis
+  definition: "DES NWE cargo price minus TTF, same delivery month"
+  unit: "USD/MMBtu"
+  sign: "negative = NWE at a discount to TTF"
+
+  # Primary observable. Spark assesses this directly as a financial basis
+  # rather than deriving it from two outright prices, so it carries no
+  # cross-source timing error.
+  primary_source:
+    source: spark
+    contract: "sparknwe-fin-monthly"
+    price_key: "usdPerMMBtu"
+    field: "spark"
+
+  # Independent reconstruction, used only as a cross-check. If the two
+  # disagree by more than `reconciliation_tolerance` the run warns; it does
+  # not silently prefer one.
+  crosscheck_source:
+    method: "sparknwe-des-fin-monthly minus Bloomberg TTF converted to USD/MMBtu"
+    reconciliation_tolerance_usd_per_mmbtu: 0.05
+
+# Tenors carried through the model. Spark quotes M+1..M+15 but the tail is
+# thin: M+14 and M+15 appear on only part of the releases, so fitting on them
+# mixes a shrinking sample into the curve. Headline forecasts are M+1 and M+2.
+tenors:
+  fitted: ["M+1", "M+2", "M+3", "M+4", "M+5", "M+6"]
+  headline: ["M+1", "M+2"]
+  reported: ["M+1", "M+2", "M+3", "M+6", "M+12"]
+
+# Forecast horizons in business days, measured from the observation date.
+horizons_business_days: [1, 5, 21, 63]

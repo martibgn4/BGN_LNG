@@ -1,0 +1,244 @@
+# ---------------------------------------------------------------------------
+# demand_sources.yaml — Phase 2 Step 0 result: the observed series the demand
+# models will be fitted against.
+#
+# PROVENANCE. Every ticker below was discovered via Bloomberg's own
+# //blp/instruments search on 2026-08-25 and then VERIFIED by pulling
+# 2024-10-01..2025-03-31 (or 2025-01-13..2025-01-19) and checking that the
+# series returns daily data of the right magnitude. Nothing here is guessed.
+# Units are taken from the Bloomberg security description, which states them.
+#
+# Anything not verified is recorded under `gaps:` rather than filled in.
+# ---------------------------------------------------------------------------
+
+_verification:
+  method: "blpapi //blp/instruments instrumentListRequest, then blp.bdh magnitude check"
+  date: "2026-08-25"
+  window_checked: "2024-10-01..2025-03-31"
+
+# ---------------------------------------------------------------------------
+# SIGN CONVENTION — read before using any of these.
+# Fluxys publishes demand as an OFFTAKE, i.e. NEGATIVE. Verified: Belgian end-user
+# demand returns -79.31..-24.69 mcm/d for Jan 2025. Ingesting that without a sign
+# flip produces negative demand and a balance that fails in the wrong direction.
+# Every series therefore declares its sign explicitly; there is no default.
+# ---------------------------------------------------------------------------
+
+countries:
+
+  FR:
+    tso: NaTran (formerly GRTgaz) + Terega
+    note: >
+      Best-covered country in the ring. The three sector components sum to
+      within 3.0% of the published TSO aggregate over Oct-24..Mar-25, with a
+      steady +40.6 GWh/d residual that is most likely gas-for-power.
+    series:
+      total_demand:      {ticker: "FRGCALTL Index", unit: "GWh/d", sign: positive, bucket: total}
+      ldz:               {ticker: "FRGCSDPD Index", unit: "GWh/d", sign: positive, bucket: ldz}
+      industry_hms:      {ticker: "FRGCNDCC Index", unit: "GWh/d", sign: positive, bucket: industry}
+      industry_non_hms:  {ticker: "FRGCADIC Index", unit: "GWh/d", sign: positive, bucket: industry}
+      terega_pitd:       {ticker: "TFGDPITD Index", unit: "GWh/d", sign: positive, bucket: total}
+      terega_pic:        {ticker: "TFGDPIC Index",  unit: "GWh/d", sign: positive, bucket: industry}
+
+  BE:
+    tso: Fluxys
+    note: "All Fluxys demand series are published NEGATIVE (offtake). Sign flip required."
+    series:
+      ldz:      {ticker: "FXMDEFHD Index", unit: "mcm/d", sign: negative, bucket: ldz}
+      industry: {ticker: "FXMCHPIC Index", unit: "mcm/d", sign: negative, bucket: industry}
+      power:    {ticker: "FXMPHPPP Index", unit: "mcm/d", sign: negative, bucket: power}
+
+  NL:
+    tso: GTS
+    note: "Industrial split by H-gas and L-gas. LDZ series not yet located."
+    series:
+      industry_h: {ticker: "NLGDMINH Index", unit: "mcm/d", sign: positive, bucket: industry}
+      industry_l: {ticker: "NLGDMINL Index", unit: "mcm/d", sign: positive, bucket: industry}
+
+  AT:
+    tso: AGGM
+    note: "Published by market area, not sector. Sum of the three areas is total demand."
+    series:
+      area_east:       {ticker: "AGGMEDEM Index", unit: "mcm/d", sign: positive, bucket: total}
+      area_tyrol:      {ticker: "AGGMTDEM Index", unit: "mcm/d", sign: positive, bucket: total}
+      area_vorarlberg: {ticker: "AGGMVDEM Index", unit: "mcm/d", sign: positive, bucket: total}
+
+  UK:
+    tso: National Grid
+    note: >
+      Published per LDZ region, not nationally. NLDZEA1D (Eastern) verified;
+      the full 13-LDZ set still needs enumerating before UK LDZ demand is usable.
+    series:
+      ldz_eastern: {ticker: "NLDZEA1D Index", unit: "mcm/d", sign: positive, bucket: ldz}
+
+# ---------------------------------------------------------------------------
+# Power system. LD1C<CC> = load, GT1C<CC><FUEL> = generation by fuel, both in MW,
+# both "ACT 24AV" for the daily average. Verified DE/FR/NL/BE/AT/CZ/DK/IE.
+# Prefix is NOT uniform: Ireland uses GT0C/LD0C, Italy uses GT1B per bidding zone.
+# ---------------------------------------------------------------------------
+power:
+  load_pattern: "LD1C{cc} ACT 24AV Index"
+  generation_pattern: "GT1C{cc}{fuel} ACT 24AV Index"
+  prefix_overrides:
+    IE: {load: "LD0C{cc} ACT 24AV Index", generation: "GT0C{cc}{fuel} ACT 24AV Index"}
+  # Verified by reading each ticker's full Bloomberg description, not inferred
+  # from the two-letter code - GA is Waste, not Gas, which is exactly the kind of
+  # guess that would have put waste incineration into the gas balance.
+  fuel_codes:
+    WS: wind_onshore
+    WO: wind_offshore
+    SL: solar
+    NU: nuclear
+    GS: gas            # Germany 15,109 MW mean, 13-19 Jan 2025
+    LI: lignite        # 10,831 MW
+    CO: coal_hard      # 5,807 MW
+    CG: coal_derived_gas
+    BM: biomass
+    GA: waste
+    OT: other
+  unit: "MW"
+  verified_countries: [DE, FR, NL, BE, AT, CZ, DK, IE]
+
+# ---------------------------------------------------------------------------
+# Prices, for the coal-gas switching band (SPEC 2b) and industrial elasticity (2c).
+# ---------------------------------------------------------------------------
+prices:
+  ttf:       {root: "TZT", yellow_key: Comdty, unit: "EUR/MWh", note: "from the trader's own config"}
+  coal_api2: {root: "XA",  yellow_key: Comdty, unit: "USD/t",   note: "API2 CIF ARA"}
+  eua:       {ticker: "MO1 Comdty", unit: "EUR/t", note: "ICE EUA generic front"}
+  jkm:       {root: "JKL", yellow_key: Comdty, unit: "USD/MMBtu"}
+
+# ---------------------------------------------------------------------------
+# Temperature. No Bloomberg weather series appears in the instrument index, so
+# this uses ERA5 reanalysis via Open-Meteo: free, no key, verified reachable,
+# history back decades. SPEC 2a requires POPULATION-WEIGHTED temperature, so the
+# city weights below are part of the model and must be reviewed.
+# ---------------------------------------------------------------------------
+temperature:
+  source: "Open-Meteo ERA5 archive (https://archive-api.open-meteo.com/v1/archive)"
+  variable: "temperature_2m_mean"
+  requires_key: false
+  verified: "Berlin 2025-01-13..19 returned -3.6..+2.7 C, consistent with the cold spell"
+  population_weights: NOT_YET_DEFINED   # city lat/lon + weight per country
+
+# ---------------------------------------------------------------------------
+# GAPS. Recorded, not filled. SPEC 11: do not invent data to make something run.
+# ---------------------------------------------------------------------------
+gaps:
+  DE_demand:
+    severity: PARTIALLY_RESOLVED   # was BLOCKER
+    resolved_2026_08_25: >
+      LDZ solved by the BNEF Europe LDZ Gas Demand Monitor ("Germany implied
+      flow", realised, from Trading Hub Europe). POWER solved by GT1CDEGS
+      gas-fired generation. Remaining gap is German INDUSTRIAL demand only.
+    scope_reduced: >
+      The POWER bucket for Germany is now solved without a demand ticker:
+      GT1CDEGS gives gas-fired generation in MW, which converts to gas burn via
+      the fleet efficiency in demand_params.yaml. Outstanding ask is therefore
+      only the LDZ and INDUSTRIAL buckets, not total German demand.
+    detail: >
+      No daily German gas demand series found on Bloomberg across eight distinct
+      searches. Germany is roughly a third of ring demand, so Phase 2 cannot hit
+      its MAPE gate without it.
+    rejected_workarounds:
+      - "ENTSOG Aggregated Final Consumers: captures only 31% of true demand,
+         measured against the published French TSO aggregate. Unusable."
+      - "TGD <CC> family: annual/Eurostat-style, returns nothing daily. Unusable."
+      - "Deriving DE demand as the balance residual: circular, and forbidden by SPEC 2."
+    candidate_routes:
+      - "A Bloomberg ticker family the trader knows but search did not surface"
+      - "A saved BSRCH panel (needs a BIKEY from the Terminal)"
+      - "Trading Hub Europe publishes aggregate consumption publicly; a fetcher is feasible"
+  DE_industry:
+    severity: OPEN
+    detail: >
+      No German industrial gas demand series located. Roughly a third of German
+      demand. Options: a Bloomberg ticker the trader knows, or derive it as
+      (German total - LDZ - power) if a total series can be found.
+  UK_power:
+    severity: HIGH
+    detail: >
+      LD1CGB / GT1CGB return nothing. The UK left the ENTSO-E transparency
+      platform after Brexit, so Bloomberg's ENTSO-E-derived family excludes it.
+      Needed for SPEC 2b residual load.
+    candidate_routes: ["National Grid ESO / Elexon public API", "an as-yet-unfound Bloomberg family"]
+  NL_solar_anomaly:
+    severity: CHECK
+    detail: "GT1CNLSL averaged 11 MW over Jan 2025, implausibly low for ~25 GW installed."
+  NL_UK_ldz_series:
+    severity: MEDIUM
+    detail: "No NL LDZ series located; UK LDZ is per-region and only one region verified."
+  hydro_and_mustrun:
+    severity: MEDIUM
+    detail: "Fuel codes for hydro and must-run not yet identified; SPEC 2b needs both."
+
+# ---------------------------------------------------------------------------
+# BNEF Europe LDZ Gas Demand Monitor — the SPEC 2a dependent variable.
+# Excel export from the Terminal, daily, already in mcm/d, from 2022-01-01.
+#
+# VALIDATED against raw TSO data pulled independently from Bloomberg:
+#   France: file vs (NaTran FRGCSDPD + Terega TFGDPITD), Oct-24..Mar-25
+#           mean diff +0.11 mcm/d, MAE 0.66 (0.7% of level), corr 0.9971
+# Terega alone explains the 6.8 mcm/d that NaTran on its own does not cover.
+# ---------------------------------------------------------------------------
+bnef_ldz:
+  workbook_path: "C:/Marti/python_tests_2/BGN_LNG/20260825-EuropeLocalDistributionZoneGasDemandMonitor.xlsx"
+  sheet: "Europe LDZ gas demand (daily)"
+  dataset_date: "2026-07-28"     # from the COVER sheet
+  update_frequency: weekly
+  definition: "LDZ = residential + commercial gas demand (BNEF note)"
+
+  # Region label in the workbook -> perimeter country key.
+  # `null` means deliberately outside the ring. Every region must appear here:
+  # an unmapped region raises rather than being dropped.
+  region_to_country:
+    "Germany implied flow": DE          # realised; USE THIS for fitting
+    "Germany flow nominations": null    # nominations, not actuals - see below
+    "France": FR
+    "UK": UK
+    "Netherlands": NL
+    "Belgium": BE
+    "Austria": AT
+    "Ireland": IE
+    "Italy": null                       # outside the NW Europe ring
+    "Spain": null                       # outside the ring
+    "Europe Perimeter": null            # an aggregate, would double-count
+    "Europe Perimeter excluding Germany": null
+
+  # Caveats carried from the BNEF note and from measurement. These are model
+  # facts, not trivia - each one changes how a series may be used.
+  caveats:
+    germany: >
+      "Germany flow nominations" are grid-operator forecast nominations and BNEF
+      states they are "not reflective of actual demand". Measured against
+      "Germany implied flow": +1.38 mcm/d bias, 5.0% MAE, worst day 28.6 mcm/d,
+      corr 0.9954. Implied lags (~2 months), so nominations are the only timely
+      option for LIVE running - but fitting and backtesting must use implied.
+    ireland: >
+      Ireland is the island's implied NET demand via the Moffat interconnector,
+      so it is not a clean LDZ series and includes power-sector offtake.
+      Treat with lower weight or exclude from the LDZ fit.
+    belgium: >
+      From 2024-09-01 Fluxys completed the L-gas to H-gas switchover and L-gas
+      end-user consumption is no longer reported. Before 2024-08-31 the series is
+      H+L summed. Check for a level shift across that boundary before fitting.
+    modelled_columns: >
+      "Expected demand" is BNEF's own regression, trained to 2022-01-01, and
+      "Benchmark historical" is the 2016-2020 average. Both load with
+      is_estimated=True. Never fit against either.
+
+  # BNEF's own backtest error, from the file. This is the professional bar for
+  # a daily per-country LDZ model, and worth knowing before promising 5%.
+  bnef_model_mape_daily_pct:
+    Belgium: 10.52
+    Germany: 14.77
+    UK: 14.84
+    Austria: 15.00
+    France: 16.42
+    Netherlands: 24.15
+
+  # Ring countries this file does NOT cover. Recorded, not filled.
+  missing_ring_countries:
+    CZ: "no Czech region in the workbook"
+    DK: "no Danish region in the workbook"
+    LU: "no Luxembourg region; likely inside the Belgian figure"

@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------------------
+# trades.yaml - the CSOs to price. Each trade overrides `defaults` key by key.
+#
+# Margin for delivery in month m (USD/MMBtu):
+#   X_m = sell.slope * sell_hub_m + strike_m - buy.slope * buy_hub_m
+# Value = E[max(X_M, X_M1)] (or with 0 too, if can_cancel), decided at
+# decision_date (null = earliest fixing among the first month's legs).
+#
+# For a US FOB export (buy 1.15 HH + K, sell TTF):
+#   sell: {hub: TTF, slope: 1.0}, buy: {hub: HH, slope: 1.15}, strike = -K
+#
+# overrides (optional, per trade, on top of the calibration files):
+#   fwd:       {TTF_M: 70.0}              absolute, native units
+#   vol_scale: 1.1                        multiplies every horizon vol
+#   vol:       {TTF_M1: 0.80}             absolute horizon vol
+#   corr:      {TTF_M/TTF_M1: 0.97}       absolute pairwise correlation
+# Leg names are <HUB>_M and <HUB>_M1 for the first and second month.
+# ---------------------------------------------------------------------------
+
+defaults:
+  volume_mmbtu: 3600000
+  sell: {hub: HH, slope: 1.0}
+  buy:  {hub: TTF, slope: 1.0}
+  strike_usd_mmbtu: 21.5         # scalar, or [K_M, K_M1]
+  can_cancel: false
+  decision_date: null
+  pay_lag_days: 20
+
+trades:
+  - id: NovDec26
+    months: ["2026-11", "2026-12"]
+
+  - id: NovDec26_crisis_corr
+    months: ["2026-11", "2026-12"]
+    overrides:
+      corr: {TTF_M/TTF_M1: 0.92}
+
+  - id: DecJan27
+    months: ["2026-12", "2027-01"]
+    volume_mmbtu: 3400000
+
+  - id: MarApr27_cancel
+    months: ["2027-03", "2027-04"]
+    strike_usd_mmbtu: [22.0, 21.0]
+    can_cancel: true

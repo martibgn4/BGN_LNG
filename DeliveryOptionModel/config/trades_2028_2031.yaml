@@ -1,0 +1,73 @@
+# ---------------------------------------------------------------------------
+# trades_2028_2031.yaml - one M / M+1 CSO for every M from Jan-2028 to
+# Nov-2031 (47 trades; the last pair is Nov/Dec-2031).
+#
+# Margin per natural delivery month m (USD/MMBtu):
+#   X_m = 1.15 * HH_m + K_m - TTF_m
+#   K_m = 9.89 for 2028 months, 6.66 for 2029-2031 months
+# Each CSO carries the strikes of its own two months, [K_M, K_M1]. Where they
+# are equal the strike cancels out of the option; in Dec-28/Jan-29 they differ
+# (9.89 vs 6.66) and the gap enters the switch decision.
+#
+#   python calibrate.py --trades config/trades_2028_2031.yaml
+#   (keep the near strip: HH has no listed vol past Apr-27, so the filled far
+#    HH vols are scaled to the strip's liquid months)
+#   python price.py     --trades config/trades_2028_2031.yaml
+# ---------------------------------------------------------------------------
+
+defaults:
+  volume_mmbtu: 3600000
+  sell: {hub: HH, slope: 1.15}
+  buy:  {hub: TTF, slope: 1.0}
+  can_cancel: false
+  decision_date: null            # earliest fixing of M's legs
+  pay_lag_days: 20
+
+trades:
+  - {id: CSO_Jan28_Feb28, months: ["2028-01", "2028-02"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Feb28_Mar28, months: ["2028-02", "2028-03"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Mar28_Apr28, months: ["2028-03", "2028-04"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Apr28_May28, months: ["2028-04", "2028-05"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_May28_Jun28, months: ["2028-05", "2028-06"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Jun28_Jul28, months: ["2028-06", "2028-07"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Jul28_Aug28, months: ["2028-07", "2028-08"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Aug28_Sep28, months: ["2028-08", "2028-09"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Sep28_Oct28, months: ["2028-09", "2028-10"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Oct28_Nov28, months: ["2028-10", "2028-11"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Nov28_Dec28, months: ["2028-11", "2028-12"], strike_usd_mmbtu: [9.89, 9.89]}
+  - {id: CSO_Dec28_Jan29, months: ["2028-12", "2029-01"], strike_usd_mmbtu: [9.89, 6.66]}
+  - {id: CSO_Jan29_Feb29, months: ["2029-01", "2029-02"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Feb29_Mar29, months: ["2029-02", "2029-03"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Mar29_Apr29, months: ["2029-03", "2029-04"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Apr29_May29, months: ["2029-04", "2029-05"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_May29_Jun29, months: ["2029-05", "2029-06"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jun29_Jul29, months: ["2029-06", "2029-07"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jul29_Aug29, months: ["2029-07", "2029-08"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Aug29_Sep29, months: ["2029-08", "2029-09"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Sep29_Oct29, months: ["2029-09", "2029-10"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Oct29_Nov29, months: ["2029-10", "2029-11"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Nov29_Dec29, months: ["2029-11", "2029-12"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Dec29_Jan30, months: ["2029-12", "2030-01"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jan30_Feb30, months: ["2030-01", "2030-02"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Feb30_Mar30, months: ["2030-02", "2030-03"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Mar30_Apr30, months: ["2030-03", "2030-04"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Apr30_May30, months: ["2030-04", "2030-05"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_May30_Jun30, months: ["2030-05", "2030-06"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jun30_Jul30, months: ["2030-06", "2030-07"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jul30_Aug30, months: ["2030-07", "2030-08"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Aug30_Sep30, months: ["2030-08", "2030-09"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Sep30_Oct30, months: ["2030-09", "2030-10"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Oct30_Nov30, months: ["2030-10", "2030-11"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Nov30_Dec30, months: ["2030-11", "2030-12"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Dec30_Jan31, months: ["2030-12", "2031-01"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jan31_Feb31, months: ["2031-01", "2031-02"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Feb31_Mar31, months: ["2031-02", "2031-03"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Mar31_Apr31, months: ["2031-03", "2031-04"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Apr31_May31, months: ["2031-04", "2031-05"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_May31_Jun31, months: ["2031-05", "2031-06"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jun31_Jul31, months: ["2031-06", "2031-07"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Jul31_Aug31, months: ["2031-07", "2031-08"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Aug31_Sep31, months: ["2031-08", "2031-09"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Sep31_Oct31, months: ["2031-09", "2031-10"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Oct31_Nov31, months: ["2031-10", "2031-11"], strike_usd_mmbtu: [6.66, 6.66]}
+  - {id: CSO_Nov31_Dec31, months: ["2031-11", "2031-12"], strike_usd_mmbtu: [6.66, 6.66]}
