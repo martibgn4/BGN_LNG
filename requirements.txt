@@ -1,3 +1,11 @@
+# BGN_LNG — Python dependencies
+#
+# Install:  pip install -r requirements.txt
+#
+# NOTE: PyPI-installable packages only. The repo also imports Bloomberg-only
+# and internal/proprietary libraries that pip cannot fetch from PyPI — see the
+# "NOT ON PyPI" section at the bottom.
+
 anyio==4.12.0
 argon2-cffi==25.1.0
 argon2-cffi-bindings==25.1.0
@@ -71,6 +79,7 @@ packaging==25.0
 pandas==2.3.3
 pandocfilters==1.5.1
 parso==0.8.5
+pdblp
 pillow==12.0.0
 platformdirs==4.5.0
 plotly==6.5.0
@@ -82,6 +91,7 @@ pycparser==2.23
 Pygments==2.19.2
 pyngrok==7.5.0
 pyparsing==3.2.5
+pytest
 python-dateutil==2.9.0.post0
 python-json-logger==4.0.0
 pytz==2025.2
@@ -103,6 +113,7 @@ Send2Trash==1.8.3
 setuptools==80.9.0
 six==1.17.0
 soupsieve==2.8
+spgci==0.0.98
 stack-data==0.6.3
 terminado==0.18.1
 tinycss2==1.4.0
@@ -117,5 +128,32 @@ webcolors==25.10.0
 webencodings==0.5.1
 websocket-client==1.9.0
 Werkzeug==3.1.4
+xbbg
 xlwings==0.33.16
 zipp==3.23.0
+
+# ---------------------------------------------------------------------------
+# NOT ON PyPI — install separately. Documented here so a fresh setup knows why
+# these imports fail; `pip install -r requirements.txt` will NOT provide them.
+# ---------------------------------------------------------------------------
+#
+# blpapi — Bloomberg Desktop/Server API. Required AT RUNTIME by both `xbbg` and
+#   `pdblp` above; neither works without it. Install from Bloomberg's index:
+#     pip install --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/ blpapi
+#   Also needs a running, logged-in Bloomberg Terminal on the machine.
+#
+# bql — Bloomberg Query Language. Available only inside the Bloomberg BQuant
+#   environment; not distributable. Imported by adhoc Bloomberg scripts.
+#
+# Internal / proprietary libraries (internal index or on PYTHONPATH):
+#   thorn            (thorn.core.calibration, thorn.core.market.volatility.vc, ...)
+#   thorn_excel
+#   pytest_quants
+#   general_utils
+#   time_period
+#   quantity
+#   underlying
+#   value_object
+#   official_config
+#   file_utils
+#   bbg_market_data

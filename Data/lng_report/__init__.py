@@ -8,6 +8,9 @@ Cleaned-up, modular version of the original ``Data/exampe_test.py``:
 - ``spark``      : ``extract_spark_quotes`` (Spark Commodities API).
 - ``figures``    : the Plotly figures that make up the report.
 - ``report``     : ``create_bgn_lng_report_grid`` orchestrator + entrypoint.
+- ``daily_market_data_reporting`` : the daily settlement table (its own email).
+- ``daily_job``  : the single morning job -- runs every daily report above,
+                   each sent as its own email, failures isolated.
 - ``emailer``    : Outlook email delivery.
 - ``options_oi`` : standalone options open-interest analysis.
 - ``violin``     : standalone TTF-NBP spread violin plot.

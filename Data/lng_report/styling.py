@@ -19,11 +19,17 @@ def dark_layout(**overrides):
     return layout
 
 
-def build_grid_report_html(report_date, divs):
+def build_grid_report_html(report_date, divs, full_width_divs=()):
     """Full interactive HTML page: a 2-column grid of Plotly <div>s.
 
-    `divs` must contain the 11 rendered figure/HTML fragments in report order.
+    `divs` holds the rendered figure/HTML fragments in report order, laid out
+    two per row. `full_width_divs` are appended below the grid, one per row —
+    for charts too wide to read at half width.
     """
+    grid_cells = "\n".join(f"        <div>{d}</div>" for d in divs)
+    wide_cells = "\n".join(
+        f'    <div class="full-width">{d}</div>' for d in full_width_divs
+    )
     return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -40,27 +46,33 @@ def build_grid_report_html(report_date, divs):
 <body>
     <h1>BGN LNG Desk: {report_date.strftime('%d-%b-%Y')} Daily Report</h1>
     <div class="grid">
-        <div>{divs[0]}</div>
-        <div>{divs[1]}</div>
-        <div>{divs[2]}</div>
-        <div>{divs[3]}</div>
-        <div>{divs[4]}</div>
-        <div>{divs[5]}</div>
-        <div>{divs[6]}</div>
-        <div>{divs[7]}</div>
-        <div>{divs[8]}</div>
-        <div>{divs[9]}</div>
-         <div>{divs[10]}</div>
+{grid_cells}
     </div>
+{wide_cells}
 </body>
 </html>"""
 
 
-def build_email_html(report_date, img_tags):
+def build_email_html(report_date, img_tags, full_width_img_tags=()):
     """Simplified, table-based HTML for the Outlook email body.
 
-    `img_tags` must contain the 11 embedded <img>/HTML fragments in report order.
+    `img_tags` holds the embedded <img>/HTML fragments in report order, two per
+    table row. `full_width_img_tags` are appended as single full-width rows.
     """
+    cell = 'style="width:50%; border:1px solid #30363D; padding:5px;"'
+    rows = []
+    for i in range(0, len(img_tags), 2):
+        pair = img_tags[i:i + 2]
+        cells = "\n".join(f"                <td {cell}>{t}</td>" for t in pair)
+        rows.append(f"            <tr>\n{cells}\n            </tr>")
+    for tag in full_width_img_tags:
+        rows.append(
+            '            <tr>\n'
+            '                <td colspan="2" style="border:1px solid #30363D; '
+            f'padding:5px;">{tag}</td>\n'
+            '            </tr>'
+        )
+    table_rows = "\n".join(rows)
     return f"""<!DOCTYPE html>
     <html>
     <head>
@@ -71,29 +83,7 @@ def build_email_html(report_date, img_tags):
             BGN LNG Desk: {report_date.strftime('%d-%b-%Y')} Daily Report
         </h1>
         <table cellpadding="3" cellspacing="0" border="0" style="width:100%; border-collapse: collapse;">
-            <tr>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[0]}</td>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[1]}</td>
-            </tr>
-            <tr>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[2]}</td>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[3]}</td>
-            </tr>
-            <tr>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[4]}</td>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[5]}</td>
-            </tr>
-            <tr>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[6]}</td>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[7]}</td>
-            </tr>
-            <tr>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[8]}</td>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[9]}</td>
-            </tr>
-            <tr>
-                <td style="width:50%; border:1px solid #30363D; padding:5px;">{img_tags[10]}</td>
-            </tr>
+{table_rows}
         </table>
     </body>
     </html>"""

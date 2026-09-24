@@ -263,7 +263,7 @@ def plot_nicely_historical_prices(ttf_tick, jkm_tick, hh_tick, month, brent_tick
     df.dropna(inplace=True)
 
     df['JKM-TTF'] = df[jkm_tick] - df[ttf_tick]
-    df['JKM-HH'] = df[jkm_tick] - df[hh_tick]
+    # df['JKM-HH'] = df[jkm_tick] - df[hh_tick]
 
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
                         row_heights=[0.5, 0.5], vertical_spacing=0.08,
@@ -278,15 +278,20 @@ def plot_nicely_historical_prices(ttf_tick, jkm_tick, hh_tick, month, brent_tick
     fig.add_trace(go.Scatter(x=df.index, y=df[hh_tick], name='HH',
                              line=dict(color='#FFFFFF', width=1.5, dash='dash'),
                              opacity=0.7), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y= 0.17 * df[brent_tick], name='17% Brent',
+                             line=dict(color='#FFB800', width=1.5, dash='dash'),
+                             opacity=0.7), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df[brent_tick], name='Brent',
                              line=dict(color='#FFB800', width=1.5)),
                   row=1, col=1, secondary_y=True)
     fig.add_trace(go.Scatter(x=df.index, y=df['JKM-TTF'], name='JKM-TTF',
                              line=dict(color='#00D4FF', width=1), opacity=0.8,
                              fill='tozeroy', fillcolor='rgba(0,212,255,0.3)'), row=2, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df['JKM-HH'], name='JKM-HH',
-                             line=dict(color='#FFB800', width=1), opacity=0.6,
-                             fill='tozeroy', fillcolor='rgba(255,184,0,0.1)'), row=2, col=1)
+
+    # fig.add_trace(go.Scatter(x=df.index, y=df['JKM-HH'], name='JKM-HH',
+    #                          line=dict(color='#FFB800', width=1), opacity=0.6,
+    #                          fill='tozeroy', fillcolor='rgba(255,184,0,0.1)'), row=2, col=1)
+
     fig.add_hline(y=0, line_color='white', line_width=0.5, row=2, col=1)
     fig.update_layout(**dark_layout(), height=500)
     fig.update_yaxes(title_text="USD/MMBtu", row=1, col=1)

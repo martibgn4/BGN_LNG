@@ -56,3 +56,11 @@ bbg_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
 bbg_dict = dict(zip(bbg_months, bbg_month_codes))
 bbg_dict_code_to_month = dict(zip(bbg_month_codes, bbg_months))
+
+# --- Shared-drive output ------------------------------------------------------
+
+# Where the desk's daily reports are published. Lives here rather than in
+# ``report`` so a module needing only the path does not drag in the whole
+# plotting stack to get it.
+ONLINE_DIR = (r"C:\Users\marti.fernandezreal\BAYEGAN DIS TIC. A.S"
+              r"\LNG Team - 01. Miscellaneous\17. LNG BGN Reports")

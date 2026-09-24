@@ -1,4 +1,8 @@
-"""Send the LNG report by email through the local Outlook client."""
+"""Send desk mail through the local Outlook client.
+
+One sender for every report the desk pushes out: the subject and the optional
+attachment are the caller's business, the COM plumbing lives here.
+"""
 
 from datetime import date
 from pathlib import Path
@@ -6,21 +10,28 @@ from pathlib import Path
 import win32com.client
 
 
-def send_email(html, html_out_path, sending_to="marti.fernandezreal@bgn-int.com"):
-    """Send `html` as the body of an Outlook mail, attaching the report file."""
+def send_email(html, subject, sending_to, attachment_path=None):
+    """Send `html` as the body of an Outlook mail.
+
+    `sending_to` is a semicolon-separated recipient list. `attachment_path`
+    attaches a file when given -- the LNG report ships its interactive HTML
+    that way, the settlement snapshot is body-only.
+    """
+
     outlook = win32com.client.Dispatch("Outlook.Application")
     mail = outlook.CreateItem(0)  # 0 = MailItem
 
     mail.To = sending_to
-    mail.Subject = f"LNG Report - {date.today().isoformat()}"
-    report_path = Path(html_out_path)
-    mail.Attachments.Add(str(report_path.absolute()))
+    mail.Subject = subject
+    if attachment_path is not None:
+        mail.Attachments.Add(str(Path(attachment_path).absolute()))
     mail.HTMLBody = html  # for Outlook
 
     mail.Send()
+    print(f"Sent '{subject}' to {sending_to}")
 
 
-def send_test_email():
+def send_test_email(sending_to="marti.fernandezreal@bgn-int.com"):
     """Send a minimal placeholder report to verify the Outlook pipeline works."""
     simplified_html = """<!DOCTYPE html>
         <html>
@@ -42,6 +53,6 @@ def send_test_email():
 
     send_email(
         simplified_html,
-        html_out_path="C:\\Marti\\lng_on_water.html",
-        sending_to="marti.fernandezreal@bgn-int.com"
+        subject=f"LNG Report - {date.today().isoformat()} ",
+        sending_to=sending_to,
     )
