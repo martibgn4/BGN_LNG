@@ -77,6 +77,13 @@ PRICE_FIELDS = {
 # deliberate: the full-size Jet CIF NWE listing carries no marks on this feed.
 
 PRODUCTS = [
+    # Brent leads the table: it is the crude the rest of the complex cracks
+    # against, so the products are read relative to it. Note it expires earlier
+    # than anything else here -- the contract for delivery month M stops trading
+    # at the end of M-2 -- so its nearest cell blanks out a month or two before
+    # the products' do. That is the contract calendar, not a gap in the pull.
+    ("Brent", "CO", "ICE", "Brent Crude Future",
+     "$/bbl", 2, "SETTLE"),
     ("Gasoil", "QS", "ICE", "Low Sulphur Gasoil Futures",
      "$/mt", 2, "SETTLE"),
     ("Diesel NWE", "AXP", "ICE ISF", "ULSD 10ppm CIF NWE Cargoes Future",
@@ -114,7 +121,7 @@ PRODUCTS = [
 # today, the second marks off a Platts/Argus assessment and runs a day or two
 # behind.
 PUBLICATION_GROUPS = [
-    ("exchange settled", ["Gasoil", "Heating Oil", "Gasoline US",
+    ("exchange settled", ["Brent", "Gasoil", "Heating Oil", "Gasoline US",
                           "Propane EU", "Propane US", "Butane US"]),
     ("assessment settled", ["Diesel NWE", "Jet NWE", "Naphtha NWE", "Gasoline EU",
                             "Fuel Oil HS", "Fuel Oil LS"]),
@@ -178,23 +185,37 @@ def product_tickers(months=None, today=None):
             for label, root, _, _, _, _, _ in PRODUCTS}
 
 
-def product_curve(root, months, field_kind):
+def product_curve(root, months, field_kind, pricing_date=None):
     """Latest marks for `root` over `months`.
 
     Returns ``(series indexed by delivery month, mark date)``. The mark date is
     the one most contracts agree on -- an illiquid far month can lag, but the
     strip as a whole marks to a single day.
+
+    A contract that has stopped trading is dropped rather than shown. Bloomberg
+    keeps serving an expired contract's final settlement forever, so without
+    this an expired month sits in the table looking like a live price: Brent's
+    front month expires two months before delivery, and in mid-October the
+    November contract was still handing back its 30-September settlement. The
+    same guard covers every column as the strip rolls through each month.
     """
+    pricing_date = pricing_date or date.today()
     price_field, date_field = PRICE_FIELDS[field_kind]
     ticker_of = {product_ticker(root, month): month for month in months}
 
-    quotes = blp.bdp(tickers=list(ticker_of), flds=[price_field, date_field])
+    quotes = blp.bdp(tickers=list(ticker_of),
+                     flds=[price_field, date_field, "last_tradeable_dt"])
 
     prices, mark_dates = {}, []
     for ticker, row in quotes.iterrows():
         month = ticker_of.get(ticker)
         if month is None:
             continue
+
+        expiry = row.get("last_tradeable_dt")
+        if pd.notna(expiry) and pd.Timestamp(expiry).date() < pricing_date:
+            continue  # expired: its "settlement" is history, not a mark
+
         price = row.get(price_field)
         if pd.notna(price):
             prices[month] = float(price)
@@ -221,7 +242,8 @@ def build_products_table(today=None, n_months=N_MONTHS):
 
     for label, root, _venue, _contract, _units, _decimals, field_kind in PRODUCTS:
         try:
-            series, mark_date = product_curve(root, months, field_kind)
+            series, mark_date = product_curve(root, months, field_kind,
+                                              pricing_date=today or date.today())
         except Exception as exc:
             print(f"{label} skipped: {exc!r}")
             series, mark_date = pd.Series(dtype=float), None
@@ -272,20 +294,33 @@ def _publication_rows_html(as_of):
     return "\n        ".join(lines)
 
 
-def _ticker_legend_html(months):
+def _first_quoted_month(table, label):
+    """The nearest delivery month `label` actually has a mark for.
+
+    Used for the legend's worked example, so it names a contract you can pull up
+    and see a price on. Brent is why this is not simply the table's first row:
+    its nearest month or two have already expired and are blank.
+    """
+    column = table[label].dropna()
+    return column.index[0] if len(column) else table.index[0]
+
+
+def _ticker_legend_html(table):
     """The ticker table under the curves, so every column can be checked.
 
-    Shows the root alongside a worked example -- the first delivery month in the
-    table -- which is what you actually type into the terminal to compare.
+    Shows the root alongside a worked example -- the nearest month that column
+    actually quotes -- which is what you type into the terminal to compare.
     """
-    example_month = months[0]
     rows = []
     for label, root, venue, contract, units, _decimals, field_kind in PRODUCTS:
         price_field, _ = PRICE_FIELDS[field_kind]
+        example_month = _first_quoted_month(table, label)
         rows.append(
             f'<tr>'
             f'<td style="border:1px solid {_BORDER}; padding:3px 8px;">{label}</td>'
             f'<td style="border:1px solid {_BORDER}; padding:3px 8px;"><b>{root}</b></td>'
+            f'<td style="border:1px solid {_BORDER}; padding:3px 8px; white-space:nowrap;">'
+            f'{example_month.strftime("%b-%y")}</td>'
             f'<td style="border:1px solid {_BORDER}; padding:3px 8px; white-space:nowrap;">'
             f'{product_ticker(root, example_month)}</td>'
             f'<td style="border:1px solid {_BORDER}; padding:3px 8px;">{venue}</td>'
@@ -296,7 +331,7 @@ def _ticker_legend_html(months):
         )
     body = "\n".join(rows)
 
-    heads = ["Product", "Root", f'{example_month.strftime("%b-%y")} ticker',
+    heads = ["Product", "Root", "Nearest", "Example ticker",
              "Venue", "Units", "Field", "Contract"]
     header_cells = "".join(
         f'<th style="border:1px solid {_BORDER}; padding:4px 8px; text-align:left;">{h}</th>'
@@ -308,6 +343,9 @@ def _ticker_legend_html(months):
     <p style="font-size:11px; color:{_MUTED}; margin:0 0 8px 0;">
         A delivery month's ticker is root + month code + two-digit year + " Comdty"
         &mdash; month codes F G H J K M N Q U V X Z for Jan through Dec.
+        "Nearest" is the closest month each contract still quotes, which is the
+        example ticker shown: Brent expires two months before delivery, so its
+        nearest live contract sits further out than the products'.
     </p>
     <table cellpadding="0" cellspacing="0" border="0"
            style="border-collapse:collapse; font-size:11px; color:{_FG};">
@@ -372,7 +410,7 @@ def render_products_table_html(table, as_of, report_date):
         quotes each contract &mdash; nothing is converted. Blank cells are tenors
         the contract does not quote, not a failed pull.
     </p>
-    {_ticker_legend_html(list(table.index))}
+    {_ticker_legend_html(table)}
 </body>
 </html>"""
 
