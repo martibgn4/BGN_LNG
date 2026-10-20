@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local virtualenvs (the desk keeps env_local alongside the repo)
+env_local/
+.venv/
+venv/
+
+# Report output when the shared drive is not mounted -- see
+# Data/lng_report/config.resolve_report_dir
+output/
+
+# A private Spark client credentials copy, which takes precedence over the one
+# committed at adhoc_scripts/client_credentials.csv. Never commit this.
+adhoc_scripts/client_credentials.local.csv
+
+# Generated reports that used to get committed by accident
+lng_report*.html
+market_curves_*.html
+market_curves_*.xlsx
+oil_products_curves_*.html
+oil_products_curves_*.xlsx

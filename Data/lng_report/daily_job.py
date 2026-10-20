@@ -13,6 +13,12 @@ failure: if Platts is down and the chart report dies, the settlement table
 still lands in the desk's inbox, and vice versa. The job exits non-zero when
 any task failed, so Task Scheduler shows a red run rather than a silent one.
 
+That independence extends to imports, which is why each task imports its own
+module inside its function rather than at the top of this file. The chart
+report pulls in Platts and the plotting stack; importing it up here meant
+``--only settlements`` died on a missing Platts entitlement before the
+settlement table it was asked for ever ran.
+
 Run everything and send:
     python -m Data.lng_report.daily_job
 
@@ -28,20 +34,18 @@ import sys
 import traceback
 from datetime import datetime
 
-from Data.lng_report import daily_market_data_reporting, oil_products_reporting, report
-
-# Recipients per task. Both default to what the task itself declares, so there
-# is still one place to change an address rather than two.
-SETTLEMENTS_RECIPIENTS = daily_market_data_reporting.DEFAULT_RECIPIENTS
-PRODUCTS_RECIPIENTS = oil_products_reporting.DEFAULT_RECIPIENTS
-REPORT_RECIPIENTS = report.DEFAULT_RECIPIENTS
+DEFAULT_RECIPIENT = "marti.fernandezreal@bgn-int.com"
 
 
 def _run_settlements(dry_run):
+    # Recipients default to what the task module itself declares, so there is
+    # still one place to change an address rather than two.
     # out_path is left to default: the dated copy on the shared drive, next to
     # the chart report's own dated copy.
+    from Data.lng_report import daily_market_data_reporting
+
     daily_market_data_reporting.main(
-        sending_to=SETTLEMENTS_RECIPIENTS,
+        sending_to=daily_market_data_reporting.DEFAULT_RECIPIENTS,
         dry_run=dry_run,
     )
 
@@ -49,21 +53,25 @@ def _run_settlements(dry_run):
 def _run_products(dry_run):
     # Same shape as the settlement table: the dated shared-drive copy and the
     # workbook attachment are both left to default.
+    from Data.lng_report import oil_products_reporting
+
     oil_products_reporting.main(
-        sending_to=PRODUCTS_RECIPIENTS,
+        sending_to=oil_products_reporting.DEFAULT_RECIPIENTS,
         dry_run=dry_run,
     )
 
 
 def _run_report(dry_run):
-    report.main(sending_to=REPORT_RECIPIENTS, send=not dry_run)
+    from Data.lng_report import report
+
+    report.main(sending_to=report.DEFAULT_RECIPIENTS, send=not dry_run)
 
 
 # Order matters: the two tables are cheap and are what the desk reads first
 # thing, so they go out before the slower chart report is built.
 TASKS = [
     ("settlements", _run_settlements),
-    # ("products", _run_products),
+    ("products", _run_products),
     ("report", _run_report),
 ]
 

@@ -1,8 +1,13 @@
 """Static configuration for the BGN LNG daily report.
 
 Ticker maps, Bloomberg month codes and the FX tenor grid live here so the rest
-of the package never has to hard-code a symbol.
+of the package never has to hard-code a symbol. Machine-specific paths resolve
+off ``REPO_ROOT`` or an environment variable for the same reason -- the report
+has to run from a fresh clone on someone else's laptop, not just the desk's.
 """
+
+import os
+from pathlib import Path
 
 # --- FX / commodity -> Bloomberg root ---------------------------------------
 
@@ -57,10 +62,43 @@ bbg_months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 bbg_dict = dict(zip(bbg_months, bbg_month_codes))
 bbg_dict_code_to_month = dict(zip(bbg_month_codes, bbg_months))
 
-# --- Shared-drive output ------------------------------------------------------
+# --- Repo layout --------------------------------------------------------------
+
+# The checkout this file lives in: <repo>/Data/lng_report/config.py -> <repo>.
+# Every default path below is derived from this rather than from one person's
+# drive letter, so a fresh clone works wherever it lands.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+# --- Report output ------------------------------------------------------------
 
 # Where the desk's daily reports are published. Lives here rather than in
 # ``report`` so a module needing only the path does not drag in the whole
 # plotting stack to get it.
-ONLINE_DIR = (r"C:\Users\marti.fernandezreal\BAYEGAN DIS TIC. A.S"
-              r"\LNG Team - 01. Miscellaneous\17. LNG BGN Reports")
+#
+# The desk publishes to a OneDrive folder that only exists on a machine signed
+# in to the BGN tenant with that library synced. A teammate running this from a
+# fresh clone has no such folder, and writing into a parent that does not exist
+# used to kill the whole run before the mail went out -- so the path resolves in
+# three steps and always ends somewhere writable:
+#
+#   1. BGN_LNG_REPORT_DIR, if set -- the explicit override
+#   2. the shared drive, when it is actually present (the desk's own machines)
+#   3. <repo>/output, created on demand (anyone else)
+SHARED_REPORT_DIR = (r"C:\Users\marti.fernandezreal\BAYEGAN DIS TIC. A.S"
+                     r"\LNG Team - 01. Miscellaneous\17. LNG BGN Reports")
+
+LOCAL_REPORT_DIR = REPO_ROOT / "output"
+
+
+def resolve_report_dir():
+    """The directory today's reports should be written to."""
+    override = os.getenv("BGN_LNG_REPORT_DIR")
+    if override:
+        return override
+    if Path(SHARED_REPORT_DIR).is_dir():
+        return SHARED_REPORT_DIR
+    return str(LOCAL_REPORT_DIR)
+
+
+ONLINE_DIR = resolve_report_dir()

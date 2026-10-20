@@ -1,6 +1,27 @@
 # BGN_LNG
 LNG related pricing tools for BGN LNG desk
 
+## Daily desk mails
+
+The morning job sends the settlement snapshot, the refined products curves and
+the chart report:
+
+```
+python -m Data.lng_report.daily_job                      # all three
+python -m Data.lng_report.daily_job --only settlements   # just one
+python -m Data.lng_report.daily_job --dry-run            # build, send nothing
+```
+
+Setting this up on a new machine needs a Bloomberg Terminal, Outlook, and one
+non-PyPI package. Check the machine first with
+
+```
+python -m Data.lng_report.preflight
+```
+
+and see **[Data/lng_report/SETUP.md](Data/lng_report/SETUP.md)** for the full
+walkthrough, what resolves automatically, and which blank columns are normal.
+
 ## Requirements so far
 ideally add python and python/Scripts to Environment Variables - so that python and pip work as expected
 pip install the packages:

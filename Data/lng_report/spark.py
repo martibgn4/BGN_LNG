@@ -1,5 +1,8 @@
 """Spark Commodities API access: cargo, freight and NWE-discount quotes."""
 
+import os
+from pathlib import Path
+
 from Utils.utils_spark import (
     retrieve_credentials,
     get_access_token,
@@ -8,10 +11,37 @@ from Utils.utils_spark import (
     list_contracts,
 )
 
-# Path to the Spark API client credentials CSV.
-SPARK_CREDENTIALS_PATH = (
-    "C:\\Marti\\python_tests_2\\BGN_LNG\\adhoc_scripts\\client_credentials.csv"
-)
+from Data.lng_report.config import REPO_ROOT
+
+# Where the Spark API client credentials come from, in precedence order:
+#
+#   1. SPARK_CREDENTIALS_PATH  -- an explicit CSV somewhere on this machine
+#   2. <repo>/adhoc_scripts/client_credentials.local.csv -- a private copy
+#      that .gitignore keeps out of the repo; use this to run under your own
+#      Spark client rather than the desk's
+#   3. <repo>/adhoc_scripts/client_credentials.csv -- the copy committed to the
+#      repo, so a fresh clone has working Spark access with no setup
+#
+# Returning None instead falls through to the SPARK_CLIENT_ID /
+# SPARK_CLIENT_SECRET environment variables, which is what
+# ``retrieve_credentials`` does with no path.
+_CREDENTIALS_DIR = REPO_ROOT / "adhoc_scripts"
+LOCAL_CREDENTIALS_PATH = _CREDENTIALS_DIR / "client_credentials.local.csv"
+SHIPPED_CREDENTIALS_PATH = _CREDENTIALS_DIR / "client_credentials.csv"
+
+
+def resolve_spark_credentials_path():
+    """The credentials CSV to read, or None to fall back to env vars."""
+    override = os.getenv("SPARK_CREDENTIALS_PATH")
+    if override:
+        return override
+    for candidate in (LOCAL_CREDENTIALS_PATH, SHIPPED_CREDENTIALS_PATH):
+        if Path(candidate).is_file():
+            return str(candidate)
+    return None
+
+
+SPARK_CREDENTIALS_PATH = resolve_spark_credentials_path()
 
 # Spark contract ticker for each supported quote type.
 _QUOTE_TYPE_CONFIG = {

@@ -1,7 +1,8 @@
 """Daily settlement snapshot for the LNG desk: one table, emailed each morning.
 
-Rows are the front four years of monthly contracts (delivery months only);
-columns are the latest settlement for each benchmark the desk watches:
+Rows are a rolling strip of monthly contracts (delivery months only) running to
+at least the end of 2032; columns are the latest settlement for each benchmark
+the desk watches:
 
     TTF, Brent, Henry Hub            -- Bloomberg (``px_settle``)
     JKM                              -- the manually-processed JKM settlement master
@@ -17,7 +18,8 @@ Add ``--dry-run`` to build the table without sending anything.
 """
 
 import argparse
-from datetime import date, datetime
+import os
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -32,16 +34,21 @@ from Utils.utils_spark import (
 )
 
 from Data.lng_report.bloomberg import BloombergExtractor
-from Data.lng_report.config import ONLINE_DIR
+from Data.lng_report.config import ONLINE_DIR, REPO_ROOT
 from Data.lng_report.emailer import send_email
 from Data.lng_report.spark import SPARK_CREDENTIALS_PATH
 
 # --- What the table covers ---------------------------------------------------
 
-# Front four years of monthly contracts. The first row is the month *after* the
+# A rolling strip of monthly contracts. The first row is the month *after* the
 # current one: by the time this goes out in the morning the running month is no
 # longer a forward contract on any of these benchmarks.
-N_MONTHS = 48
+#
+# 75 months keeps the strip running to at least the end of 2032 -- the tail the
+# desk asked for -- and rolls further out every month. TTF, Brent and Henry Hub
+# quote to Sep-2034 and the JKM master reaches Oct-2033, so nothing here is
+# extrapolated; the shorter freight curves simply blank out (see COLUMNS).
+N_MONTHS = 75
 
 # Bloomberg field carrying the settlement price and the date it settled on.
 BBG_SETTLE_FIELD = "px_settle"
@@ -54,19 +61,50 @@ MMBTU_PER_MWH = 3.412141633
 
 # EUR/USD spot plus the forward tenor grid, quoted in pips over spot. Bloomberg
 # has no "EUR1Y" -- the twelve-month point is "EUR12M" -- and switches from
-# month to year form after 18M. The grid reaches 5Y, so every month in a
-# four-year strip interpolates rather than extrapolates.
+# month to year form after 18M. The grid runs to 10Y so the whole strip
+# interpolates: stopping at 5Y would silently freeze the rate flat across every
+# month past the five-year point and understate TTF_USD at the tail.
 FX_SPOT_TICKER = "EUR BGN Curncy"
 FX_FORWARD_TENORS = [
     ("1M", 1), ("2M", 2), ("3M", 3), ("4M", 4), ("5M", 5), ("6M", 6),
     ("9M", 9), ("12M", 12), ("15M", 15), ("18M", 18),
     ("2Y", 24), ("3Y", 36), ("4Y", 48), ("5Y", 60),
+    ("6Y", 72), ("7Y", 84), ("8Y", 96), ("9Y", 108), ("10Y", 120),
 ]
 FX_PIPS_PER_UNIT = 10000
 FX_DATE_FIELD = "last_update_dt"
 
-# CSV built up from the manually-uploaded JKM settlement screenshots.
-JKM_MASTER_PATH = "C:\\Marti\\ClaudeProjects\\data\\raw\\jkm_settlements\\master.csv"
+# How far back to look for the settlement date's FX close. Covers a long
+# weekend plus a holiday either side; FX has no ``px_settle`` field, so the
+# close has to come from history rather than a reference-data field.
+FX_HISTORY_LOOKBACK_DAYS = 10
+
+# CSV built up from the manually-uploaded JKM settlement screenshots. It is not
+# in the repo -- it is Platts-derived price data, so it is not ours to publish --
+# and it lives outside the checkout on the desk's machine. Resolution order:
+#
+#   1. JKM_MASTER_PATH env var -- point this at your own copy
+#   2. <repo>/Data/jkm_settlements/master.csv -- drop a copy here
+#   3. the desk's own path, for the machine that builds the master
+#
+# Nothing breaks when none of these exist: the JKM column comes back blank and
+# the mail header says "JKM: unavailable" rather than quietly showing nothing.
+DESK_JKM_MASTER_PATH = "C:\\Marti\\ClaudeProjects\\data\\raw\\jkm_settlements\\master.csv"
+
+
+def resolve_jkm_master_path():
+    """The JKM settlement master to read, or None when there is not one."""
+    override = os.getenv("JKM_MASTER_PATH")
+    if override:
+        return override
+    in_repo = REPO_ROOT / "Data" / "jkm_settlements" / "master.csv"
+    for candidate in (in_repo, DESK_JKM_MASTER_PATH):
+        if Path(candidate).is_file():
+            return str(candidate)
+    return None
+
+
+JKM_MASTER_PATH = resolve_jkm_master_path()
 
 # Spark contract ids (see ``list_contracts``) and which derived price to read.
 SPARK_NWE_DISCOUNT = ("sparknwe-fin-monthly", "usdPerMMBtu")
@@ -97,7 +135,7 @@ COLUMNS = [
 ]
 
 # The Baltic LNG freight routes settle on Bloomberg like the energy curves, but
-# only run to Dec-29 -- the 2030 rows are blank because nothing is quoted there.
+# only run to Dec-29, so everything past that is blank -- nothing is quoted there.
 BBG_COMMODITIES = {
     "TTF": "TTF", "Brent": "Brent", "Henry Hub": "HH",
     "BLNG1": "BLNG1", "BLNG2": "BLNG2", "BLNG3": "BLNG3",
@@ -186,32 +224,70 @@ def bloomberg_settlements(commodity, months):
     return pd.Series(prices, dtype=float), as_of
 
 
-def eurusd_forward_curve(months, pricing_date=None):
+def _fx_quotes_on(settlement_date, tickers):
+    """EUR/USD spot and forward points as they closed on `settlement_date`.
+
+    Returns ``(quotes by ticker, the date those closes are from)``. Falls back
+    to the most recent close before that date, so a settlement landing on an FX
+    holiday still converts rather than blanking the column.
+    """
+    start = settlement_date - timedelta(days=FX_HISTORY_LOOKBACK_DAYS)
+    history = blp.bdh(tickers, "px_last", start, settlement_date)
+    if history.empty:
+        raise ValueError(f"No EUR/USD history up to {settlement_date}")
+
+    closes = history.ffill().iloc[-1]
+    quoted = {ticker: closes[(ticker, "px_last")]
+              for ticker in tickers if (ticker, "px_last") in closes.index}
+    # Report the close actually used, which is earlier than `settlement_date`
+    # when FX was shut that day but the commodity was not.
+    return quoted, pd.Timestamp(history.index[-1]).date()
+
+
+def _fx_quotes_live(tickers):
+    """Current EUR/USD spot and forward points, with the date they last moved."""
+    quotes = blp.bdp(tickers=tickers, flds=["px_last", FX_DATE_FIELD])
+    quoted = {ticker: quotes.loc[ticker, "px_last"]
+              for ticker in tickers if ticker in quotes.index}
+
+    quote_dates = quotes[FX_DATE_FIELD].dropna() if FX_DATE_FIELD in quotes else []
+    as_of = pd.Timestamp(quote_dates.mode().iloc[0]).date() if len(quote_dates) else None
+    return quoted, as_of
+
+
+def eurusd_forward_curve(months, pricing_date=None, settlement_date=None):
     """Outright EUR/USD forward for each delivery month.
 
     Returns ``(series indexed by delivery month, quote date)``. Bloomberg quotes
     the forwards as pips over spot on a coarse tenor grid, so the outrights are
     interpolated linearly in time onto the monthly strip -- straight-line
     between quoted tenors, flat past the last one.
-    """
-    pricing_date = pricing_date or date.today()
 
+    `settlement_date` pins the rates to that date's closes, matching the gas
+    settlement being converted: spot is a live tick, so reading it live would
+    make TTF_USD drift between reruns and pair one day's gas with another day's
+    FX. Without it the live quotes are used, which is only a sensible fallback
+    when the settlement date is unknown.
+    """
     tenor_tickers = {f"EUR{tenor} BGN Curncy": n_months
                      for tenor, n_months in FX_FORWARD_TENORS}
-    quotes = blp.bdp(tickers=[FX_SPOT_TICKER] + list(tenor_tickers),
-                     flds=["px_last", FX_DATE_FIELD])
+    tickers = [FX_SPOT_TICKER] + list(tenor_tickers)
 
-    if FX_SPOT_TICKER not in quotes.index:
+    if settlement_date is not None:
+        quoted, as_of = _fx_quotes_on(settlement_date, tickers)
+    else:
+        quoted, as_of = _fx_quotes_live(tickers)
+
+    spot = quoted.get(FX_SPOT_TICKER)
+    if spot is None or pd.isna(spot):
         raise ValueError("No EUR/USD spot returned by Bloomberg")
-    spot = float(quotes.loc[FX_SPOT_TICKER, "px_last"])
+    spot = float(spot)
 
     # Spot is the zero-month point; each forward is spot plus its pips.
     grid_months, grid_rates = [0.0], [spot]
     for ticker, n_months in tenor_tickers.items():
-        if ticker not in quotes.index:
-            continue
-        pips = quotes.loc[ticker, "px_last"]
-        if pd.notna(pips):
+        pips = quoted.get(ticker)
+        if pips is not None and pd.notna(pips):
             grid_months.append(float(n_months))
             grid_rates.append(spot + float(pips) / FX_PIPS_PER_UNIT)
 
@@ -220,13 +296,14 @@ def eurusd_forward_curve(months, pricing_date=None):
     grid_rates = np.asarray(grid_rates)[order]
 
     # Each delivery month is priced at its midpoint, matching how the rest of
-    # the codebase floats a monthly tenor (see ForwardCurve).
-    tenors = [(date(m.year, m.month, 15) - pricing_date).days / 365.25 * 12
+    # the codebase floats a monthly tenor (see ForwardCurve). Tenors run from
+    # the date the curve was struck, not from today, so a given settlement date
+    # always produces the same numbers however long after it the job runs.
+    anchor = settlement_date or pricing_date or date.today()
+    tenors = [(date(m.year, m.month, 15) - anchor).days / 365.25 * 12
               for m in months]
     rates = np.interp(tenors, grid_months, grid_rates)
 
-    quote_dates = quotes[FX_DATE_FIELD].dropna()
-    as_of = pd.Timestamp(quote_dates.mode().iloc[0]).date() if len(quote_dates) else None
     return pd.Series(dict(zip(months, rates)), dtype=float), as_of
 
 
@@ -239,7 +316,18 @@ def jkm_settlements(months, master_path=JKM_MASTER_PATH):
     Returns ``(series indexed by delivery month, settlement date)``. The master
     also carries balance-of-month rows (``bal:Oct``); this table is monthly
     contracts only, so they are dropped.
+
+    Raises when there is no master to read, which `_collect` turns into a blank
+    JKM column and an "unavailable" flag in the header. That is the right
+    outcome on a machine that does not build the master: every other column
+    still goes out.
     """
+    if not master_path:
+        raise RuntimeError(
+            "No JKM settlement master found. Set JKM_MASTER_PATH, or drop a "
+            "copy at Data/jkm_settlements/master.csv. Every other column in "
+            "the table is unaffected."
+        )
     master = pd.read_csv(master_path)
     last_date = master.settlement_date.max()
     latest = master[master.settlement_date == last_date]
@@ -354,9 +442,12 @@ def build_market_table(today=None):
 
     # TTF_USD is derived rather than pulled: the EUR/MWh settlement converted at
     # the EUR/USD forward for that same delivery month, so the USD curve carries
-    # the FX term structure rather than a single spot rate.
+    # the FX term structure rather than a single spot rate. The FX is taken on
+    # TTF's own settlement date, so the two legs come from the same close and
+    # re-running later in the day cannot move the column.
     try:
-        fx, as_of["EUR/USD"] = eurusd_forward_curve(months, pricing_date=today)
+        fx, as_of["EUR/USD"] = eurusd_forward_curve(
+            months, pricing_date=today, settlement_date=as_of.get("TTF"))
         columns["TTF_USD"] = columns["TTF"] / MMBTU_PER_MWH * fx
     except Exception as exc:
         print(f"TTF_USD skipped, EUR/USD curve unavailable: {exc!r}")
@@ -491,7 +582,9 @@ def render_market_table_html(table, as_of, report_date):
     </table>
     <p style="font-size:11px; color:{_MUTED}; margin-top:12px;">
         Monthly contracts only, front {len(table)} months. Blank cells are tenors the
-        source does not quote &mdash; the Spark curves run about 16 months out.
+        source does not quote &mdash; the Spark curves run about 16 months out and
+        the Baltic routes to Dec-29, while TTF, JKM, Brent and Henry Hub run the
+        full strip.
     </p>
 </body>
 </html>"""
@@ -607,8 +700,16 @@ def main(sending_to=DEFAULT_RECIPIENTS, dry_run=False, out_path=None,
     html = render_market_table_html(table, as_of, report_date)
 
     if out_path:
-        Path(out_path).write_text(html, encoding="utf-8")
-        print(f"Settlement snapshot written to {out_path}")
+        # The published copy is a convenience, not the deliverable -- the table
+        # is in the mail body either way. A missing or read-only shared drive
+        # used to raise here and kill the run before anything was sent, which
+        # is the worst possible failure for a morning mail.
+        try:
+            Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+            Path(out_path).write_text(html, encoding="utf-8")
+            print(f"Settlement snapshot written to {out_path}")
+        except OSError as exc:
+            print(f"Settlement snapshot not published to {out_path}: {exc!r}")
 
     attachment = None
     if xlsx_path:
