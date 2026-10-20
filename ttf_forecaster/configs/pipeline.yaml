@@ -1,0 +1,45 @@
+# Synthetic end-to-end run (STEP 6). Verifies architecture only: every output is SYNTHETIC and is not
+# evidence about TTF. Real-data runs will get their own config once identifiers are confirmed.
+
+synthetic:
+  start: "2019-01-02"
+  end: "2024-12-31"          # ends before the locked holdout (configs/backtests.yaml, D-019)
+  seed: 7
+  contract_noise: 0.002      # per-contract idiosyncratic log-noise so rolls are exercised
+  planted_beta: 0.01         # planted world only: daily return per unit lagged storage surprise
+  planted_driver: change     # near-white flow surprise: only storage features can carry it (see synthetic.py)
+
+target:
+  builder: m1_logret         # T3 fixed held-contract log return (primary target, D-006)
+  horizon: 5
+
+evaluation:
+  first_origin: "2021-01-01" # two gas years of warm-up for seasonal storage normals
+  min_feature_coverage: 0.2  # near-empty columns dropped; coverage measured BEFORE first test fold
+  # Columns excluded from models per modelling_log D-024 (deterministic transforms / pure calendar).
+  exclude_prefixes:
+    - storage__normal_
+    - storage__proj_eos_cold
+    - storage__proj_eos_mild
+    - storage__proj_eos_low_lng
+    - storage__proj_eos_high_outage
+  models: [ridge, lightgbm]
+  # Benchmarks (spec §4). `ar` uses the target's own lags known at the origin.
+  benchmarks:
+    zero: {model: zero_return}
+    rolling_mean_60: {model: rolling_mean_60}
+    ar: {model: ar}
+  ar_lags: 5
+  principal_benchmark: zero
+  # Criterion 3 twin (same estimator). Own target lags (`ar__`) count as price information.
+  price_only_families: [price, curve, calendar, ar]
+  regime_breakdown: true
+  feature_families: [price, curve, calendar, storage]
+  cost_multipliers: [1.0, 2.0]
+
+# Real-data H1 run (D-036). Reads only the git-ignored store of the authorised Bloomberg pull.
+real:
+  store: data/live
+  first_origin: "2016-01-01"   # TZT history from 2015; momentum windows need ~6 months of warm-up
+  horizons: [5, 20]            # T3b and T3c (primary targets, research spec §3)
+  report: outputs/real_h1_report.md

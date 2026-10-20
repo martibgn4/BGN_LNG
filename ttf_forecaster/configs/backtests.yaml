@@ -1,0 +1,70 @@
+# Backtest / evaluation parameters (owner: backtesting-agent). Read by evaluation/splits.py,
+# evaluation/backtest.py and evaluation/statistical_tests.py. Spec: research_specification.md §7-§8,
+# point_in_time_policy.md §6. Values marked ASSUMPTION are placeholders until evidenced.
+
+splits:
+  scheme: expanding              # expanding (default) | rolling (sensitivity)
+  rolling_window_years: 3        # used only when scheme = rolling
+  test_block_months: 6           # contiguous outer test blocks of ORIGIN dates
+  first_test_start: null         # "YYYY-MM-DD" (Europe/Amsterdam date). null -> first block starts
+                                 # after min_train_origins origins, aligned to the next 1 Jan / 1 Jul
+  min_train_origins: 250         # an outer fold needs at least this many (post-purge) training rows
+  min_test_origins: 20           # a trailing partial block smaller than this is dropped
+  embargo_trading_days: null     # null -> horizon h of the target being evaluated
+  retrain_frequency: block       # block (refit at block start only, spec §7 default) | daily |
+                                 # weekly | monthly | quarterly (refit points inside a test block)
+  inner:
+    validation_fraction: 0.25    # last 25 % of the outer training set, for hyperparameters only
+    n_blocks: 3                  # contiguous validation blocks inside that 25 %
+
+holdout:
+  # LOCKED final holdout (spec §7). Origins on/after `start` are excluded from every outer fold and
+  # from every training set built by make_splits. Evaluating on it requires unlock_holdout=True,
+  # which logs and warns. Set `start` to a fixed date once the real data range is known, and never
+  # move it afterwards. While null, it is derived as last origin - `months` with a warning (a derived
+  # holdout drifts as data accrues and is therefore NOT a valid lock for a final claim).
+  # Fixed by the orchestrator on 2026-10-16, BEFORE any real data was pulled (modelling_log D-019):
+  # the last ~12 months up to the audit date. Do not move it after seeing results.
+  start: "2025-10-01"
+  months: 12
+
+trading:
+  # What the trading simulation is for. One of:
+  #   forecast_evaluation      - P&L is a diagnostic of the forecast's economic value; no claim of a
+  #                              deployable strategy (DEFAULT)
+  #   directional_speculation  - P&L is presented as a stand-alone speculative strategy
+  #   hedging_improvement      - forecast times an existing hedge (needs an exposure; not implemented)
+  exercise: forecast_evaluation
+  execution_delay_settlements: 1 # signal observed at origin (after settlement publication); filled
+                                 # at the settlement `delay` trading days later. 1 = next settlement
+                                 # (spec §8 criterion 4). 0 is refused (same-settlement fill).
+  price_field: settle            # fills and marks at exchange settlement
+  rebalance_every: 1             # take a new position every k origins (k = h -> non-overlapping)
+  sizing:
+    method: scaled               # scaled: position = clip(forecast / forecast_unit, +-limit)
+                                 # sign:   position = limit * sign(forecast)
+    forecast_unit: 0.01          # forecast (log return) that maps to a 1-lot position. ASSUMPTION
+    position_limit: 1.0          # |position| cap, in units of 1 MWh/day-equivalent. ASSUMPTION
+  costs:
+    # Per unit traded, EUR/MWh, charged on each side (entry and exit; a roll is two sides).
+    # ASSUMPTIONS until bid/offer entitlement on TZT is confirmed (target_definitions §4 item 5)
+    # and the desk's clearing/exchange fee schedule is supplied.
+    half_bid_offer_eur_mwh: 0.025  # ASSUMPTION: ~0.05 EUR/MWh front-month bid-offer in normal markets
+    fee_per_side_eur_mwh: 0.005    # ASSUMPTION: exchange + clearing + broker
+    status: assumption
+    stress_multiplier: 2.0         # spec §8 criterion 4 evaluates at 2x base cost
+  annualisation_days: 252
+
+statistical_tests:
+  dm_loss: mse                   # squared-error loss differential
+  dm_alternative: less           # H1: model loss < benchmark loss (one-sided)
+  hln_correction: true
+  hac_kernel: bartlett           # Newey-West, lag = h - 1
+
+success_criteria:
+  fold_win_share: 0.75           # criterion 1: OOS MSE reduction > 0 in >= 75 % of outer folds
+  min_folds: 4                   # criterion 1 not evaluable (fails) with fewer outer folds (D-031)
+  dm_alpha: 0.05                 # criterion 1: pooled one-sided HLN-DM p < 0.05
+  crisis_window:                 # criterion 2: OOS R^2 > 0 including AND excluding this window
+    start: "2021-07-01"
+    end: "2023-06-30"

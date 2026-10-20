@@ -1,0 +1,413 @@
+# Non-Bloomberg European gas fundamentals + parameters of the balance and of the storage / flows
+# feature builders. Owner: gas-fundamentals-agent. Shared per-series schema: configs/data_sources.yaml.
+#
+# STATUS (2026-10-16): no connector exists for any series below and the desk holds no ENTSOG or
+# GIE API key (as of Aug 2026). Every identifier is null. `candidate_sources` names PUBLIC sources
+# that publish the quantity; it is NOT an endpoint, dataset id or field name, and none may be
+# requested until a human has confirmed the exact identifier and set status: known.
+#
+# Bloomberg-sourced fundamentals (storage, LNG send-out, country TSO demand) are in
+# configs/sources/bloomberg_fundamentals.yaml.
+
+x-defaults:
+  public_daily: &public_daily
+    vendor: public
+    ticker: null
+    field: null
+    frequency: daily
+    status: requires_discovery
+    entitlement: public
+    sign: 1
+  gassco_flow: &gassco_flow
+    vendor: public
+    ticker: null
+    field: null
+    frequency: daily
+    status: requires_discovery
+    entitlement: public
+    sign: 1
+    # PIT policy §4: Norwegian physical flows D+1. Grade B until a vintaged feed is stored.
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Oslo", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "physical flows restated after allocation; nominations revise intraday"
+
+series:
+  # ------------------------------------------------------------------------ Norwegian pipeline supply
+  flows.no.pipeline_exports_gwhd:
+    <<: *gassco_flow
+    unit: GWh/d
+    geography: "NO->EU+GB"
+    measure_type: flow
+    purpose: "physical Norwegian pipeline deliveries to the continent and GB (largest single supply)"
+    candidate_sources: ["Gassco transparency (public)", "ENTSOG transparency platform entry points (no key held)"]
+    provenance: "none - requires discovery"
+  flows.no.pipeline_exports_continent_gwhd:
+    <<: *gassco_flow
+    unit: GWh/d
+    geography: "NO->DE+NL+BE+FR"
+    measure_type: flow
+    purpose: "Norwegian flow excluding GB (GB sits outside the EU storage perimeter)"
+    candidate_sources: ["Gassco transparency (public)", "ENTSOG transparency platform entry points"]
+    provenance: "none - requires discovery"
+  # Derived in GWh/d from the Bloomberg GAANTOTI series (data/implied_outage.py, D-047). Not a vendor identifier, so it
+  # is never requested live: status requires_user_input means 'no vendor identifier'.
+  flow.no.exit_total_intraday_gwhd:
+    <<: *gassco_flow
+    unit: GWh/d
+    geography: "NO"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 1, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    purpose: "norway exit flow in GWh/d: GAANTOTI (MCM/d) x project GCV; feature input for flows__no_flow_gwhd"
+    provenance: "derived: flow.no.exit_total_intraday_mcmd (Bloomberg GAANTOTI, verified 2026-10-20) x gas_quality"
+  flows.no.nominations_gwhd:
+    <<: *gassco_flow
+    unit: GWh/d
+    geography: "NO->EU+GB"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 0, time: "06:00", tz: "Europe/Oslo", business_days: false}
+    purpose: "day-ahead / within-day nominations: the real-time (A-grade if snapshotted) view of supply"
+    candidate_sources: ["Gassco transparency (public)"]
+    provenance: "none - requires discovery"
+  flows.no.technical_capacity_gwhd:
+    <<: *gassco_flow
+    unit: GWh/d
+    geography: "NO->EU+GB"
+    measure_type: capacity
+    purpose: "nameplate export capacity, denominator of utilisation"
+    candidate_sources: ["Gassco (public)", "ENTSOG technical capacity at Norwegian entry points"]
+    revision_behaviour: "near-static; changes with infrastructure"
+    provenance: "none - requires discovery"
+  flows.no.outage_unavailable_gwhd:
+    # Daily unavailable capacity aggregated from Gassco UMMs (planned + unplanned). event_time is the
+    # affected gas day, which may be in the FUTURE for planned maintenance; publication_time is the
+    # UMM message timestamp (A-grade only if the message archive with original timestamps is kept).
+    vendor: public
+    ticker: null
+    field: null
+    frequency: event
+    status: requires_user_input
+    entitlement: public
+    sign: 1
+    unit: GWh/d
+    geography: "NO"
+    measure_type: capacity
+    pit_grade: A
+    publication_lag: null      # source timestamp; no lag rule
+    publication_lag_evidence: "message timestamp"
+    revision_behaviour: "UMMs are updated (extended/shortened); each update is a new vintage"
+    purpose: "outage-adjusted Norwegian capacity; H4 outage x tight-storage interaction"
+    candidate_sources: ["Gassco UMM (REMIT urgent market messages, public)"]
+    provenance: "none - needs a UMM archive with original message times (text/ pipeline or vendor)"
+  flows.no.outage_unplanned_unavailable_gwhd:
+    vendor: public
+    ticker: null
+    field: null
+    frequency: event
+    status: requires_user_input
+    entitlement: public
+    sign: 1
+    unit: GWh/d
+    geography: "NO"
+    measure_type: capacity
+    pit_grade: A
+    publication_lag: null
+    publication_lag_evidence: "message timestamp"
+    revision_behaviour: "as above"
+    purpose: "unplanned subset: the genuine surprise component (planned maintenance is priced in)"
+    candidate_sources: ["Gassco UMM (REMIT, public)"]
+    provenance: "none"
+
+  # ------------------------------------------------------------------------ other pipeline imports
+  flows.eu.imports_north_africa_gwhd:
+    <<: *public_daily
+    unit: GWh/d
+    geography: "DZ+LY->ES+IT"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSOG physical flows restated by TSOs"
+    purpose: "southern pipeline supply into the EU perimeter"
+    candidate_sources: ["ENTSOG transparency platform (no key held)"]
+    provenance: "none"
+  flows.eu.imports_tap_gwhd:
+    <<: *public_daily
+    unit: GWh/d
+    geography: "AZ->GR/IT (TAP)"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSOG physical flows restated by TSOs"
+    purpose: "Caspian pipeline supply"
+    candidate_sources: ["ENTSOG transparency platform"]
+    provenance: "none"
+  flows.eu.imports_russia_gwhd:
+    <<: *public_daily
+    unit: GWh/d
+    geography: "RU->EU (TurkStream residual)"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSOG physical flows restated by TSOs"
+    purpose: "residual Russian pipeline supply (structural break 2022)"
+    candidate_sources: ["ENTSOG transparency platform"]
+    provenance: "none"
+  flows.eu.imports_gb_gwhd:
+    <<: *public_daily
+    unit: GWh/d
+    geography: "GB->BE/NL (IUK, BBL)"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSOG physical flows restated by TSOs"
+    purpose: "GB->continent flows (sign flips seasonally; split into imports/exports, never netted silently)"
+    candidate_sources: ["ENTSOG transparency platform", "National Gas (GB TSO) data portal"]
+    provenance: "none"
+
+  # ------------------------------------------------------------------------------- production
+  production.eu.domestic_gwhd:
+    <<: *public_daily
+    status: requires_user_input
+    unit: GWh/d
+    geography: EU
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "unknown"
+    purpose: "EU indigenous production (NL small fields, RO, DK, IT, DE) + biomethane"
+    candidate_sources: ["ENTSOG aggregated production points", "national TSO data", "monthly Eurostat (too slow; history only)"]
+    provenance: "none"
+
+  # ----------------------------------------------------------------------------------- demand
+  # Country-level TSO demand components that ARE known are in bloomberg_fundamentals.yaml; an EU
+  # total does not exist there (no daily German demand series - sibling demand_sources.yaml gaps).
+  demand.eu.ldz_gwhd:
+    <<: *public_daily
+    status: requires_user_input
+    unit: GWh/d
+    geography: EU
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "allocations restated"
+    purpose: "residential/commercial demand - the weather-driven term"
+    candidate_sources: ["BNEF Europe LDZ Gas Demand Monitor (licensed; weekly Excel export, used by GasImbalanceModel)", "national TSOs"]
+    provenance: "none for EU aggregate; BNEF workbook path in ../GasImbalanceModel/config/demand_sources.yaml is a sibling-local file"
+  demand.eu.industrial_gwhd:
+    <<: *public_daily
+    status: requires_user_input
+    unit: GWh/d
+    geography: EU
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "unknown"
+    purpose: "price-elastic industrial demand (demand destruction channel)"
+    candidate_sources: ["national TSOs (FR/NL/BE known on Bloomberg; DE missing)"]
+    provenance: "none"
+  demand.eu.power_burn_gwhd:
+    <<: *public_daily
+    status: requires_user_input
+    unit: GWh/d
+    geography: EU
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSO-E generation restated"
+    purpose: "gas-for-power; derived from gas-fired generation x fleet efficiency (weather-power agent)"
+    candidate_sources: ["Bloomberg GT1C<CC>GS ACT 24AV Index generation pattern (../GasImbalanceModel/config/demand_sources.yaml power) x efficiency assumption"]
+    provenance: "none for a burn series; generation pattern verified in sibling for DE/FR/NL/BE/AT/CZ/DK/IE"
+  demand.eu.total_gwhd:
+    <<: *public_daily
+    status: requires_user_input
+    unit: GWh/d
+    geography: EU
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "unknown"
+    purpose: "total consumption: balance demand term and days-of-cover denominator"
+    candidate_sources: ["sum of national TSO data (incomplete: DE)", "a licensed aggregator the desk may hold"]
+    provenance: "none"
+
+  # ------------------------------------------------------------------------------------ exports
+  flows.eu.exports_gb_gwhd:
+    <<: *public_daily
+    unit: GWh/d
+    geography: "BE/NL->GB"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSOG physical flows restated"
+    purpose: "continent->GB exports (summer)"
+    candidate_sources: ["ENTSOG transparency platform"]
+    provenance: "none"
+  flows.eu.exports_ukraine_moldova_gwhd:
+    <<: *public_daily
+    unit: GWh/d
+    geography: "EU->UA+MD"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSOG physical flows restated"
+    purpose: "reverse flows to Ukraine/Moldova"
+    candidate_sources: ["ENTSOG transparency platform"]
+    provenance: "none"
+  flows.eu.exports_other_gwhd:
+    <<: *public_daily
+    unit: GWh/d
+    geography: "EU->CH/RS/other"
+    measure_type: flow
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    revision_behaviour: "ENTSOG physical flows restated"
+    purpose: "remaining perimeter exits"
+    candidate_sources: ["ENTSOG transparency platform"]
+    provenance: "none"
+
+  # ---------------------------------------------------- maintenance / interconnector constraints
+  constraints.eu.interconnector_unavailable_gwhd:
+    vendor: public
+    ticker: null
+    field: null
+    frequency: event
+    status: requires_user_input
+    entitlement: public
+    sign: 1
+    unit: GWh/d
+    geography: EU
+    measure_type: capacity
+    pit_grade: A
+    publication_lag: null
+    publication_lag_evidence: "message timestamp"
+    revision_behaviour: "each TSO maintenance-plan update is a vintage"
+    purpose: "cross-border capacity reductions (e.g. BBL/IUK, NL->DE) that segment hubs"
+    candidate_sources: ["ENTSOG transparency platform interruptions/maintenance", "TSO REMIT UMMs"]
+    provenance: "none"
+  outages.eu.lng_terminal_unavailable_gwhd:
+    vendor: public
+    ticker: null
+    field: null
+    frequency: event
+    status: requires_user_input
+    entitlement: public
+    sign: 1
+    unit: GWh/d
+    geography: EU
+    measure_type: capacity
+    pit_grade: A
+    publication_lag: null
+    publication_lag_evidence: "message timestamp"
+    revision_behaviour: "UMM updates"
+    purpose: "regas outages reduce send-out ceiling"
+    candidate_sources: ["GIE ALSI unavailability (no key held)", "terminal operator UMMs"]
+    provenance: "none"
+
+# ===================================================================================== balance
+balance:
+  # The perimeter must match the storage aggregate: the EU-aggregate AGSI series (CGIEEU*) cover the
+  # GIE "EU" region. Its exact membership (EU27; GB in or out) is unverified - see open questions.
+  # Every flow component below must be measured AT THIS PERIMETER (exits to GB are exports, etc.).
+  perimeter:
+    name: "EU (GIE AGSI EU aggregate)"
+    storage_geography: EU
+    membership_status: requires_user_input
+    note: "Match to ../GasImbalanceModel/config/perimeter.yaml is NOT implied; that ring is NW-Europe incl. GB."
+  # Volume->energy conversion for any component published in mcm/d. One GCV for the whole balance
+  # (sibling decision: never run two calorific values at once).
+  gas_quality:
+    gcv_kwh_per_m3: 10.55
+    reference: "GCV; GIE/IEA bcm<->TWh convention (reference conditions not stated by source)"
+    source: "../GasImbalanceModel/config/conversions.yaml canonical_gcv_kwh_per_m3 (status DEFAULT_UNVERIFIED); 10.55 retained by trader decision recorded in ../GasImbalanceModel/PHASE1_NOTES.md"
+  # Identity (GWh/d, positive = into the perimeter's storage):
+  #   dS_implied = production + pipeline_imports + lng_sendout - demand - exports - balancing
+  #   residual   = dS_observed - dS_implied
+  # sign: +1 supply term, -1 offtake term. Each component is the SUM of its series; a missing series
+  # makes the component NaN (never 0) and the residual NaN with a stated reason.
+  components:
+    production:       {sign: 1,  series: [production.eu.domestic_gwhd]}
+    pipeline_imports: {sign: 1,  series: [flows.no.pipeline_exports_continent_gwhd, flows.eu.imports_north_africa_gwhd, flows.eu.imports_tap_gwhd, flows.eu.imports_russia_gwhd, flows.eu.imports_gb_gwhd]}
+    lng_sendout:      {sign: 1,  series: [lng.eu.sendout_gwhd]}
+    demand:           {sign: -1, series: [demand.eu.total_gwhd]}
+    exports:          {sign: -1, series: [flows.eu.exports_gb_gwhd, flows.eu.exports_ukraine_moldova_gwhd, flows.eu.exports_other_gwhd]}
+  # Linepack change / TSO balancing actions. No series exists. `absorbed_in_residual` means the
+  # term is NOT a column of the identity and is stated to sit inside the residual; set
+  # treatment: series + series: [...] when a source exists (then a missing value is NaN).
+  balancing:
+    treatment: absorbed_in_residual
+    series: []
+  observed_storage_change:
+    # injection_minus_withdrawal (two flow series) or inventory_diff (first difference of the stock).
+    method: injection_minus_withdrawal
+    injection_series: storage.eu.injection_gwhd
+    withdrawal_series: storage.eu.withdrawal_gwhd
+    inventory_series: storage.eu.inventory_twh
+  residual_monitoring:
+    window_days: 30
+    min_periods: 10
+    abs_band_gwhd: 1000.0     # single-day |residual| alert (~1 TWh/d; GIE gas-day misbooking artefacts)
+    mean_band_gwhd: 250.0     # rolling-mean |bias| alert: a systematic gap means a missing term or unit error
+    z_band: 4.0               # |residual - rolling mean| / rolling std alert
+  # Assumed band values: scaled from the sibling's 20 mcm/d (~211 GWh/d) systematic-gap alert
+  # (../GasImbalanceModel/config/perimeter.yaml tolerances) to an EU-wide perimeter. Awaiting review.
+
+# ============================================================================ feature parameters
+storage_features:
+  inventory_series: storage.eu.inventory_twh
+  working_gas_volume_series: storage.eu.working_gas_volume_twh
+  injection_series: storage.eu.injection_gwhd
+  withdrawal_series: storage.eu.withdrawal_gwhd
+  demand_series: demand.eu.total_gwhd       # days-of-cover denominator; NaN while unavailable
+  max_staleness_days: 5                     # latest value older than this (vs origin) -> NaN
+  net_flow_window_days: 5
+  demand_window_days: 7
+  normal_window_days: 3                     # +/- days around the same day-of-gas-year
+  normal_min_years: 3                       # prior gas years required for a seasonal normal
+  projection_enabled: true
+  projection_scenarios: [normal, cold, mild, low_lng, high_outage]
+  bootstrap_scenario: normal                # threshold probabilities are computed for this scenario
+
+flows_features:
+  norway_flow_series: flow.no.exit_total_intraday_gwhd   # mapped 2026-10-20: GAANTOTI x GCV (was a placeholder)
+  norway_capacity_series: flows.no.technical_capacity_gwhd
+  norway_unavailable_series: flows.no.outage_unavailable_gwhd
+  lng_sendout_series: lng.eu.sendout_gwhd
+  lng_capacity_series: lng.eu.sendout_capacity_gwhd
+  supply_series: [flows.no.pipeline_exports_gwhd, lng.eu.sendout_gwhd]   # summed; any missing day -> NaN
+  max_staleness_days: 5
+  change_lags_days: [1, 5]
+  outage_forward_days: 7
+  surprise_recent_days: 5
+  surprise_baseline_days: 28
+  cumulative_window_days: 30
+  normal_window_days: 3
+  normal_min_years: 3
+
+# ===================================================================== EU storage policy target
+# Dated assumption, NOT verified against the regulation text in this project. Must be checked
+# against the Official Journal before live use (sibling SPEC Phase 5 says the same).
+# Regulation (EU) 2022/1032: 90 % by 1 November from 2023 (80 % in 2022). Amended in 2025 to allow
+# reaching 90 % at any point between 1 October and 1 December and to permit deviations under
+# difficult market conditions. Values below encode the understanding as of the 2026-06 knowledge
+# cut-off; `status` makes the uncertainty explicit.
+policy_storage_target:
+  status: requires_user_input
+  source: "Regulation (EU) 2022/1032 and its 2025 amendment - text not consulted in this project"
+  regimes:
+    - {effective_from: "2022-07-01", effective_to: "2022-12-31", target_pct: 80.0, deadline_mmdd: "11-01", flexibility_pct_pts: 0.0}
+    - {effective_from: "2023-01-01", effective_to: "2025-06-30", target_pct: 90.0, deadline_mmdd: "11-01", flexibility_pct_pts: 0.0}
+    - {effective_from: "2025-07-01", effective_to: "2027-12-31", target_pct: 90.0, deadline_mmdd: "12-01", flexibility_pct_pts: 10.0}

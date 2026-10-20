@@ -1,0 +1,193 @@
+# Regime models (src/ttf_forecaster/models/regimes.py). Owner: regime-agent.
+#
+# Point-in-time rules (docs/point_in_time_policy.md §5.6):
+#   * every threshold below is either FIXED EX-ANTE here (with the physical rationale written next
+#     to it) or a percentile / normal estimated on data that ENDS AT THE ORIGIN;
+#   * nothing here was calibrated on TTF history. The numbers are priors set before any backtest and
+#     may only be changed with a modelling_log entry (no tuning on test folds, policy §5.4);
+#   * the historical crisis window is NOT here: it lives under `evaluation_only` and is never a
+#     feature.
+
+version: 1
+
+# ---------------------------------------------------------------------------------------------
+# Inputs derived from the DataBundle (used by build_regime_features when no input_frame is given)
+# ---------------------------------------------------------------------------------------------
+inputs:
+  hub: TTF
+  # Front-month definition used for the regime inputs only. It mirrors target_definitions.md §1
+  # (front = nearest monthly contract whose last trading day is > R trading days after t, R = 5).
+  # Last trading day comes from bundle.contracts when present, otherwise from the configured rule
+  # below ([CONFIRM] ICE Endex: 2 business days before delivery). BDay approximates the exchange
+  # calendar; contracts/rolls.py (market-data-agent) is the canonical implementation.
+  roll_trading_days_before_expiry: 5
+  expiry_bdays_before_delivery: 2
+  # Summer = Apr-Sep, Winter = Oct-Mar (kept for the `same_season` diagnostic only).
+  winter_months: [10, 11, 12, 1, 2, 3]
+
+  # M1-M2: (M1 - M2) / M2 is scored as its DEVIATION (m1m2_dev) from the mean, over prior gas
+  # years of the trade date, for the same M1 delivery calendar month. Across a season boundary
+  # (Sep vs Oct, Mar vs Apr) the raw spread is the structural summer-winter storage carry; the
+  # deviation keeps those months but removes that shape (gas-fundamentals review, 2026-10-17).
+  m1m2:
+    min_prior_gas_years: 3
+
+  # MARKET STRESS, not physical: price and vol percentiles describe how stressed the curve is, not
+  # the physical balance. Their combined positive score is capped (rules.market_stress_cap).
+  price_percentile:
+    window_trading_days: 504      # ~2 years trailing, ending at the origin (inclusive); shorter
+                                  # than 3y so a multi-year regime does not dominate its own window
+    min_periods: 250              # ~1 year before a percentile is trusted
+  realised_vol:
+    vol_window_trading_days: 20   # ~1 month of daily within-contract log returns
+    vol_min_periods: 15
+    annualisation: 252
+    percentile_window_trading_days: 756
+    percentile_min_periods: 250
+
+  storage:
+    series_id: storage.eu.inventory_twh            # internal ids (configs/sources/*.yaml map them)
+    wgv_series_id: storage.eu.working_gas_volume_twh
+    max_staleness_days: 10                # older than this -> NaN (no indefinite carry-forward)
+    # Measured as FILL in % of working gas volume (inventory / WGV x 100), so capacity changes do
+    # not read as tightness. Seasonal normal: mean over PRIOR gas years only of the fill within
+    # +/- window_days of the same calendar day; excluded years are those >=
+    # min(gas_year(origin), gas_year(last published day)), as in features/storage.py, so on 1-2 Oct
+    # the last September day never enters its own normal (policy §5.3). Scale: cross-year std of
+    # the per-year means, floored at min_scale_pct_pts because 3-5 years give a noisy std.
+    seasonal_window_days: 7
+    min_prior_gas_years: 3
+    min_scale_pct_pts: 2.5
+
+  jkm_ttf:
+    # Freight-adjusted Spark arbitrage NEA minus NWE (USD/MMBtu, grade A), not raw JKM - TTF.
+    # Bundle path: the observation series below (same id as features/lng.py `arb_series_id`;
+    # monthIdx semantics are requires_discovery in spark.yaml). input_frame path: the lng family
+    # column lng__arb_nea_minus_nwe_usd_mmbtu (see input_frame_aliases). Optional.
+    enabled: false
+    series_id: route.sabine_pass.arb_nea_minus_nwe_mi1_usd_mmbtu
+    max_staleness_days: 5
+
+  # input_frame column -> regime input, used when an already-built feature matrix is passed.
+  input_frame_aliases:
+    jkm_ttf: lng__arb_nea_minus_nwe_usd_mmbtu
+
+# ---------------------------------------------------------------------------------------------
+# Rule-based physical regimes {oversupplied, normal, tight, crisis}
+# ---------------------------------------------------------------------------------------------
+# Each indicator contributes a signed "tightness" score; the regime is read off the sum.
+# Positive = tighter. An indicator whose input is NaN abstains (contributes nothing) but is not
+# counted towards min_indicators.
+rules:
+  labels: [oversupplied, normal, tight, crisis]   # ordered loose -> tight; code = position
+  min_indicators: 2          # fewer non-NaN inputs -> label NaN ("unknown"), never a guess
+  min_physical_indicators: 1 # ... and at least one of storage_z / jkm_ttf must be non-NaN
+  # The curve alone must not reach tight or crisis: these labels need storage_z or jkm_ttf to
+  # score tight (>= +1) by itself; otherwise the label is capped at normal.
+  require_physical_for: [tight, crisis]
+  # Combined positive contribution of price_percentile + vol_percentile (market stress).
+  market_stress_cap: 2
+
+  indicators:
+    storage_z:
+      # Physical story: inventory below its seasonal normal means less buffer against cold / supply
+      # loss for the rest of the gas year; the market has to price demand destruction or attract
+      # marginal LNG. Above normal: the opposite, and summer injection demand is weaker.
+      # Thresholds in z units of the cross-year dispersion of fill (% of WGV).
+      tight_at_or_below: -1.0      # +1
+      crisis_at_or_below: -2.0     # +2 (replaces the +1)
+      loose_at_or_above: 1.0       # -1
+    price_percentile:
+      # MARKET STRESS (not physical): the front month in the top decile of its own 2-year history
+      # is consistent with rationing of the marginal molecule (switching, demand destruction) but
+      # can also be a pure risk-premium move; hence the cap and require_physical_for. The bottom
+      # quintile is where storage is full and LNG is absorbed at a discount.
+      tight_at_or_above: 0.80      # +1
+      crisis_at_or_above: 0.95     # +2
+      loose_at_or_below: 0.20      # -1
+    vol_percentile:
+      # MARKET STRESS (not physical): realised volatility rises when the system has little
+      # flexibility left
+      # (storage, LNG regas, pipeline headroom) so every weather or outage headline moves price.
+      # Low volatility is not evidence of oversupply, so this indicator has no loose side.
+      tight_at_or_above: 0.80      # +1
+      crisis_at_or_above: 0.95     # +2
+    m1m2_dev:
+      # (M1 - M2) / M2 minus its prior-gas-years normal for the same M1 month (inputs.m1m2).
+      # More backwardation than usual = prompt scarcity / withdrawal pressure; more contango than
+      # usual = prompt surplus.
+      tight_at_or_above: 0.03      # +1  (3 pp more backwardated than normal)
+      loose_at_or_below: -0.03     # -1  (3 pp more contango than normal)
+    jkm_ttf:
+      # Freight-adjusted arb NEA - NWE, USD/MMBtu. <= 0: NWE nets back at least as well as Asia,
+      # i.e. Europe is bidding cargoes away (the short market, 2022). >= +1: Asia clearly wins
+      # cargoes and Europe is the residual sink, comparatively loose. Only if inputs.jkm_ttf.enabled.
+      tight_at_or_below: 0.0       # +1
+      loose_at_or_above: 1.0       # -1
+
+  # Score -> label (applied after the score is summed). Max attainable score: storage +2,
+  # market stress +2 (capped), m1m2_dev +1, jkm_ttf +1 = 6.
+  score_thresholds:
+    oversupplied_at_or_below: -2
+    tight_at_or_above: 2
+    crisis_at_or_above: 5
+
+  # Anti-flicker, both strictly causal (state at t uses only raw labels/scores at <= t):
+  hysteresis:
+    # Schmitt trigger around `normal`: a non-normal state is ENTERED at its plain threshold and
+    # EXITED towards normal only once the score is `score_band` points back past that threshold
+    # (e.g. with band 1: tight is entered at score >= 2 and left only when score + 1 < 2, i.e.
+    # score <= 0 for integer scores; tight -> crisis is an entry at the plain crisis threshold).
+    score_band: 1
+    # A changed label must be the candidate on `min_duration` consecutive trading days before the
+    # published state switches (confirmation delay, not a look-ahead).
+    min_duration: 3
+
+# ---------------------------------------------------------------------------------------------
+# Markov-switching regression on daily front-month returns (statsmodels MarkovRegression)
+# ---------------------------------------------------------------------------------------------
+markov:
+  enabled: true
+  k_regimes: 2                  # low-vol / high-vol; states are ordered by fitted variance
+  switching_variance: true
+  trend: c                      # switching mean (constant)
+  return_scale: 100.0           # fit on returns in % for numerical stability
+  min_train_obs: 250            # no probability before ~1 year of returns
+  refit_every: 21               # trading days; refit schedule is anchored at the series START
+  max_iter: 200                 # passed to fit(maxiter=...)
+
+hmm:                            # optional, only if hmmlearn is installed (it is not, D-005)
+  enabled: false
+  n_states: 2
+  covariance_type: diag
+  n_iter: 100
+  random_state: 7
+  min_train_obs: 250
+  refit_every: 21
+
+# ---------------------------------------------------------------------------------------------
+# Causal change-point detection: two-sided Page CUSUM on standardised returns + variance CUSUM
+# ---------------------------------------------------------------------------------------------
+changepoint:
+  enabled: true
+  standardise_window: 60        # trailing mean/std from returns strictly BEFORE t
+  standardise_min_periods: 40
+  k_mean: 0.5                   # allowance (in sigma) for the mean CUSUM; detects ~1 sigma shifts
+  h_mean: 5.0                   # decision interval (~465 days per side with KNOWN moments)
+  k_var: 0.5                    # allowance on z^2 - 1 for the variance CUSUM
+  h_var: 12.0
+  # In-control ARL0 with the 60-day trailing standardisation, simulated on i.i.d. Gaussian
+  # returns (seed 1, 20,000 days; SYNTHETIC, a property of the detector, not of TTF):
+  # ~420 days to the first of either mean alarm, ~330 days for the variance alarm (h_var 8 gave
+  # ~105, judged too noisy). A 3x vol step is flagged in ~4 days. Fixed ex-ante, not tuned on TTF.
+  days_since_alarm_cap: 250     # feature cap so an old alarm does not grow without bound
+
+# ---------------------------------------------------------------------------------------------
+# EVALUATION ONLY - never a feature (point_in_time_policy.md §5.6). Used to slice OOS metrics,
+# e.g. research_specification.md §8 criterion 2 ("excluding 2021-07..2023-06").
+# ---------------------------------------------------------------------------------------------
+evaluation_only:
+  crisis_window:
+    start: "2021-07-01"         # inclusive, Europe/Amsterdam local date
+    end: "2023-06-30"           # inclusive
+    name: eval_crisis_2021_07_2023_06

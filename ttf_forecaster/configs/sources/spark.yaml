@@ -1,0 +1,187 @@
+# Spark Commodities (owner: lng-flows-agent). Read by ttf_forecaster.data.spark.
+#
+# PROVENANCE. Every Spark dataset id, endpoint and payload field below was listed from the live
+# API with the desk's credentials and inspected by the sibling project NWEBasisModel on 2026-09-04
+# (NWEBasisModel/config/sources.yaml, src/nwebasis/data/spark_api.py), and/or is in production
+# use in Data/lng_report and Utils/utils_spark.py. Nothing was executed from this project.
+#
+# NOT KNOWN in this repo (status requires_user_input; the adapter raises IdentifierUnknown):
+#   * any Spark vessel-position / AIS dataset
+#   * any Spark cargo-arrival / ETA dataset
+# Vessel snapshots and arrival forecasts therefore come only from the mock backend (tests) or from
+# user-placed local extracts until the user names a vintaged source.
+#
+# CREDENTIALS: environment variable NAMES only. Values come from the environment or the git-ignored
+# .env via settings.get_secret. adhoc_scripts/client_credentials.csv is NEVER read (it is tracked in
+# Git; see docs/environment_audit.md).
+
+vendor: spark
+entitlement: licensed_spark
+
+api:
+  base_url: "https://api.sparkcommodities.com"       # Utils/utils_spark.py API_BASE_URL
+  base_url_env: SPARK_BASE_URL                        # optional override
+  token_uri: "/oauth/token/"                          # OAuth2 client credentials, HTTP 201 on success
+  grant_type: "clientCredentials"
+  scopes: "read:access,read:prices"
+  credentials:
+    client_id_env: SPARK_CLIENT_ID
+    client_secret_env: SPARK_CLIENT_SECRET
+  price_releases_uri: "/v1.0/contracts/{contract}/price-releases/"
+  max_releases: 4000          # API pages by release COUNT, not date (LNGFreightModel sources.yaml)
+  timeout_seconds: 60
+  status: known
+  provenance: "Utils/utils_spark.py (production auth), NWEBasisModel spark_api.py, 2026-09-04"
+
+# Publication rule for every Spark release-dated value (PIT policy section 4: "release date 19:00
+# London assumed [CONFIRM]"). LNGFreightModel observed spark30s dated D present on D, and FFA dated
+# D-1 on D at probe time; the 19:00 London rule is at least as conservative for spot.
+lag_rules:
+  spark_release: &lag_spark {days: 0, time: "19:00", tz: "Europe/London", business_days: false}
+
+# ---------------------------------------------------------------------------------------------
+# Price-release series (kind: price_release). Spot contracts must carry exactly ONE data point per
+# release (the adapter raises otherwise: multi-point spot payloads were never inspected here).
+# ---------------------------------------------------------------------------------------------
+series:
+  freight.atlantic.spark30s_usd_per_d:
+    {vendor: spark, ticker: "spark30s", field: "derivedPrices.usdPerDay.spark", kind: price_release,
+     curve: false, vessel_type: "174-2stroke", unit: "USD/d", frequency: daily, geography: ATLANTIC,
+     status: known, history_from: "2019-07-30", pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark,
+     provenance: "NWEBasisModel/config/sources.yaml (live listing 2026-09-04); weekly 2019-07..2021-12 and 2023-06-27..2023-12-19"}
+  freight.pacific.spark25s_usd_per_d:
+    {vendor: spark, ticker: "spark25s", field: "derivedPrices.usdPerDay.spark", kind: price_release,
+     curve: false, vessel_type: "174-2stroke", unit: "USD/d", frequency: daily, geography: PACIFIC,
+     status: known, history_from: "2019-07-30", pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark,
+     provenance: "NWEBasisModel/config/sources.yaml (live listing 2026-09-04)"}
+
+# Curve contracts: one series per delivery month offset k = months(deliveryPeriod.startAt) -
+# months(releaseDate), computed by the adapter from verified payload fields (not a vendor tenor
+# label). series id = template with {k}.
+series_templates:
+  freight.atlantic.spark30ffa_mplus{k}_usd_per_d:
+    {vendor: spark, ticker: "spark30ffa-monthly", field: "derivedPrices.usdPerDay.spark",
+     kind: price_release, curve: true, unit: "USD/d", frequency: daily, geography: ATLANTIC,
+     status: known, history_from: "2021-02-04", pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark,
+     provenance: "NWEBasisModel/config/sources.yaml (in production use, daily_market_data_reporting.py)"}
+  freight.pacific.spark25ffa_mplus{k}_usd_per_d:
+    {vendor: spark, ticker: "spark25ffa-monthly", field: "derivedPrices.usdPerDay.spark",
+     kind: price_release, curve: true, unit: "USD/d", frequency: daily, geography: PACIFIC,
+     status: known, history_from: null, pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark,
+     provenance: "NWEBasisModel/config/sources.yaml (in production use)"}
+  gas.nwe.des_basis_fin_mplus{k}_usd_mmbtu:
+    {vendor: spark, ticker: "sparknwe-fin-monthly", field: "derivedPrices.usdPerMMBtu.spark",
+     kind: price_release, curve: true, unit: "USD/MMBtu", frequency: daily, geography: NWE,
+     status: known, history_from: "2022-11-29", pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark, note: "NWE DES LNG basis to TTF",
+     provenance: "NWEBasisModel/config/sources.yaml (live listing 2026-09-04, 946 releases)"}
+  gas.nwe.des_outright_fin_mplus{k}_usd_mmbtu:
+    {vendor: spark, ticker: "sparknwe-des-fin-monthly", field: "derivedPrices.usdPerMMBtu.spark",
+     kind: price_release, curve: true, unit: "USD/MMBtu", frequency: daily, geography: NWE,
+     status: known, history_from: "2022-11-29", pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark,
+     provenance: "NWEBasisModel/config/sources.yaml (live listing 2026-09-04)"}
+
+  # Netbacks (kind: netback). series id: route.{port}.{field}_mi{n}_usd_mmbtu where n is Spark's
+  # monthIdx. WHICH monthIdx is the prompt load month (0- or 1-based) is NOT recorded anywhere in
+  # this repo -> requires_discovery before a feature picks one (features param arb_series_id).
+  route.{port}.{field}_mi{n}_usd_mmbtu:
+    {vendor: spark, ticker: "/v1.0/netbacks/", field: "see netbacks.fields", kind: netback,
+     unit: "USD/MMBtu", frequency: daily, geography: "by fob_port", status: known,
+     history_from: "2021-09-01", pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark, month_index_semantics: requires_discovery,
+     provenance: "NWEBasisModel/config/sources.yaml (verified 2026-09-04 on Sabine Pass via COGH, 1262 releases)"}
+
+  # Terminal slots (kind: terminal_slots). series id: lng.slots.{terminal}.available_{bucket}_count
+  # with bucket in total, m0..m12, mgt12 (CSV columns Total, M+0..M+12, M>12). A COUNT OF UNSOLD
+  # SLOTS: falling = tightening. Terminal codes are listable from the list endpoint but none is
+  # recorded in this repo -> terminals below require discovery.
+  lng.slots.{terminal}.available_{bucket}_count:
+    {vendor: spark, ticker: "/beta/terminal-slots/terminals/{uuid}/", field: "CSV column per bucket",
+     kind: terminal_slots, unit: "slots", frequency: daily, geography: "by terminal",
+     status: known, history_from: "2023-11-28", pit_grade: A, publication_lag: *lag_spark,
+     entitlement: licensed_spark,
+     provenance: "NWEBasisModel/config/sources.yaml (verified 2026-09-04 on Isle of Grain, 699 rows)"}
+
+netbacks:
+  endpoint: "/v1.0/netbacks/"
+  reference_endpoint: "/v1.0/netbacks/reference-data/"   # data.staticData.sparkReleases
+  # via-point is REQUIRED: without it the endpoint answers HTTP 200 with an EMPTY data list.
+  # The adapter refuses a port without via_point and raises EmptyPayloadError on an empty payload.
+  via_point_required: true
+  fob_ports:
+    sabine_pass:    {uuid: "003dec0a-ce8f-41db-8c24-4d7ef6addf70", via_point: "cogh", status: known}
+    corpus_christi: {uuid: "0030c461-9a63-403d-8f53-9327ea773517", via_point: "cogh", status: known}
+  # payload paths, relative to each element of data.netbacks (all USD/MMBtu)
+  fields:
+    arb_nea_minus_nwe: "neaMinusNwe.ttfBasis.usdPerMMBtu"   # freight-adjusted JKM-TTF arb
+    nwe_netback_basis: "nwe.ttfBasis.usdPerMMBtu"
+    nea_netback_basis: "nea.ttfBasis.usdPerMMBtu"
+    route_cost_nwe: "nweMeta.routeCost.usdPerMMBtu"
+    route_cost_nea: "neaMeta.routeCost.usdPerMMBtu"
+    ttf_price: "nweMeta.ttfPrice.usdPerMMBtu"
+    jkm_price: "neaMeta.desLngPrice.usdPerMMBtu"
+  month_index_key: "monthIdx"
+  status: known
+  provenance: "NWEBasisModel/config/sources.yaml + spark_api.py NetbackFetcher, 2026-09-04"
+
+terminal_slots:
+  list_endpoint: "/beta/terminal-slots/terminals/"        # CSV: TerminalCode, TerminalUUID, ...
+  detail_endpoint: "/beta/terminal-slots/terminals/{uuid}/"
+  accept_header: "text/csv"
+  release_date_column: "ReleaseDate"
+  buckets: {total: "Total", m0: "M+0", m1: "M+1", m2: "M+2", m3: "M+3", m4: "M+4", m5: "M+5",
+            m6: "M+6", m7: "M+7", m8: "M+8", m9: "M+9", m10: "M+10", m11: "M+11", m12: "M+12",
+            mgt12: "M>12"}
+  # Terminal codes of the NWE/EU regas terminals: NOT recorded in this repo. Discover with the list
+  # endpoint (known) and fill as {code: {region: [NWE, EU]}}.
+  terminals: {}
+  terminals_status: requires_discovery
+  status: known
+  provenance: "NWEBasisModel spark_api.py TerminalSlotFetcher + Utils/utils_spark.py, 2026-09-04"
+
+# ---------------------------------------------------------------------------------------------
+# Vessel-level data: NO KNOWN SOURCE. Shapes are defined in data/spark.py
+# (VESSEL_SNAPSHOT_SCHEMA, realised-arrival events); identifiers are not.
+# ---------------------------------------------------------------------------------------------
+vessels:
+  dataset: null
+  endpoint: null
+  status: requires_user_input
+  pit_grade: C            # until a VINTAGED (snapshot-stored) history is confirmed; then A
+  note: >
+    Need a vendor feed of laden/ballast LNG vessels with DECLARED destination and ETA as they stood
+    at each snapshot time (Spark, Kpler, Vortexa, AIS provider). Realised destinations are grade C,
+    always. Snapshots accumulated live by this project are grade A from their first capture.
+arrivals:
+  dataset: null
+  endpoint: null
+  status: requires_user_input
+  pit_grade: C
+ais:
+  dataset: null
+  endpoint: null
+  status: requires_user_input
+realised_arrivals:
+  dataset: null
+  status: requires_user_input
+  pit_grade: B            # observation of a past discharge once published; lag rule below
+  publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+
+# Regions for arrival aggregation: terminal code -> regions. Unknown until terminal codes are
+# confirmed (requires_user_input). Mock backend uses its own SYNTHETIC codes.
+regions:
+  status: requires_user_input
+  terminal_regions: {}
+
+local_file:
+  subdir: spark           # under data_sources.yaml local_file.extracts_dir
+  files:
+    vessels: vessels                 # VESSEL_SNAPSHOT_SCHEMA
+    arrivals: arrivals               # FORECAST_SCHEMA
+    realised_arrivals: realised_arrivals   # OBSERVATION_SCHEMA
+    observations: observations       # OBSERVATION_SCHEMA (freight, gas, route economics, slots)

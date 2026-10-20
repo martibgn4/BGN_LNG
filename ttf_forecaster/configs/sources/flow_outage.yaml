@@ -1,0 +1,13 @@
+# Implied realised Norwegian outage from the total exit flow (data/implied_outage.py, user spec 2026-10-20).
+# Strictly past data: the capacity proxy for day D uses flows of days D-window .. D-1 only.
+implied_outage:
+  flow_series: flow.no.exit_total_intraday_mcmd
+  window_days: 30        # rolling window of past flows
+  percentile: 0.95       # capacity proxy = this percentile of the window
+  min_periods: 20        # a proxy needs at least this many past flows (else NaN)
+  threshold_mcmd: 10.0   # implied_outage_event = 1 when the shortfall exceeds this
+  # outputs (observation series, grade B, usable from D+1 07:00 Europe/Amsterdam)
+  outage_series: flow.no.implied_outage_mcmd
+  event_series: flow.no.implied_outage_event
+  flow_gwhd_series: flow.no.exit_total_intraday_gwhd
+  outage_gwhd_series: flow.no.implied_outage_gwhd

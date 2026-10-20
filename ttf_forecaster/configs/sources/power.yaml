@@ -1,0 +1,173 @@
+# Power-sector series and power-economics parameters (owner: weather-power-agent).
+# Read by src/ttf_forecaster/features/power.py. NO ADAPTER in this project serves these series yet:
+# identifiers are unknown and every entry is requires_user_input / requires_discovery. Features are
+# implemented against the INTERNAL series ids below and tested on synthetic frames only.
+#
+# If Bloomberg turns out to carry power / API2 / EUA / EURUSD, the market-data agent should add
+# them to configs/sources/bloomberg.yaml under the SAME internal ids (or tell us the ids it chose).
+#
+# PIT. Day-ahead wind/solar/load forecasts: ENTSO-E Transparency publishes day-ahead generation
+# forecasts for wind and solar for day D by 18:00 Brussels time on D-1 (Regulation (EU) 543/2013,
+# Art. 14(1)(d) - recalled, not re-verified offline -> confirm). TTF settles ~17:30, so a D+1
+# forecast is available for a 19:00 origin. Stored as FORECAST_SCHEMA with issue_time; grade A only
+# if vintages are snapshotted (ENTSO-E serves the latest forecast; whether earlier vintages are
+# retrievable is UNKNOWN -> requires_discovery).
+# French nuclear availability: REMIT unavailability messages (EDF / RTE). Stored as a FORECAST_SCHEMA
+# schedule (issue_time = message publication). Grade A only from an archived message history.
+
+vendor: other
+entitlement: licensed_other
+
+lag_rules:
+  # Cross-commodity closes after TTF (PIT policy section 4): next European trading date 19:00.
+  cross_commodity: &lag_xc {days: 1, time: "19:00", tz: "Europe/Amsterdam", business_days: true}
+  entsoe_actuals: &lag_entsoe_act {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}   # ASSUMED, confirm
+  hydro_weekly: &lag_hydro {days: 7, time: "12:00", tz: "Europe/Amsterdam", business_days: false}         # ASSUMED, confirm
+
+_unknown: &unknown {vendor: null, ticker: null, field: null, status: requires_user_input,
+                    provenance: "none - identifier not known in this repo"}
+
+series:
+  # ---- Renewables and load (forecasts + actuals for normals) -----------------------------------
+  power.de.wind_fc_gw:      {<<: *unknown, unit: GW, frequency: hourly_or_daily, geography: DE, schema: forecast, pit_grade: A, preferred_source: "ENTSO-E Transparency (day-ahead wind forecast) or vendor multi-day forecast", status: requires_discovery}
+  power.de.solar_fc_gw:     {<<: *unknown, unit: GW, frequency: hourly_or_daily, geography: DE, schema: forecast, pit_grade: A, preferred_source: "ENTSO-E Transparency (day-ahead solar forecast)", status: requires_discovery}
+  power.de.load_fc_gw:      {<<: *unknown, unit: GW, frequency: hourly_or_daily, geography: DE, schema: forecast, pit_grade: A, preferred_source: "ENTSO-E Transparency (day-ahead total load forecast)", status: requires_discovery}
+  power.de.wind_gen_gw:     {<<: *unknown, unit: GW, frequency: daily, geography: DE, schema: observation, pit_grade: B, publication_lag: *lag_entsoe_act, preferred_source: "ENTSO-E actual generation per type", status: requires_discovery}
+  power.de.solar_gen_gw:    {<<: *unknown, unit: GW, frequency: daily, geography: DE, schema: observation, pit_grade: B, publication_lag: *lag_entsoe_act, preferred_source: "ENTSO-E actual generation per type", status: requires_discovery}
+  power.de.wind_capacity_gw:  {<<: *unknown, unit: GW, frequency: annual, geography: DE, schema: observation, pit_grade: B, preferred_source: "ENTSO-E installed capacity per production type"}
+  power.de.solar_capacity_gw: {<<: *unknown, unit: GW, frequency: annual, geography: DE, schema: observation, pit_grade: B, preferred_source: "ENTSO-E installed capacity per production type"}
+  # ---- French nuclear ----------------------------------------------------------------------------
+  power.fr.nuclear_avail_fc_gw: {<<: *unknown, unit: GW, frequency: daily, geography: FR, schema: forecast, pit_grade: A, preferred_source: "EDF/RTE REMIT unavailability messages, archived"}
+  power.fr.nuclear_avail_gw:    {<<: *unknown, unit: GW, frequency: daily, geography: FR, schema: observation, pit_grade: B, publication_lag: *lag_entsoe_act, preferred_source: "RTE / ENTSO-E nuclear generation or available capacity"}
+  # ---- Hydro proxy -----------------------------------------------------------------------------
+  power.alp_nord.hydro_reservoir_gwh: {<<: *unknown, unit: GWh, frequency: weekly, geography: "FR+CH+AT+NO+SE (TBD)", schema: observation, pit_grade: B, publication_lag: *lag_hydro, preferred_source: "ENTSO-E aggregated filling rate of water reservoirs"}
+  # ---- Prices for spark/dark/switching: OWNED by configs/sources/bloomberg.yaml (SQ-05) --------
+  # power.de.base_m1_eur_mwh, coal.api2.m1_usd_t, carbon.eua.dec_eur_t, fx.eurusd.spot_usd_per_eur
+  # and gas.ttf.m1_eur_mwh were defined here too under different ids. They are referenced from
+  # `features.prices` below instead of being defined twice (a config test enforces one owner).
+
+# ------------------------------------------------------------------------------------------------
+# Source mapping (D-034, 2026-10-19). Raw Bloomberg tickers live in configs/sources/bloomberg_power.yaml
+# under their own ids and units (MW). The GW series the features expect are DERIVED from them below.
+# STATUS: implemented in data/derived.py and applied inside features/power.py (build_power_features).
+# The raw MW components must be in the bundle; a missing component gives NaN, never a partial sum.
+# Derived vintages are published at the latest component publication; grade is the worst component.
+# ------------------------------------------------------------------------------------------------
+derived:
+  power.de.wind_fc_gw:
+    sum: [power.de.wind_onshore_fc_mw, power.de.wind_offshore_fc_mw]
+    scale: 0.001
+  power.de.solar_fc_gw:
+    sum: [power.de.solar_fc_tennet_mw, power.de.solar_fc_50hertz_mw, power.de.solar_fc_amprion_mw]
+    scale: 0.001
+    note: "TransnetBW missing since 2021-02 (PSENDAVG dead): a 3-of-4-TSO sum. Its anomaly vs a normal built from the same sum is fine; its level is NOT national solar."
+  power.de.wind_gen_gw: {sum: [power.de.wind_total_gen_mw], scale: 0.001}
+  power.de.solar_gen_gw: {sum: [power.de.solar_gen_mw], scale: 0.001}
+  # French nuclear AVAILABILITY = fleet installed capacity - unavailable MW (BSRCH outages, D-043). Replaces the
+  # generation PROXY (nuclear_gen_mw). Realised (observation) and planned (forecast) use the same definition.
+  power.fr.nuclear_avail_gw:
+    terms: [{series: power.fr.outage_nuclear_unavail_mw, coef: -1}]
+    constant: 63000               # MW, French nuclear fleet installed capacity (~63.0 GW incl. Flamanville 3)
+    constant_status: assumed
+    constant_provenance: "RTE/EDF published fleet capacity; ~63.0 GW incl. Flamanville 3; CONFIRM (recalled, not verified on Bloomberg)"
+    scale: 0.001
+  power.fr.nuclear_avail_fc_gw:
+    components_kind: forecast
+    terms: [{series: power.fr.outage_nuclear_unavail_mw, coef: -1}]
+    constant: 63000               # MW, same fleet constant as the realised series
+    constant_status: assumed
+    constant_provenance: "RTE/EDF published fleet capacity; ~63.0 GW incl. Flamanville 3; CONFIRM (recalled, not verified on Bloomberg)"
+    scale: 0.001
+  power.alp_nord.hydro_reservoir_gwh:
+    sum: [power.no.hydro_reservoir_mwh, power.se.hydro_reservoir_mwh, power.ch.hydro_reservoir_mwh, power.at.hydro_reservoir_mwh, power.fr.hydro_reservoir_mwh]
+    scale: 0.001
+
+# Best non-Bloomberg sources for what Bloomberg lacks (research 2026-10-19; none connected, no keys):
+non_bloomberg_sources:
+  power.de.load_fc_gw:
+    source: "ENTSO-E Transparency Platform REST API, total load day-ahead forecast (document type A65, process A01); needs a free security token"
+    alt: "SMARD.de (Bundesnetzagentur) forecasted consumption, CC BY 4.0, bulk download"
+    pit: "both serve the LATEST forecast; history is grade B unless snapshotted daily from now"
+  power.fr.nuclear_avail_fc_gw:
+    source: "EDF REMIT unavailability publications (doaat.edf.fr), with historical download since 2015 and original publication timestamps"
+    alt: "EDF Open Data 'disponibilite du parc nucleaire' (sliding year, hourly refresh); RTE Unavailability API"
+    pit: "GRADE A possible: rebuild availability as of each origin from the message archive. EDF's own sliding-year dataset is not vintaged"
+  power.de.solar_fc_national:
+    source: "ENTSO-E day-ahead wind and solar generation forecast (document type A69) for the DE-LU zone, which covers all four TSOs including TransnetBW"
+    pit: "grade B unless snapshotted"
+  power.de.capacity:
+    source: "ENTSO-E installed capacity per production type (annual); Bundesnetzagentur Marktstammdatenregister for monthly detail"
+    pit: "grade B; revisions small"
+
+# ------------------------------------------------------------------------------------------------
+# Economics parameters. Each carries value + status + provenance. null -> requires_user_input and
+# the dependent features are NaN with a flag (never a guessed constant).
+# ------------------------------------------------------------------------------------------------
+economics:
+  # BASIS (D-034): TTF is priced per MWh GCV, so the GAS leg is on a GCV basis throughout: efficiency
+  # and emission factor both per MWh(GCV). Coal is on an NCV basis because API2 is quoted per tonne at
+  # 6,000 kcal/kg NAR (net). Each leg is then internally consistent.
+  gas_plant_efficiency:
+    value: 0.45                  # GCV basis = 0.50 (NCV, modern CCGT fleet marginal unit) x 0.901 (NCV/GCV)
+    status: assumed
+    provenance: "ASSUMPTION 2026-10-19 (user: 'assume something decent'): 50% NCV, a common market convention for clean spark spreads, converted to GCV with NCV/GCV = 0.901 for natural gas. Desk convention supersedes."
+  coal_plant_efficiency:
+    value: 0.38                  # NCV basis, typical hard-coal unit near the switching margin
+    status: assumed
+    provenance: "ASSUMPTION 2026-10-19: 38% NCV, a typical clean dark spread convention for hard-coal plants. Desk convention supersedes."
+  gas_ncv_over_gcv:
+    value: 0.901
+    status: assumed
+    provenance: "ASSUMPTION: typical NCV/GCV ratio of pipeline natural gas (~0.90); the exact ratio depends on gas quality"
+  gas_emission_factor_t_per_mwh_th:
+    value: 0.182                 # GCV basis: 56.1 tCO2/TJ(NCV) x 0.0036 TJ/MWh x 0.901 = 0.18197
+    status: known
+    provenance: "IPCC 2006 Guidelines for National GHG Inventories, Vol. 2 Ch. 1 Table 1.4, natural gas default 56,100 kg CO2/TJ (NCV basis), converted to GCV with gas_ncv_over_gcv (assumed 0.901)."
+  coal_emission_factor_t_per_mwh_th:
+    value: 0.3406                # 94.6 tCO2/TJ x 0.0036 = 0.34056
+    status: known
+    provenance: "IPCC 2006 Guidelines, Vol. 2 Ch. 1 Table 1.4, other bituminous coal default 94,600 kg CO2/TJ (NCV basis)"
+  coal_energy_mwh_per_t:
+    value: 6.978                 # 6,000 kcal/kg x 4.1868 kJ/kcal = 25.12 GJ/t = 6.978 MWh/t
+    status: known
+    provenance: "API2 index specification: 6,000 kcal/kg NAR (Argus/McCloskey API 2); conversion 1 kcal = 4.1868 kJ (IT calorie). Recalled, confirm against the index methodology."
+
+# ------------------------------------------------------------------------------------------------
+# Feature parameters (overridable through `params`).
+# ------------------------------------------------------------------------------------------------
+features:
+  market_tz: Europe/Amsterdam
+  renewables:
+    geographies: [de]
+    techs: [wind, solar]
+    forecast_template: "power.{geo}.{tech}_fc_gw"
+    actual_template: "power.{geo}.{tech}_gen_gw"
+    capacity_template: "power.{geo}.{tech}_capacity_gw"   # optional; normal scaled by capacity ratio
+    window: {start: 1, end: 1}           # ENTSO-E day-ahead only covers D+1
+    min_points_per_day: 1                # set 24 for hourly forecast rows
+  residual_load:
+    geographies: [de]
+    load_template: "power.{geo}.load_fc_gw"
+    window: {start: 1, end: 1}
+    revision_step_days: 1
+  nuclear:
+    forecast_series: power.fr.nuclear_avail_fc_gw
+    actual_series: power.fr.nuclear_avail_gw
+    window: {start: 1, end: 7}
+    revision_step_days: 7
+  hydro:
+    series: [power.alp_nord.hydro_reservoir_gwh]
+    max_staleness_days: 21
+  prices:                       # internal ids owned by bloomberg.yaml (SQ-05)
+    power: price.power_de.base_m1_eur_mwh
+    gas: price.ttf.m1_eur_mwh     # TTF M1 settle from the curve store, not a Bloomberg field
+    coal: price.coal_api2.m1_usd_t
+    carbon: price.eua.front_eur_t # front, not Dec: bloomberg.yaml has no Dec EUA id (D-033)
+    eurusd: fx.eurusd.spot_usd_per_eur
+    max_staleness_days: 5
+  normals:
+    window_years: 5          # short on purpose: capacity mix changes fast
+    min_years: 3
+    smoothing_half_window_days: 7
+    gas_year_start_month: 10
+  max_forecast_age_hours: 48

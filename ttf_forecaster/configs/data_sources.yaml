@@ -1,0 +1,39 @@
+# Index of data sources. Vendor identifiers live in configs/sources/<source>.yaml, owned by the
+# respective adapter. Every identifier carries a status:
+#   known               - in production use or verified in this repo (provenance stated)
+#   requires_discovery  - findable by the user/orchestrator via vendor discovery tools
+#   requires_user_input - only the user can supply it (entitlement, saved search, dataset id)
+# Only `known` identifiers may be requested live, and only on explicit user instruction.
+
+default_backend: mock          # mock | local_file | live
+live_calls_authorised: false   # flip only on explicit user instruction, in a git-ignored local file
+
+sources:
+  bloomberg:     {config: sources/bloomberg,     adapter: ttf_forecaster.data.bloomberg}
+  spark:         {config: sources/spark,         adapter: ttf_forecaster.data.spark}
+  fundamentals:  {config: sources/fundamentals,  adapter: ttf_forecaster.data.fundamentals}
+  weather:       {config: sources/weather,       adapter: ttf_forecaster.data.weather}
+
+# Per-series entry schema, shared by every configs/sources/*.yaml file:
+#
+#   series:
+#     <internal_series_id>:            # e.g. storage.eu.inventory_twh  (<domain>.<geo>.<measure>_<unit>)
+#       vendor: bloomberg | spark | public | other
+#       ticker: "CGIEEUST Index"        # or dataset id / endpoint; null when unknown
+#       field: px_last                  # vendor field; null when unknown
+#       unit: TWh
+#       frequency: daily
+#       geography: EU
+#       status: known | requires_discovery | requires_user_input
+#       provenance: "GasImbalanceModel/config/bloomberg_series.yaml, verified 2026-08-25"
+#       pit_grade: A | B | C
+#       publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+#       entitlement: licensed_bloomberg
+#
+# The Bloomberg adapter (data/bloomberg.py) serves EVERY series found in configs/sources/bloomberg*.yaml
+# (bloomberg.yaml: market-data; bloomberg_lng.yaml: LNG; bloomberg_fundamentals.yaml: fundamentals),
+# so Bloomberg-sourced fundamentals and LNG aggregates go through one live client.
+
+local_file:
+  # Root for vendor extracts the user places locally (git-ignored). Parquet or CSV.
+  extracts_dir: data/raw/extracts

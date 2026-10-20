@@ -1,0 +1,87 @@
+# Text / LLM event-extraction configuration (docs/llm_event_schema.md).
+# Nothing here enables a model call. There is no extraction runner in the package yet.
+
+schema_version: "0.1"
+
+extraction:
+  enabled: false                 # no extraction runner exists; flipping this does nothing yet
+  prompt_version: event_extraction_v0
+  # External models (any hosted API, Anthropic's included) may receive ONLY text whose licence
+  # permits it, and only after explicit user/compliance approval recorded here.
+  external_model_approved: false
+  approval_reference: null       # requires_user_input: compliance ticket / approval record id
+  model_id: null                 # requires_user_input: set once a model is approved
+  model_version: null
+
+# Candidate authorised sources. `authorised: false` until the user confirms entitlement and
+# licence terms. No endpoints, feed ids or URLs are recorded until the user supplies them.
+sources:
+  remit_umm_platforms:
+    description: REMIT inside-information platforms (UMMs) for EU gas infrastructure unavailability
+    publisher: null              # one entry per platform once chosen
+    access: null
+    licence: null
+    entitlement: public          # assumed; confirm per platform terms
+    status: requires_user_input
+    authorised: false
+  gassco_umm:
+    description: Gassco UMMs for Norwegian field/plant/pipeline events (rates typically MSm3/d)
+    publisher: Gassco
+    access: null
+    licence: null
+    entitlement: public          # assumed; confirm terms of reuse
+    status: requires_user_input
+    authorised: false
+  lng_terminal_notices:
+    description: LNG terminal operator notices (send-out / slot / maintenance)
+    publisher: null
+    access: null
+    licence: null
+    entitlement: null
+    status: requires_user_input
+    authorised: false
+  broker_notes:
+    description: Broker/bank research notes received by the desk
+    publisher: null
+    access: null
+    licence: null                # usually prohibits redistribution and third-party processing
+    entitlement: licensed_other
+    status: requires_user_input
+    authorised: false
+  licensed_newswires:
+    description: Licensed newswire / agency headlines (e.g. via a terminal)
+    publisher: null
+    access: null
+    licence: null                # check whether machine processing / LLM use is permitted
+    entitlement: licensed_other
+    status: requires_user_input
+    authorised: false
+
+validation:
+  # Unit spellings accepted right after a number in impact_quote (literal support, no conversion).
+  # MSm3/d and energy units (GWh/d, kWh/h) are deliberately absent: they need a documented
+  # conversion, which is a modelling decision (see unresolved questions), not literal support.
+  accepted_mcmd_units: ["million cubic metres per day", "million cubic meters per day",
+                        "mcm per day", "mcm/day", "mcm/d", "mcmd", "mcm"]
+  min_confidence_for_review_queue: 0.0   # everything is reviewed in v1; do not raise silently
+
+capacity_mapping:
+  # Independently maintained asset-capacity table (asset -> technical capacity, unit, provenance,
+  # valid_from). Required for any number not literally stated in the source.
+  table_path: null               # requires_user_input
+  status: requires_user_input
+
+features:
+  family: text
+  clean_backtest_eligible: false # excluded from the clean backtest until provenance exists
+  count_event_types: [outage, maintenance]
+  offset_days: 1                 # feature describes the next gas day after the origin's gas day
+  coverage_start: null           # tz-aware ISO time from which the reviewed feed is complete
+  allowed_grades: [A, B]
+  series: []                     # fix the column universe here (avoid hindsight-chosen columns)
+
+pit:
+  mode: live                     # live | historical
+  assembled_with_hindsight: true # conservative default: grade C until shown otherwise
+  historical_review_lag_hours: 24  # ASSUMPTION for back-filled reviews; sensitivity: 6, 24, 72
+  open_ended_days: 14            # ASSUMPTION for events with no stated end; rows flagged estimated

@@ -1,0 +1,73 @@
+# Target construction parameters (docs/target_definitions.md). Read by src/ttf_forecaster/targets/.
+# Changing anything here changes the experiment: log it in docs/modelling_log.md.
+
+hub: TTF
+field: settle
+
+roll:
+  R: 5                     # front = nearest monthly contract whose last trade is > R sessions after t
+  R_sensitivity: [1, 3, 5, 10]
+  R_prime: 0               # held contract must have last trade >= t + h + R_prime sessions
+  # Interpretation (see market-data report): the held contract is the FRONT contract under R unless
+  # that one stops trading before the exit date, in which case the next one that still trades.
+  # false = literal target_definitions.md §1 rule (nearest contract trading at exit, ignoring R).
+  held_respects_roll_rule: true
+
+# When a futures settlement becomes knowable (PIT policy §4). origin_time and label_known_time of
+# every futures target are derived from this.
+settlement_publication: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+
+annualisation_days: 252
+
+targets:
+  T1:
+    id: da_level
+    horizons: [1]
+    da_series_id: price.ttf.da_eur_mwh
+    # The label is the DA assessment made on session t + assessment_session_offset, for the next
+    # working gas day after that session. Offset 0 would be the DA already known at the close of t.
+    assessment_session_offset: 1
+    # Fallback publication rule if a DA row lacks publication_time (assessment session, local).
+    publication_fallback: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+  T2:
+    id: m1_settle
+    horizons: [1, 5, 20]
+  T3:
+    id: m1_logret
+    horizons: [1, 5, 20]
+  T4:
+    id: da_month_avg
+    ks: [1, 2]
+    da_series_id: price.ttf.da_eur_mwh
+    # true: a DA value is required for EVERY calendar gas day of the month (weekend days included);
+    # false: only for gas days following a trading session. [CONFIRM index methodology]
+    require_every_calendar_gas_day: true
+  T5:
+    ks: [1, 2, 3]
+    ids:
+      futures: delivery_excess_fut
+      futures_log: delivery_excess_fut_log
+      physical: delivery_excess_phys
+      physical_log: delivery_excess_phys_log
+  T6:
+    quarter: {id: q_logret, horizons: [20, 60]}
+    season: {id: season_logret, horizons: [20, 60]}
+  T7:
+    m1m2: {id: spread_m1m2_chg, horizons: [5, 20]}
+    q1q2: {id: spread_q1q2_chg, horizons: [5, 20]}
+    sum_win: {id: spread_sum_win_chg, horizons: [20, 60]}
+    win_sum: {id: spread_win_sum_chg, horizons: [20, 60]}
+  T8:
+    id: rv
+    horizons: [5, 20]
+  T9:
+    direction: {id: dir, horizons: [1, 5, 20]}
+    tail:
+      id: tail
+      horizons: [1, 5, 20]
+      mode: ewma            # ewma | fixed
+      k: 1.5
+      ewma_span: 60         # sessions; sigma_t from the spliced front-month return series up to t
+      ewma_min_periods: 20
+      fixed_threshold: 0.10 # |log return| threshold when mode = fixed (sensitivity)
+    regime_change: {id: regime_change, horizons: [20, 60]}

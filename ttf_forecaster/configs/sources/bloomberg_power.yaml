@@ -1,0 +1,149 @@
+# Bloomberg power-sector fundamentals (served by data/bloomberg.py like every bloomberg*.yaml).
+#
+# PROVENANCE. Every ticker below was found with //blp/instruments discovery and checked with a
+# reference-data request (NAME, PX_LAST, LAST_UPDATE_DT, QUOTE_UNITS) on 2026-10-19, read-only, on the
+# user's instruction ("research around Bloomberg"). No history was pulled, so history depth is unverified.
+# Units are as Bloomberg publishes them (MW daily averages). Conversion to the GW series that
+# features/power.py expects is a derivation step declared in power.yaml (`derived:`), not done here.
+#
+# PIT (all ASSUMPTIONS until measured by live snapshotting, D-034):
+# - EEX / TSO day-ahead forecasts: the regulatory publication is D-1 18:00 CET. It is unknown whether
+#   Bloomberg keeps the first published value or overwrites it, so these are grade B with a
+#   conservative lag: the forecast for day D counts as available only at D 08:00. That throws away the
+#   day-ahead lead; measure Bloomberg's update time to recover it.
+# - Actuals: D+1 12:00, grade B (TSO data is revised).
+# - Weekly reservoirs: 7 days after the week, grade B.
+
+x-defaults:
+  fc: &fc {vendor: bloomberg, field: px_last, frequency: daily, status: known, pit_grade: B,
+           publication_lag: {days: 0, time: "08:00", tz: Europe/Amsterdam, business_days: false},
+           entitlement: licensed_bloomberg}
+  act: &act {vendor: bloomberg, field: px_last, frequency: daily, status: known, pit_grade: B,
+             publication_lag: {days: 1, time: "12:00", tz: Europe/Amsterdam, business_days: false},
+             entitlement: licensed_bloomberg}
+  wk: &wk {vendor: bloomberg, field: px_last, frequency: weekly, status: known, pit_grade: B,
+           publication_lag: {days: 7, time: "12:00", tz: Europe/Amsterdam, business_days: false},
+           entitlement: licensed_bloomberg}
+
+series:
+  # ---- Germany wind: EEX forecasts and actuals ----------------------------------------------
+  power.de.wind_onshore_fc_mw:
+    <<: *fc
+    ticker: "EXDEWSAY Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany Wind Onshore Generation Forecast (EEX)', QUOTE_UNITS megawatt, last update 2026-10-18"
+  power.de.wind_offshore_fc_mw:
+    <<: *fc
+    ticker: "EXDEWOAY Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany Wind Offshore Generation Forecast (EEX)', megawatt, last update 2026-10-18"
+  power.de.wind_onshore_gen_mw:
+    <<: *act
+    ticker: "GT1CDEWS ACT 24AV Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany Power Generation by Fuel - Wind Onshore Actual Daily Average', last update 2026-10-18"
+  power.de.wind_total_gen_mw:
+    <<: *act
+    ticker: "AWDEIDAY Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'European Energy Exchange Germany Actual Wind Generation', last update 2026-10-19; unit assumed MW (daily average) - confirm"
+
+  # ---- Germany solar: TSO day-ahead planned generation (EEX Transparency) and actual ---------
+  # TransnetBW (PSENDAVG) stopped 2021-02-08, so the sum of the three live TSOs UNDERSTATES national
+  # solar (TransnetBW is roughly 15-20% of German PV, ASSUMED). Use anomalies relative to the same
+  # three-TSO sum, never levels against the national actual.
+  power.de.solar_fc_tennet_mw:
+    <<: *fc
+    ticker: "EXTEDAVG Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany TenneT Average Day-ahead Planned Solar Generation (EEX Transparency)', last update 2026-10-15"
+  power.de.solar_fc_50hertz_mw:
+    <<: *fc
+    ticker: "PS50DAVG Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany 50Hertz Average Day-ahead Planned Solar Generation', last update 2026-10-15"
+  power.de.solar_fc_amprion_mw:
+    <<: *fc
+    ticker: "PSAMDAVG Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany Amprion Average Day-ahead Planned Solar Generation', last update 2026-10-15"
+  power.de.solar_gen_mw:
+    <<: *act
+    ticker: "GT1CDESL ACT 24AV Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany Power Generation by Fuel - Solar Actual Daily Average', last update 2026-10-18"
+
+  # ---- Germany load: actual only (no load FORECAST found on Bloomberg) ------------------------
+  power.de.load_act_mw:
+    <<: *act
+    ticker: "LD1CDE ACT 24AV Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Germany Power Load Actual Daily Average', megawatt, last update 2026-10-18"
+
+  # ---- France nuclear: GENERATION (availability is not on Bloomberg; see power.yaml) ----------
+  power.fr.nuclear_gen_mw:
+    <<: *act
+    ticker: "GT1CFRNU ACT 24AV Index"
+    unit: MW
+    geography: FR
+    provenance: "Bloomberg discovery 2026-10-19: 'France Power Generation by Fuel - Nuclear Actual Daily Average', megawatt, last update 2026-10-18; cross-check RTEGNUCT Index (RTE daily average)"
+
+  # ---- Hydro reservoirs, weekly (MWh) ---------------------------------------------------------
+  # Nord Pool NPER* reservoir series stopped 2025-02 and are NOT used.
+  power.no.hydro_reservoir_mwh:
+    <<: *wk
+    ticker: "RV1CNO ACT WK Index"
+    unit: MWh
+    geography: "NO"
+    provenance: "Bloomberg discovery 2026-10-19: 'Norway Water Reservoirs and Hydro Storage Actual Weekly', last update 2026-09-30"
+  power.se.hydro_reservoir_mwh:
+    <<: *wk
+    ticker: "RV1CSE ACT WK Index"
+    unit: MWh
+    geography: SE
+    provenance: "Bloomberg discovery 2026-10-19: 'Sweden Water Reservoirs and Hydro Storage Actual Weekly', MWh, last update 2026-09-30"
+  power.ch.hydro_reservoir_mwh:
+    <<: *wk
+    ticker: "RV1CCH ACT WK Index"
+    unit: MWh
+    geography: CH
+    provenance: "Bloomberg discovery 2026-10-19: 'Switzerland Water Reservoirs and Hydro Storage Actual Weekly'; unit assumed MWh as the RV1C family - confirm"
+  power.at.hydro_reservoir_mwh:
+    <<: *wk
+    ticker: "RV1CAT ACT WK Index"
+    unit: MWh
+    geography: AT
+    provenance: "Bloomberg discovery 2026-10-19: 'Austria Water Reservoirs and Hydro Storage Actual Weekly'; unit assumed MWh - confirm"
+  power.fr.hydro_reservoir_mwh:
+    <<: *wk
+    ticker: "RV1CFR ACT WK Index"
+    unit: MWh
+    geography: FR
+    provenance: "Bloomberg discovery 2026-10-19: 'France Water Reservoirs and Hydro Storage Actual Weekly'; unit assumed MWh - confirm"
+
+  # ---- Bloomberg discovery 2026-10-19 (read-only): Amprion zone load (Germany, one TSO only) --------
+  # PARTIAL: Amprion is one of four German TSO zones, so this is NOT national German load. The
+  # national load FORECAST was not found on Bloomberg (see docs/bloomberg_discovery.md).
+  power.de.amprion_load_fc_mw:
+    <<: *fc
+    ticker: "AMPNDFDA Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Amprion Daily Average Day-Ahead Forecast Demand (Germany)'; live, PX_LAST 16334 MW on 2026-10-17"
+    note: "Amprion zone only (partial coverage of German load). Forecast lag: same rule as other day-ahead forecasts (ASSUMPTION)"
+  power.de.amprion_load_act_mw:
+    <<: *act
+    ticker: "AMPNVLDA Index"
+    unit: MW
+    geography: DE
+    provenance: "Bloomberg discovery 2026-10-19: 'Amprion Daily Average Actual Vertical Load (Germany)'; live, PX_LAST 8984 MW on 2026-10-17"
+    note: "Amprion zone only; pair with power.de.amprion_load_fc_mw, not with national load"

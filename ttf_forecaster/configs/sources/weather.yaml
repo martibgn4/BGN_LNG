@@ -1,0 +1,214 @@
+# Weather sources, regions and weather-feature parameters (owner: weather-power-agent).
+# Read by src/ttf_forecaster/data/weather.py (adapter) and src/ttf_forecaster/features/weather.py.
+#
+# PROVENANCE. Open-Meteo endpoints, the `temperature_2m` hourly variable, the `_previous_day{n}`
+# suffix, the 7-day max lead, the ~mid-2021 archive start, the hourly-only restriction, the
+# ensemble null-padding behaviour and the per-model availability lags are all taken from
+# ../WeatherReturnsModel/config/sources.yaml and src/wxreturns/data/openmeteo.py, where they were
+# probed against the live API from this machine on 2026-09-07 (desk notes). Nothing here was
+# executed from this project.
+#
+# LICENCE. Open-Meteo data is CC-BY-4.0; the free tier is NON-COMMERCIAL. Desk use requires the
+# paid tier (customer host + API key). This is a decision for the user, not an engineering matter:
+# `licence.commercial_use_confirmed` stays false until the user says otherwise, and the live
+# backend refuses to run while it is false.
+#
+# PIT. Forecast runs are grade A (stored with issue_time). Observed weather (ERA5 reanalysis) is
+# grade B, published with a conservative D+5 lag (PIT policy section 4) and NEVER used as a
+# forecast substitute: observed-weather features carry the `obs_` prefix.
+
+vendor: open_meteo
+entitlement: public           # CC-BY-4.0; see licence block - free tier is non-commercial
+
+licence:
+  name: "CC-BY-4.0"
+  free_tier_commercial_use: false
+  commercial_use_confirmed: false        # requires_user_input: paid tier for desk use
+  attribution: "Weather data by Open-Meteo.com (CC-BY-4.0)"
+
+open_meteo:
+  status: known
+  provenance: "WeatherReturnsModel/config/sources.yaml, probed live 2026-09-07 (desk notes)"
+  api_key_env_var: OPEN_METEO_API_KEY    # only for the paid tier; read via settings.get_secret
+  timezone: UTC                          # request and aggregate in UTC; DST cannot shift a day
+  endpoints:
+    historical_forecast: "https://historical-forecast-api.open-meteo.com/v1/forecast"
+    archive: "https://archive-api.open-meteo.com/v1/archive"         # ERA5 actuals
+    forecast: "https://api.open-meteo.com/v1/forecast"               # live deterministic
+    ensemble: "https://ensemble-api.open-meteo.com/v1/ensemble"      # live members
+  previous_runs:
+    hourly_variable: temperature_2m
+    suffix_template: "_previous_day{n}"
+    hourly_only: true            # daily variables with the suffix are rejected by the API
+    max_lead_days: 7             # previous_day8+ returns ALL NULLS silently -> refused here
+    archive_verified_from: "2021-06-01"
+    # Mapping of a `_previous_dayN` value for valid day V to a run. Open-Meteo does not state which
+    # run (init hour) produced each hourly value. The sibling project uses issue = V - N days
+    # (00z). That is optimistic if a later run of day V-N was used. Default here is CONSERVATIVE:
+    # the value is treated as published only at the END of day V-N plus the availability lag,
+    # which costs about one day of usable lead. See unresolved question in the agent report.
+    nominal_issue_hour_utc: 0
+    publication_rule: end_of_issue_day   # end_of_issue_day (conservative) | issue_plus_lag
+    availability_lag_hours: 8            # ECMWF IFS archive model: 8 h after 00z (sibling config)
+  daily_aggregation:
+    min_hours_per_day: 24        # a day with fewer non-null hours becomes NaN + missing_input
+  # Deterministic models (sibling config, 2026-09-07). archive_from = first date with data.
+  models:
+    ecmwf_ifs04:  {available_after_hours: 8, max_lead_days: 15, archive_from: "2017-01-01"}
+    ecmwf_ifs025: {available_after_hours: 8, max_lead_days: 15, archive_from: "2024-11-01"}
+    gfs_seamless: {available_after_hours: 5, max_lead_days: 16, archive_from: "2021-03-23"}
+    icon_seamless: {available_after_hours: 5, max_lead_days: 7, archive_from: "2022-11-25"}
+  # Ensembles: max_lead_days = NON-NULL days measured 2026-09-07, NOT the time-axis length.
+  # Every model pads a 35-day axis with nulls past its real horizon.
+  # Historical ensemble runs: NO archive is known -> live accumulation only (requires_discovery).
+  ensemble_models:
+    gfs05:        {members: 31, max_lead_days: 34}
+    ecmwf_ifs025: {members: 51, max_lead_days: 14}
+    gfs025:       {members: 31, max_lead_days: 10}
+    icon_seamless: {members: 39, max_lead_days: 7}
+  ensemble_min_usable_fraction: 0.8
+  ensemble_archive_status: requires_discovery
+
+# Publication-lag rule for observed (ERA5) weather: PIT policy section 4 (>= D+5, grade B).
+lag_rules:
+  era5_observed: &lag_era5 {days: 5, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+
+# ------------------------------------------------------------------------------------------------
+# Regions. Degree days are computed PER POINT and THEN weighted (max(0, b - T) is convex; weighting
+# temperatures first is wrong, most of all in shoulder season).
+#
+# WEIGHTS: requires_user_input. They must come from the BNEF LDZ demand workbook at the repo root
+# (../20260825-EuropeLocalDistributionZoneGasDemandMonitor.xlsx). That workbook is LICENSED: its
+# data is NOT copied here; the user extracts country LDZ shares into a git-ignored
+# configs/local_weather.yaml (deep-merged by settings.load_config). Until then every weight is
+# null and feature building raises. Equal weights exist ONLY for synthetic tests and are labelled.
+#
+# POINTS: one representative coordinate per country, copied from
+# ../WeatherReturnsModel/config/regions.yaml (eu_gas, provenance "estimate"). The country list is a
+# candidate set, also requires_user_input (should match the LDZ workbook's coverage).
+# ------------------------------------------------------------------------------------------------
+regions:
+  eu_ldz:
+    label: "EU LDZ-gas-demand-weighted composite"
+    input: points                     # points | preaggregated_hdd
+    weights_status: requires_user_input
+    weights_source: "BNEF Europe LDZ Gas Demand Monitor 2026-08-25 (licensed; reference only)"
+    points_provenance: "WeatherReturnsModel/config/regions.yaml eu_gas (country centroid estimate)"
+    points:
+      - {id: de, name: Germany,        lat: 51.16, lon: 10.45, weight: null}
+      - {id: gb, name: United Kingdom, lat: 52.36, lon: -1.17, weight: null}
+      - {id: it, name: Italy,          lat: 43.00, lon: 12.00, weight: null}
+      - {id: fr, name: France,         lat: 46.60, lon: 2.35,  weight: null}
+      - {id: nl, name: Netherlands,    lat: 52.13, lon: 5.29,  weight: null}
+      - {id: pl, name: Poland,         lat: 52.12, lon: 19.40, weight: null}
+      - {id: es, name: Spain,          lat: 40.30, lon: -3.70, weight: null}
+      - {id: be, name: Belgium,        lat: 50.64, lon: 4.67,  weight: null}
+      - {id: cz, name: Czechia,        lat: 49.80, lon: 15.47, weight: null}
+      - {id: at, name: Austria,        lat: 47.68, lon: 13.35, weight: null}
+  # Pre-aggregated HDD series (e.g. data/synthetic.py weather_forecast_runs -> weather.eu.hdd, or a
+  # vendor's own population-weighted HDD). No CDD, no per-point convexity correction.
+  eu_preaggregated:
+    label: "Pre-aggregated EU HDD series"
+    input: preaggregated_hdd
+    hdd_forecast_series_id: weather.eu.hdd
+    hdd_observed_series_id: weather.eu.hdd_obs
+    weights_status: not_applicable
+
+# Internal series-id templates for point series (shared per-series schema below is generated per
+# point by the adapter: weather.<point>.t2m_mean_degc / weather.<point>.t2m_mean_obs_degc).
+series_templates:
+  forecast: "weather.{point}.t2m_mean_degc"
+  observed: "weather.{point}.t2m_mean_obs_degc"
+
+series:
+  weather.point.t2m_mean_degc:          # template entry; one per point at runtime
+    vendor: public
+    ticker: "https://historical-forecast-api.open-meteo.com/v1/forecast"
+    field: temperature_2m                # hourly; `_previous_day{n}` for n = 1..7
+    unit: degC
+    frequency: daily (UTC-day mean of 24 hourly values)
+    geography: point
+    status: known
+    provenance: "WeatherReturnsModel/config/sources.yaml + openmeteo.py, probed live 2026-09-07"
+    pit_grade: A
+    entitlement: public
+    history_from: "2021-06-01"
+  weather.point.t2m_mean_obs_degc:
+    vendor: public
+    ticker: "https://archive-api.open-meteo.com/v1/archive"
+    field: temperature_2m                # ERA5 hourly, aggregated to UTC-day mean
+    unit: degC
+    frequency: daily
+    geography: point
+    status: known
+    provenance: "WeatherReturnsModel/config/sources.yaml (archive endpoint), 2026-09-07"
+    pit_grade: B
+    publication_lag: *lag_era5
+    entitlement: public
+  weather.point.t2m_mean_ens_degc:       # ensemble members, live accumulation only
+    vendor: public
+    ticker: "https://ensemble-api.open-meteo.com/v1/ensemble"
+    field: temperature_2m
+    unit: degC
+    frequency: daily
+    geography: point
+    status: requires_discovery           # historical ensemble archive unknown
+    provenance: "WeatherReturnsModel/config/sources.yaml ensemble block, 2026-09-07"
+    pit_grade: A
+    entitlement: public
+
+# Local-file backend: canonical long files the user (or an ingest job) places under
+# <local_file.extracts_dir>/weather/. Forecast files in FORECAST_SCHEMA, observed files in
+# OBSERVATION_SCHEMA. Missing publication_time is derived from the rules above and flagged.
+local_file:
+  subdir: weather
+  forecast_glob: "forecasts*"
+  observed_glob: "observed*"
+
+# ------------------------------------------------------------------------------------------------
+# Feature parameters (features/weather.py). Overridable per call through `params`.
+# ------------------------------------------------------------------------------------------------
+features:
+  region: eu_ldz
+  deterministic: {model: ecmwf_ifs04, member: det}
+  ensemble: {model: gfs05, min_members: 10}
+  # Degree-day convention: Eurostat (nrg_chdd metadata, "Cooling and heating degree days"):
+  #   HDD = 18 - Tm  if Tm <= 15 C, else 0     (reference 18 C, heating threshold 15 C)
+  #   CDD = Tm - 21  if Tm >= 24 C, else 0     (reference 21 C, cooling threshold 24 C)
+  # Tm = daily mean 2 m temperature (UTC day here). Cited from memory of the Eurostat
+  # methodology, not re-verified offline -> confirm against the Eurostat metadata page.
+  # NB: the sibling project's "15.5 C Eurostat" base is the UK (CIBSE/Met Office) convention,
+  # not Eurostat's. Set convention: simple to use max(0, reference - Tm) with threshold = reference.
+  degree_days:
+    convention: eurostat
+    hdd: {reference_c: 18.0, threshold_c: 15.0}
+    cdd: {reference_c: 21.0, threshold_c: 24.0}
+  # Valid-day windows, in days after the origin's Europe/Amsterdam calendar date (inclusive).
+  # `bal_week` = D+1 .. next Sunday, truncated to end_max.
+  windows:
+    d1_3: {start: 1, end: 3}
+    d1_5: {start: 1, end: 5}
+    d1_6: {start: 1, end: 6}       # level/anomaly only (see lead arithmetic below)
+    d1_7: {start: 1, end: 7}       # ensemble only (live ensemble reaches 34 days for gfs05)
+    bal_week: {start: 1, end: weekday_sunday, end_max: 5}
+  # Lead arithmetic with Open-Meteo previous runs (max lead 7) and the conservative publication
+  # rule: at origin day D the freshest visible value for valid day D+k is previous_day(k+1); the
+  # state one day earlier needs previous_day(k+2) <= 7 -> revisions need k <= 5, levels k <= 6.
+  # Revisions compare the state of knowledge at origin vs origin - step, over the SAME valid days.
+  # Validated: window end + step_days <= max_lead_days (7), else ConfigError.
+  revision: {step_days: 1, windows: [d1_3, d1_5, bal_week], max_run_age_hours: 72}
+  level_windows: [d1_6]
+  ensemble_windows: [d1_7]
+  # Windows needing leads > 7 cannot be backfilled; only live-accumulated. Excluded unless
+  # params allow_live_only_windows=true.
+  live_only_windows: {d8_14: {start: 8, end: 14}}
+  normals:
+    window_years: 30
+    min_years: 10                  # fewer prior gas years -> NaN + flag (ERA5 has 1940+)
+    smoothing_half_window_days: 7  # centred 15-day mean over day-of-year
+    leap_day_policy: map_to_feb28
+    gas_year_start_month: 10       # normals use gas years strictly before the origin's
+  observed:
+    max_staleness_days: 8          # ERA5 lag is D+5; older latest-visible day -> NaN
+    recent_window_days: [7, 30]
+  market_tz: Europe/Amsterdam

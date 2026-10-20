@@ -1,0 +1,495 @@
+# Bloomberg-sourced European gas fundamentals (GIE AGSI+/ALSI redistribution, TSO demand).
+# Served live by data/bloomberg.py (the Bloomberg adapter reads every configs/sources/bloomberg*.yaml)
+# and routed there by data/fundamentals.py. Owner: gas-fundamentals-agent.
+#
+# PROVENANCE. No identifier here was guessed. Every `known` ticker is copied from a sibling project
+# that discovered it with Bloomberg's own //blp/instruments search on 2026-08-25 and verified it by
+# pulling real data and checking magnitudes:
+#   ../GasImbalanceModel/config/bloomberg_series.yaml   (CGIE storage, LNGATLIN, LNGATLSO)
+#   ../GasImbalanceModel/config/demand_sources.yaml     (TSO demand series)
+#   ../GasImbalanceModel/PHASE1_NOTES.md                (storage identity reconciles over 3 gas years)
+# The field `px_last` is the field the sibling fetcher uses for every one of these series
+# (../GasImbalanceModel/src/gasbalance/data/bloomberg.py, PRICE_FIELD). These identifiers have NOT
+# been re-verified in this project (docs/environment_audit.md).
+#
+# UNITS come from the Bloomberg security descriptions as recorded in the sibling, e.g.
+#   "Germany Gas Inventory (Daily,TWh,GIE)", "Germany Gas Withdrawal (Daily,GWh/d,GIE)",
+#   "Europe LNG Inventory (Daily,1000 m3,GIE)", "Europe LNG Send-Out (Daily,GWh/d,GIE)".
+# All AGSI/ALSI energies are on a GCV basis. A live fetch should compare `description_unit` with
+# the Bloomberg NAME/description and raise on disagreement (sibling behaviour).
+#
+# PUBLICATION LAG (docs/point_in_time_policy.md §4): GIE publishes gas day D at D+1 19:30 CET and
+# revises later; Bloomberg history holds only the latest value, so availability is set to the
+# conservative D+2 07:00 Europe/Amsterdam and pit_grade = B. Sensitivity runs: +1 and +3 days.
+# The TSO demand series have NO documented lag rule: the same D+2 07:00 is ASSUMED (flagged with
+# publication_lag_evidence: none) and must be measured by live snapshotting before trusting them.
+#
+# Extension keys beyond the shared schema in configs/data_sources.yaml (consumers may ignore them):
+#   description_unit  unit text as given in the Bloomberg description
+#   measure_type      stock | flow | capacity | ratio
+#   sign              +1 or -1: multiply the vendor value by this to get the positive physical
+#                     quantity named by the series id (Fluxys publishes demand as negative offtake).
+#                     Applied ONCE, in data/fundamentals.py, never in data/bloomberg.py.
+#   publication_lag_evidence   documented | none
+
+x-defaults:
+  agsi: &agsi
+    vendor: bloomberg
+    field: px_last
+    frequency: daily
+    status: known
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: documented
+    publication_lag_sensitivity_days: [1, 3]
+    entitlement: licensed_bloomberg
+    revision_behaviour: "GIE revises after first release; Bloomberg keeps latest value only (no vintages)"
+    sign: 1
+  tso_demand: &tso_demand
+    vendor: bloomberg
+    field: px_last
+    frequency: daily
+    status: known
+    pit_grade: B
+    publication_lag: {days: 2, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    measure_type: flow
+    revision_behaviour: "unknown; TSO allocations are typically restated - measure before use"
+    provenance: "../GasImbalanceModel/config/demand_sources.yaml, discovered+verified 2026-08-25"
+
+series:
+  # ------------------------------------------------------------------ EU aggregate storage (AGSI)
+  # Perimeter of GIE's "EU" aggregate (EU27, UK excluded post-Brexit?) must be read from the
+  # Bloomberg description before live use - recorded as an unresolved question, not assumed.
+  storage.eu.inventory_twh:
+    <<: *agsi
+    ticker: "CGIEEUST Index"
+    unit: TWh
+    description_unit: TWh
+    measure_type: stock
+    geography: EU
+    provenance: "../GasImbalanceModel/config/bloomberg_series.yaml aggregate.europe_inventory; 2025-01-15 = 690.99 TWh"
+  storage.eu.injection_gwhd:
+    <<: *agsi
+    ticker: "CGIEEUIN Index"
+    unit: GWh/d
+    description_unit: GWh/d
+    measure_type: flow
+    geography: EU
+    provenance: "../GasImbalanceModel/config/bloomberg_series.yaml aggregate.europe_injection"
+  storage.eu.withdrawal_gwhd:
+    <<: *agsi
+    ticker: "CGIEEUWI Index"
+    unit: GWh/d
+    description_unit: GWh/d
+    measure_type: flow
+    geography: EU
+    provenance: "../GasImbalanceModel/config/bloomberg_series.yaml aggregate.europe_withdrawal; 2025-01-15 = 8810 GWh/d"
+  storage.eu.working_gas_volume_twh:
+    <<: *agsi
+    ticker: "CGIEEUWG Index"
+    unit: TWh
+    description_unit: "TWh (Technical Capacity)"
+    measure_type: capacity
+    geography: EU
+    provenance: "../GasImbalanceModel/config/bloomberg_series.yaml aggregate.europe_capacity; 2025-01-15 = 1147.64 TWh"
+  storage.eu.full_pct:
+    # The orchestrator brief names an `FU` suffix in the CGIE family, but no in-repo file verifies
+    # any FU ticker. Not needed: % full is derived as inventory / working gas volume.
+    <<: *agsi
+    ticker: null
+    status: requires_discovery
+    unit: "%"
+    description_unit: null
+    measure_type: ratio
+    geography: EU
+    provenance: "none - FU suffix unverified; derive from storage.eu.inventory_twh / storage.eu.working_gas_volume_twh"
+  storage.eu.injection_capacity_gwhd:
+    # AGSI publishes injection capacity per site; no Bloomberg CGIE suffix for it is known.
+    <<: *agsi
+    ticker: null
+    status: requires_discovery
+    unit: GWh/d
+    description_unit: null
+    measure_type: capacity
+    geography: EU
+    provenance: "none - AGSI field exists, Bloomberg identifier unknown"
+  storage.eu.withdrawal_capacity_gwhd:
+    <<: *agsi
+    ticker: null
+    status: requires_discovery
+    unit: GWh/d
+    description_unit: null
+    measure_type: capacity
+    geography: EU
+    provenance: "none - AGSI field exists, Bloomberg identifier unknown"
+
+  # ------------------------------------------------------- NW-Europe country storage (AGSI, CGIE<CC>)
+  # Pattern CGIE<CC><ST|IN|WI|WG> Index for the 8 storage countries of the sibling's NWE ring
+  # (../GasImbalanceModel/config/perimeter.yaml). All 32 were pulled for 2022-10..2025-09 in the
+  # sibling's storage gate (PHASE1_NOTES.md: 35,072 obs, no missing days). Bloomberg uses GB, not UK.
+  storage.de.inventory_twh:      {<<: *agsi, ticker: "CGIEDEST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: DE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST; PHASE1_NOTES storage gate"}
+  storage.de.injection_gwhd:     {<<: *agsi, ticker: "CGIEDEIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: DE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN; PHASE1_NOTES storage gate"}
+  storage.de.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIEDEWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: DE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI; PHASE1_NOTES storage gate"}
+  storage.de.working_gas_volume_twh: {<<: *agsi, ticker: "CGIEDEWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: DE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG; PHASE1_NOTES storage gate"}
+  storage.nl.inventory_twh:      {<<: *agsi, ticker: "CGIENLST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: NL, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST; PHASE1_NOTES storage gate"}
+  storage.nl.injection_gwhd:     {<<: *agsi, ticker: "CGIENLIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: NL, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN; PHASE1_NOTES storage gate"}
+  storage.nl.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIENLWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: NL, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI; PHASE1_NOTES storage gate"}
+  storage.nl.working_gas_volume_twh: {<<: *agsi, ticker: "CGIENLWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: NL, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG; PHASE1_NOTES storage gate"}
+  storage.be.inventory_twh:      {<<: *agsi, ticker: "CGIEBEST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: BE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST; PHASE1_NOTES storage gate"}
+  storage.be.injection_gwhd:     {<<: *agsi, ticker: "CGIEBEIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: BE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN; PHASE1_NOTES storage gate"}
+  storage.be.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIEBEWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: BE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI; PHASE1_NOTES storage gate"}
+  storage.be.working_gas_volume_twh: {<<: *agsi, ticker: "CGIEBEWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: BE, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG; PHASE1_NOTES storage gate"}
+  storage.fr.inventory_twh:      {<<: *agsi, ticker: "CGIEFRST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: FR, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST; PHASE1_NOTES storage gate"}
+  storage.fr.injection_gwhd:     {<<: *agsi, ticker: "CGIEFRIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: FR, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN; PHASE1_NOTES storage gate"}
+  storage.fr.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIEFRWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: FR, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI; PHASE1_NOTES storage gate"}
+  storage.fr.working_gas_volume_twh: {<<: *agsi, ticker: "CGIEFRWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: FR, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG; PHASE1_NOTES storage gate"}
+  storage.at.inventory_twh:      {<<: *agsi, ticker: "CGIEATST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: AT, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST; PHASE1_NOTES storage gate"}
+  storage.at.injection_gwhd:     {<<: *agsi, ticker: "CGIEATIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: AT, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN; PHASE1_NOTES storage gate"}
+  storage.at.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIEATWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: AT, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI; PHASE1_NOTES storage gate"}
+  storage.at.working_gas_volume_twh: {<<: *agsi, ticker: "CGIEATWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: AT, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG; PHASE1_NOTES storage gate"}
+  storage.dk.inventory_twh:      {<<: *agsi, ticker: "CGIEDKST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: DK, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST; PHASE1_NOTES storage gate"}
+  storage.dk.injection_gwhd:     {<<: *agsi, ticker: "CGIEDKIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: DK, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN; PHASE1_NOTES storage gate"}
+  storage.dk.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIEDKWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: DK, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI; PHASE1_NOTES storage gate"}
+  storage.dk.working_gas_volume_twh: {<<: *agsi, ticker: "CGIEDKWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: DK, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG; PHASE1_NOTES storage gate"}
+  storage.cz.inventory_twh:      {<<: *agsi, ticker: "CGIECZST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: CZ, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST; PHASE1_NOTES storage gate"}
+  storage.cz.injection_gwhd:     {<<: *agsi, ticker: "CGIECZIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: CZ, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN; PHASE1_NOTES storage gate"}
+  storage.cz.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIECZWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: CZ, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI; PHASE1_NOTES storage gate"}
+  storage.cz.working_gas_volume_twh: {<<: *agsi, ticker: "CGIECZWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: CZ, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG; PHASE1_NOTES storage gate"}
+  storage.gb.inventory_twh:      {<<: *agsi, ticker: "CGIEGBST Index", unit: TWh,   description_unit: TWh,   measure_type: stock,    geography: GB, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.ST (country_code_map UK->GB); PHASE1_NOTES storage gate"}
+  storage.gb.injection_gwhd:     {<<: *agsi, ticker: "CGIEGBIN Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: GB, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.IN (UK->GB); PHASE1_NOTES storage gate"}
+  storage.gb.withdrawal_gwhd:    {<<: *agsi, ticker: "CGIEGBWI Index", unit: GWh/d, description_unit: GWh/d, measure_type: flow,     geography: GB, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WI (UK->GB); PHASE1_NOTES storage gate"}
+  storage.gb.working_gas_volume_twh: {<<: *agsi, ticker: "CGIEGBWG Index", unit: TWh, description_unit: TWh, measure_type: capacity, geography: GB, provenance: "../GasImbalanceModel/config/bloomberg_series.yaml storage_series.WG (UK->GB); PHASE1_NOTES storage gate"}
+
+  # -------------------------------------------------------------------------- LNG terminals (ALSI)
+  # Owned here because the brief assigns LNGATL* to fundamentals; the lng-flows agent must NOT also
+  # declare these ids in bloomberg_lng.yaml (the Bloomberg adapter merges all bloomberg*.yaml files).
+  lng.eu.sendout_gwhd:
+    <<: *agsi
+    ticker: "LNGATLSO Index"
+    unit: GWh/d
+    description_unit: GWh/d
+    measure_type: flow
+    geography: EU
+    provenance: "../GasImbalanceModel/config/bloomberg_series.yaml lng_series.europe_lng_sendout (identified, not pulled in sibling Phase 1)"
+  lng.eu.terminal_inventory_1000m3:
+    # Bloomberg: "Europe LNG Inventory (Daily,1000 m3,GIE)". The sibling labels this `km3`, which
+    # reads as cubic KILOMETRES (1e9 m3) - wrong by 10^6. Kept as "1000m3". Whether this is LIQUID
+    # LNG volume (ALSI convention, ~600x gas volume) or gas volume is unresolved: never convert it
+    # with units.GasQuality (a gas-phase GCV) until settled.
+    <<: *agsi
+    ticker: "LNGATLIN Index"
+    unit: "1000m3"
+    description_unit: "1000 m3"
+    measure_type: stock
+    geography: EU
+    provenance: "../GasImbalanceModel/config/bloomberg_series.yaml lng_series.europe_lng_inventory (identified, not pulled in sibling Phase 1)"
+  lng.eu.sendout_capacity_gwhd:
+    # ALSI publishes declared/technical send-out capacity (DTRS); no Bloomberg identifier known.
+    <<: *agsi
+    ticker: null
+    status: requires_discovery
+    unit: GWh/d
+    description_unit: null
+    measure_type: capacity
+    geography: EU
+    provenance: "none"
+
+  # --------------------------------------------------------------- TSO demand (country components)
+  # NOT an EU total: these cover parts of FR/BE/NL/AT/UK only (Germany has no daily demand series on
+  # Bloomberg - ../GasImbalanceModel/config/demand_sources.yaml `gaps.DE_demand`). Useful for
+  # country-level checks and as weather-sensitive demand proxies; never summed into an "EU demand".
+  demand.fr.total_gwhd:          {<<: *tso_demand, ticker: "FRGCALTL Index", unit: GWh/d, description_unit: GWh/d, geography: FR, sign: 1}
+  demand.fr.ldz_gwhd:            {<<: *tso_demand, ticker: "FRGCSDPD Index", unit: GWh/d, description_unit: GWh/d, geography: FR, sign: 1}
+  demand.fr.industry_hms_gwhd:   {<<: *tso_demand, ticker: "FRGCNDCC Index", unit: GWh/d, description_unit: GWh/d, geography: FR, sign: 1}
+  demand.fr.industry_nonhms_gwhd: {<<: *tso_demand, ticker: "FRGCADIC Index", unit: GWh/d, description_unit: GWh/d, geography: FR, sign: 1}
+  demand.fr.terega_pitd_gwhd:    {<<: *tso_demand, ticker: "TFGDPITD Index", unit: GWh/d, description_unit: GWh/d, geography: FR, sign: 1}
+  demand.fr.terega_pic_gwhd:     {<<: *tso_demand, ticker: "TFGDPIC Index",  unit: GWh/d, description_unit: GWh/d, geography: FR, sign: 1}
+  demand.be.ldz_mcmd:            {<<: *tso_demand, ticker: "FXMDEFHD Index", unit: mcm/d, description_unit: mcm/d, geography: BE, sign: -1}
+  demand.be.industry_mcmd:       {<<: *tso_demand, ticker: "FXMCHPIC Index", unit: mcm/d, description_unit: mcm/d, geography: BE, sign: -1}
+  demand.be.power_mcmd:          {<<: *tso_demand, ticker: "FXMPHPPP Index", unit: mcm/d, description_unit: mcm/d, geography: BE, sign: -1}
+  demand.nl.industry_h_mcmd:     {<<: *tso_demand, ticker: "NLGDMINH Index", unit: mcm/d, description_unit: mcm/d, geography: NL, sign: 1}
+  demand.nl.industry_l_mcmd:     {<<: *tso_demand, ticker: "NLGDMINL Index", unit: mcm/d, description_unit: mcm/d, geography: NL, sign: 1}
+  demand.at.area_east_mcmd:      {<<: *tso_demand, ticker: "AGGMEDEM Index", unit: mcm/d, description_unit: mcm/d, geography: AT, sign: 1}
+  demand.at.area_tyrol_mcmd:     {<<: *tso_demand, ticker: "AGGMTDEM Index", unit: mcm/d, description_unit: mcm/d, geography: AT, sign: 1}
+  demand.at.area_vorarlberg_mcmd: {<<: *tso_demand, ticker: "AGGMVDEM Index", unit: mcm/d, description_unit: mcm/d, geography: AT, sign: 1}
+  demand.gb.ldz_eastern_mcmd:    {<<: *tso_demand, ticker: "NLDZEA1D Index", unit: mcm/d, description_unit: mcm/d, geography: GB, sign: 1}
+
+  # ===================================================================================================
+  # Bloomberg discovery 2026-10-19 (read-only //blp/instruments + ReferenceDataRequest on NAME,
+  # PX_LAST, LAST_UPDATE_DT, QUOTE_UNITS). Usable series only; dead and entitlement-walled tickers are
+  # listed in docs/bloomberg_discovery.md, not here. Live = LAST_UPDATE_DT on or after 2026-10-01.
+  # PIT: B grade throughout (Bloomberg keeps the latest value only, no vintages). Daily flows and
+  # production: D+1 12:00 Europe/Amsterdam (ASSUMPTION, conservative). Monthly production: 45 days.
+  # ===================================================================================================
+  flow.no.exit_total_mcmd:
+    vendor: bloomberg
+    ticker: "GAANTOTL Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: NO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Norway Total Exit Daily Within-Day Nominations (Gassco)(MCM/d)'; live, PX_LAST 341.0 on 2026-10-18, QUOTE_UNITS MCM/d"
+    note: "Within-day nominations, not final allocations. Revision behaviour unknown."
+  flow.no.exit_to_de_mcmd:
+    vendor: bloomberg
+    ticker: "GAANNGAG Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: NO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Norway to Germany Daily Historical Flows/Within-Day Nominations (Gassco)'; live, PX_LAST 143.3 on 2026-10-18. Dead twins GAAFGERG and GASSGERG (last update 2020) not used"
+  flow.no.exit_to_uk_mcmd:
+    vendor: bloomberg
+    ticker: "GAANUKRG Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: NO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Norway to the UK Total Exit Daily Within-Day Nominations (Gassco)'; live, PX_LAST 87.5 on 2026-10-18. Dead twins GAAFUKG and GASSUKG (last update 2020) not used"
+  flow.no.exit_to_others_mcmd:
+    vendor: bloomberg
+    ticker: "GAANNOAG Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: NO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Norway to Others Daily Historical Flows/Within-Day Nominations (Gassco)'; live, PX_LAST 1.4 on 2026-10-18"
+    note: "Small residual route. No Bloomberg series gives the Benelux/France split of the Gassco total; do not derive one by subtraction without a stated assumption"
+  flow.de.dornum_entry_gwhd:
+    vendor: bloomberg
+    ticker: "GUDFDODF Index"
+    field: px_last
+    unit: GWh/d
+    description_unit: GWh/d
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Dornum Gasunie DTS Daily Gas Flows (Norway to Germany)'; live, PX_LAST 679.1 GWh/d on 2026-10-18"
+    note: "Same corridor as flow.no.exit_to_de_mcmd in other units: a cross-check, not an extra route. GUDMDODF (MCM/d twin) last updated 2024-10-05, not used"
+  flow.ru.to_ce_europe_mcmd:
+    vendor: bloomberg
+    ticker: "EGTPNTRC Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: CE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Russia > CE Europe Net Gas Flow (MCM/d)'; live, PX_LAST 7.39 on 2026-10-17"
+    note: "Net Russian flow into Central Europe. Dead: NRSTFLOW (NordStream Greifswald, last 2023-08-30) and EGTPNTRN (NW Europe, last 2023-08-30)"
+  flow.ru.to_se_europe_mcmd:
+    vendor: bloomberg
+    ticker: "EGTPNTRS Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: SE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Russia > SE Europe Gas Flow (MCM/d)'; live, PX_LAST 48.5 on 2026-10-17"
+  prod.nl.gas_production_mcmd:
+    vendor: bloomberg
+    ticker: "NLFMPROD Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Netherlands Gas Production (MCM/d) (GTS)'; live, PX_LAST 25.33 on 2026-10-19. GWh/d twin NLFIPROD not added (same series). Monthly NLGPTOTL, NLGPGROP, NLGPOFTO, NLGPOSTO last updated 2022-02-28: dead"
+  prod.no.troll_field_mcm_monthly:
+    vendor: bloomberg
+    ticker: "NWGPTYGP Index"
+    field: px_last
+    unit: million_m3
+    description_unit: "million cubic meters"
+    frequency: monthly
+    geography: NO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 45, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'Norway Fuel Production Troll Field Gas'; live, PX_LAST 3812.8 million m3, last update 2026-07-31"
+    note: "Monthly, one field. 45-day lag is an ASSUMPTION"
+  demand.de.slp_weekly_gwhd:
+    vendor: bloomberg
+    ticker: "DEGSDEWK Index"
+    field: px_last
+    unit: GWh/d
+    description_unit: GWh/d
+    frequency: weekly
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 7, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'German SLP Gas Demand - Weekly Average (Bnetza)(GWh/d)'; live, PX_LAST 281 GWh/d, last update 2026-10-04"
+    note: "Standard-load-profile (small consumer) demand only, NOT total German demand. TGD DE (total gas demand from power generation, last update 2011-12-31) is dead"
+
+  # ---- Bloomberg discovery 2026-10-19 (read-only): WSI station temperatures (observed, Celsius) -----
+  # Weather station series on Bloomberg (WSI / "Custom Weather", live 2026-10-17..19, history from at
+  # least 2011-01-03, probed with an 8-day window). ONLY observed station values: no forecasts, no
+  # ensembles and no issue times were found for Europe. Averaging basis (daily mean, max or min) is
+  # NOT stated in the discovery record: UNVERIFIED, confirm with DES on the Terminal before use.
+  # Revised values possible (WSI corrections); B grade. Lag: D+1 12:00 (ASSUMPTION).
+  weather.nl.schiphol_t2m_obs_degc:
+    vendor: bloomberg
+    ticker: "WENLEHAM Index"
+    field: px_last
+    unit: degC
+    description_unit: Celsius
+    frequency: daily
+    geography: NL
+    measure_type: observation
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'WSI/ Custom Weather Amsterdam/Schiphol Netherlands Weather Data/062400'; live, PX_LAST 13.3 on 2026-10-19; QUOTE_UNITS Celsius"
+  weather.gb.heathrow_t2m_obs_degc:
+    vendor: bloomberg
+    ticker: "WEUKEGLL Index"
+    field: px_last
+    unit: degC
+    description_unit: Celsius
+    frequency: daily
+    geography: GB
+    measure_type: observation
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'WSI/ Custom Weather London/Heathrow United Kingdom Weather Data/037720'; live, PX_LAST 9.9 on 2026-10-17; QUOTE_UNITS Celsius"
+  weather.fr.orly_t2m_obs_degc:
+    vendor: bloomberg
+    ticker: "WEFRLFPO Index"
+    field: px_last
+    unit: degC
+    description_unit: Celsius
+    frequency: daily
+    geography: FR
+    measure_type: observation
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'WSI/ Custom Weather Paris/Orly'; live, PX_LAST 12.3 on 2026-10-17; QUOTE_UNITS Celsius"
+  weather.de.berlin_t2m_obs_degc:
+    vendor: bloomberg
+    ticker: "WEDLEDDB Index"
+    field: px_last
+    unit: degC
+    description_unit: Celsius
+    frequency: daily
+    geography: DE
+    measure_type: observation
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'WSI/ Custom Weather Berlin Schoenfeld Germany Weather Data'; live, PX_LAST 10.4 on 2026-10-17; QUOTE_UNITS Celsius"
+  weather.de.munich_t2m_obs_degc:
+    vendor: bloomberg
+    ticker: "WEDLEDDM Index"
+    field: px_last
+    unit: degC
+    description_unit: Celsius
+    frequency: daily
+    geography: DE
+    measure_type: observation
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'WSI/ Custom Weather Munich/Riem Germany Weather Data/108660'; live, PX_LAST 11.1 on 2026-10-19; QUOTE_UNITS Celsius"
+  weather.de.regional_t2m_obs_degc:
+    vendor: bloomberg
+    ticker: "WER1DL00 Index"
+    field: px_last
+    unit: degC
+    description_unit: "unknown (QUOTE_UNITS blank); magnitude consistent with Celsius"
+    frequency: daily
+    geography: DE
+    measure_type: observation
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'WSI/ CW Weather Regional Average Country Germany'; live, PX_LAST 10.99 on 2026-10-17"
+    note: "UNITS UNCONFIRMED. Check the pull's magnitude against the station series before any use"
+  flow.gb.bacton_iuk_to_be_mcmd:
+    vendor: bloomberg
+    ticker: "GBITKMCM Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: "Europe/Amsterdam", business_days: false}
+    publication_lag_evidence: none
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg discovery 2026-10-19: 'UK Interconnector Bacton Gas Flow UK>BE (MCM/Day)'; live, PX_LAST 18.77 on 2026-10-19, QUOTE_UNITS MCM/d (GBITBMCM 'actual flow' twin has identical value: not added)"
+    note: "UK to Belgium via IUK at Bacton. Pipeline interconnector flow; a UK-to-continent route, not Norway"

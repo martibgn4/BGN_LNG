@@ -1,0 +1,76 @@
+# LNG cargo imports per country: BSRCH TPD:DEX saved searches (user keys, 2026-10-20; all 15 verified with TPD:DEX the same day).
+# Read by data/lng_imports.py only. A country is pulled only when status is 'known' and it has at least one bikeys entry.
+# Several keys per country are allowed (e.g. date-split keys); rows are merged and de-duplicated by IMO + arrival.
+# A search that returns the BSRCH cap (2,000 rows) is truncated: history_truncated_before = the first arrival date that
+# the capped search returned. Days before it are stored as NaN (unknown), never as zero imports.
+countries:
+  NL:
+    geography: NL
+    status: known
+    bikeys: ["41UT24O9ARLJ60ST27JSQI3N6"]  # 1377 rows, 2016-12-11..
+  PT:
+    geography: PT
+    status: known
+    bikeys: ["C3MAL313496YDMUIP3OKWA0J8"]  # 530 rows, 2016-12-17..
+  ES:
+    geography: ES
+    status: known
+    bikeys: ["36G7EY4VOPZD2IDM1TJI2EWPW"]  # 2000 = CAPPED, 2018-07-16..
+    history_truncated_before: "2018-07-16"
+  FI:
+    geography: FI
+    status: known
+    bikeys: ["A11XBEGAUGFHJMUNBG1FEC4"]  # 250 rows, 2017-11-19..
+  BE:
+    geography: BE
+    status: known
+    bikeys: ["77BKCFH1CF2M3WM9H4PCXWQ2F"]  # 926 rows, 2017-01-02..
+  GB:
+    geography: GB
+    status: known
+    bikeys: ["2WE2ULYH1HAWASWQFDN6KVC8R"]  # 1364 rows, 2016-12-21..
+  FR:
+    geography: FR
+    status: known
+    bikeys: ["2TBY7SOIRLK16P4WD6F8MDCJM"]  # 2000 = CAPPED, 2020-02-19..
+    history_truncated_before: "2020-02-19"
+  SE:
+    geography: SE
+    status: known
+    bikeys: ["56XAAQ17PDE6IXYH9IIXKN759"]  # 183 rows, 2019-03-09..
+  IT:
+    geography: IT
+    status: known
+    bikeys: ["1CAAL4XMJIFW38QNBAS5KFLS9"]  # 1611 rows, 2016-12-13..
+  DE:
+    geography: DE
+    status: known
+    bikeys: ["CSGPULI97EANXAWTYRFBS5EB0"]  # 329 rows, 2022-12-20..
+  GI:
+    geography: GI
+    status: known
+    bikeys: ["EGTO1ZB45O1JQ810UW00CLFWV"]  # 119 rows, 2019-01-10..
+  HR:
+    geography: HR
+    status: known
+    bikeys: ["2KWEOHB0QI0ZCTOPP3Y9A8B9J"]  # 137 rows, 2020-12-15..
+  PL:
+    geography: PL
+    status: known
+    bikeys: ["1Q7SSCED2WRDG69QQD2RUELV0"]  # 455 rows, 2017-01-21..
+  LT:
+    geography: LT
+    status: known
+    bikeys: ["PO4XLG103W7N44B3MWL5NPJV"]  # 380 rows, 2016-12-30..
+  TR:
+    geography: TR
+    status: known
+    bikeys: ["BUUA3L3J21F76OEA9M95VTOC2"]  # 1358 rows, 2016-12-08..
+
+# Regional aggregates (sum of the member countries; a day is NaN if any member is NaN). Turkey is kept separate.
+regions:
+  NWE: [NL, BE, FR, GB, DE]
+  IBERIA: [ES, PT]
+  MED: [IT, HR, GI]
+  NORDIC_BALTIC: [FI, SE, PL, LT]
+  TURKEY: [TR]

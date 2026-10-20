@@ -1,0 +1,399 @@
+# Bloomberg BSRCH power-plant unavailability, ASSET_OUTAGE:POWER_PLANT (D-043). Read by data/outages.py only.
+#
+# PROVENANCE: BSRCH domain ASSET_OUTAGE:POWER_PLANT, supplied by the user as an Excel form
+# (=@BSRCH("ASSET_OUTAGE:POWER_PLANT", "LOCATION=..", "START_DATE=..", "END_DATE=..", "AS_OF_DATE=..", "STACK=FALSE")).
+# Verified through the Python API (xbbg blp.bsrch) on 2026-10-19: FR, DE and NORDPOOL return data; other locations 0 rows.
+#
+# Values are unavailable MW per fuel per applicable day. One as-of date gives the forward plan to 2028-12-31.
+# AS_OF_DATE is honoured back to 2026-10-13 only, so vintages exist from that date. START_DATE is a rolling year
+# before the as-of date. There is no ticker: ticker and field are null, so the ticker adapter refuses these series.
+#
+# PIT: snapshot rows (applicable day >= as-of) are FORECAST rows with issue = publication = the request time
+# (conservative). Realised rows (applicable day < as-of) are OBSERVATION rows, grade B, D+1 12:00 UTC.
+# Units MW are as BSRCH returns them (measured).
+
+series:
+  power.fr.outage_biomass_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Biomass' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_coal_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Coal' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_hydro_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Hydro' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_natural_gas_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Natural Gas' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_nuclear_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Nuclear' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_oil_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Oil' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_other_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Other' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_storage_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Storage' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.fr.outage_wind_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=FR, column 'Wind' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_biomass_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Biomass' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_coal_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Coal' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_hydro_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Hydro' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_lignite_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Lignite' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_natural_gas_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Natural Gas' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_oil_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Oil' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_other_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Other' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_other_gas_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Other Gas' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_solar_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Solar' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_storage_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Storage' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_waste_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Waste' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.de.outage_wind_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=DE, column 'Wind' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_biomass_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Biomass' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_coal_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Coal' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_hydro_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Hydro' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_natural_gas_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Natural Gas' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_nuclear_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Nuclear' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_oil_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Oil' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_other_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Other' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_solar_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Solar' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_storage_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Storage' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_waste_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Waste' (user-supplied domain; verified 2026-10-19, D-043)"
+  power.nordpool.outage_wind_unavail_mw:
+    vendor: bloomberg_bsrch
+    ticker: null
+    field: null
+    unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    status: known
+    pit_grade: B
+    publication_lag: {days: 1, time: "12:00", tz: UTC, business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "BSRCH ASSET_OUTAGE:POWER_PLANT LOCATION=NORDPOOL, column 'Wind' (user-supplied domain; verified 2026-10-19, D-043)"

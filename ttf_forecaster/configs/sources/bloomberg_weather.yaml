@@ -1,0 +1,2872 @@
+# Bloomberg weather through BQL weather(), read via the user's Excel (D-042, 2026-10-19).
+# NOT served by the Bloomberg ticker adapter: these entries have no ticker (ticker: null), so is_known is False and
+# LiveBloombergAdapter refuses them. They are filled by pipelines/bql_weather.py through data/bql_excel.py.
+# Forecast series: one row per (as_of, lead) per model in the 'model' and 'member' columns of FORECAST_SCHEMA.
+# Units are the BQL convention and are ASSUMED until checked on the Terminal (WIND_SPEED m/s, SOLAR_RADIATION W/m2).
+# Solar radiation is not returned for actuals or normals.
+
+series:
+  weather.de.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: A
+    publication_lag: &id001
+      days: 0
+      time: '10:00'
+      tz: UTC
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.de.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.de.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.de.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.de.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.de.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: &id002
+      days: 1
+      time: '12:00'
+      tz: UTC
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.de.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.de.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.de.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.de.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.de.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.de.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.de.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.de.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.de.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.de.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.de.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: DE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nl.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nl.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nl.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nl.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nl.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nl.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nl.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nl.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nl.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nl.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.fr.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.fr.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.fr.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.fr.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.fr.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.fr.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.fr.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.fr.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.fr.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.fr.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: FR
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.gb.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.gb.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.gb.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.gb.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.gb.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.gb.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.gb.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.gb.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.gb.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.gb.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: GB
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.it.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.it.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.it.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.it.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.it.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.it.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.it.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.it.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.it.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.it.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: IT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.be.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.be.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.be.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.be.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.be.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.be.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.be.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.be.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.be.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.be.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: BE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.at.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.at.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.at.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.at.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.at.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.at.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.at.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.at.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.at.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.at.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: AT
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.pl.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.pl.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.pl.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.pl.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.pl.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.pl.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.pl.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.pl.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.pl.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.pl.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: PL
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nwe.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nwe.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nwe.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nwe.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.nwe.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nwe.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nwe.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nwe.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.nwe.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.nwe.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: NWE
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.cen.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.cen.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.cen.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.cen.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.cen.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.cen.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.cen.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.cen.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.cen.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.cen.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: CEN
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.eeu.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.eeu.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.eeu.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.eeu.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.eeu.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.eeu.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.eeu.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.eeu.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.eeu.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.eeu.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: EEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.hdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.seu.cdd18_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.seu.t2m_mean_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.seu.wind_speed_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.seu.solar_rad_w_m2:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: W_m2
+    description_unit: W_m2
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: A
+    publication_lag: *id001
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Forecast vintages: rows keyed by as_of (issue D 00Z); lead i = valid day D+i. Units ASSUMED from BQL convention'
+  weather.seu.hdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.seu.hdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.hdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.cdd18_obs_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.seu.cdd18_normals_10y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.cdd18_normals_30y_degc_day:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC_day
+    description_unit: degC_day
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.t2m_mean_obs_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.seu.t2m_mean_normals_10y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.t2m_mean_normals_30y_degc:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: degC
+    description_unit: degC
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.wind_speed_obs_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: B
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'Observed daily value (BQL ae=A). Revisions unknown: grade B, D+1 12Z assumed'
+  weather.seu.wind_speed_normals_10y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_10Y climatology: uses years after the event, excluded from clean backtests (grade C)'
+  weather.seu.wind_speed_normals_30y_m_s:
+    vendor: bloomberg_bql_excel
+    ticker: null
+    field: null
+    unit: m_s
+    description_unit: m_s
+    frequency: daily
+    geography: SEU
+    status: known
+    pit_grade: C
+    publication_lag: *id002
+    entitlement: licensed_bloomberg
+    provenance: BQL weather() via Excel, verified 2026-10-19 (D-042)
+    note: 'NORMALS_30Y climatology: uses years after the event, excluded from clean backtests (grade C)'

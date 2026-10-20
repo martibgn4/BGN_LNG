@@ -1,0 +1,428 @@
+# Bloomberg market data: identifiers, fields and PIT rules. Owned by the market-data agent.
+#
+# Per-series entries follow the shared schema in configs/data_sources.yaml. The adapter
+# (src/ttf_forecaster/data/bloomberg.py) serves every `series:` entry found in ANY
+# configs/sources/bloomberg*.yaml file (this file, bloomberg_lng.yaml, bloomberg_fundamentals.yaml),
+# plus the futures curves declared under `curves:` below (this file only).
+#
+# Status: known = in production use / verified in this repo, provenance cited. Nothing below was
+# re-verified from this project (no live calls were made). Only `known` may be requested live, and
+# only when configs/local_data_sources.yaml sets live_calls_authorised: true on the user's instruction.
+
+client:
+  library: xbbg
+  # xbbg lowercases returned field names. xbbg 1.x returns polars and breaks pandas `.empty`
+  # checks (NWEBasisModel/config/sources.yaml: pinned_version 0.12.2). env_local has 0.10.3.
+  supported_versions: ["0.10.3", "0.12.2"]
+  provenance: "NWEBasisModel/config/sources.yaml (bloomberg.pinned_version); docs/environment_audit.md"
+
+fields:
+  settle:
+    name: px_settle
+    status: known
+    provenance: "Data/lng_report/daily_market_data_reporting.py BBG_SETTLE_FIELD; NWEBasisModel/config/sources.yaml settle_field"
+    note: "[CONFIRM] equals the exchange settlement (not last trade) on all dates since 2015 (target_definitions.md §4.2). Some ICE swap futures leave px_settle empty (Data/lng_report/oil_products_reporting.py) - not expected for TZT."
+  settle_date:
+    name: px_settle_last_dt
+    status: known
+    provenance: "Data/lng_report/daily_market_data_reporting.py BBG_SETTLE_DATE_FIELD; NWEBasisModel/config/sources.yaml settle_date_field"
+  last:
+    name: px_last
+    status: known
+    provenance: "Data/lng_report/bloomberg.py get_historical_prices_for_underlyings default price_label"
+  last_trade_date:
+    # Used with blp.bdp on TZT/CO/JKL monthly contract tickers in an (untracked) adhoc script.
+    # Status 'known' on that provenance; a wrong field would fail loudly because computed expiries
+    # are cross-checked against it and a mismatch is a hard error (contracts/futures.py).
+    name: last_tradeable_dt
+    status: known
+    provenance: "adhoc_scripts/build_india_options_xlsm.py:130 blp.bdp(tickers, ['PX_LAST', 'LAST_TRADEABLE_DT'])"
+  bid:
+    name: null
+    status: requires_user_input
+    provenance: "NOT AVAILABLE on this Terminal (user instruction 2026-10-19); costs stay an ASSUMPTION"
+  ask:
+    name: null
+    status: requires_user_input
+    provenance: "NOT AVAILABLE (user instruction 2026-10-19)"
+  volume:
+    name: px_volume
+    status: known
+    provenance: "user instruction 2026-10-19 (available via Python API); Bloomberg discovery + reference check 2026-10-19 (read-only): TZT1 PX_VOLUME=14227 on 2026-10-19"
+  open_interest:
+    name: open_int
+    status: known
+    provenance: "user instruction 2026-10-19; Bloomberg discovery + reference check 2026-10-19 (read-only): TZT1 OPEN_INT=222215 on 2026-10-19"
+  implied_vol:
+    name: hist_call_imp_vol
+    status: known
+    provenance: "Bloomberg discovery + reference check 2026-10-19 (read-only): FJS1 Comdty HIST_CALL_IMP_VOL=69.20 / HIST_PUT_IMP_VOL=69.20; used on FJS generics"
+    note: "ASSUMPTION: Bloomberg historical call implied vol of the generic option series approximates ATM front-month vol; put twin hist_put_imp_vol"
+
+# Futures curves served by get_curve_snapshot(hub). Contract tickers are built from these roots by
+# contracts/futures.py::bloomberg_ticker with the rule below.
+#
+# TICKER RULE (provenance: Data/lng_report/bloomberg.py BloombergExtractor.get_monthly/quarterly/
+# season/yearly_tickers and Data/lng_report/config.py, both in production use):
+#   monthly   : <root_M> + <month code of delivery month> + <yy>            e.g. TZTX26 Comdty
+#   quarterly : <root_Q> + <month code of FIRST month of quarter> + <yy>     Q1 F, Q2 J, Q3 N, Q4 V
+#   season    : <root_S> + J (Summer Apr-Sep) | V (Winter Oct-Mar) + <yy of first delivery month>
+#   calendar  : <root_Y> + F + <yy>
+#   hubs with period_suffix: true (Data/lng_report/config.py `add_suffix_underlyings`: THE, PEG,
+#   PSV, PVB, VTP) append the period letter M | Q | S | Y after <yy>; then " Comdty".
+#   Month codes F G H J K M N Q U V X Z (config.py `bbg_month_codes`). Two-digit year
+#   (config.py start_year=26 style; adhoc_scripts/build_india_options_xlsm.py:ticker()).
+ticker_rule:
+  month_codes: [F, G, H, J, K, M, N, Q, U, V, X, Z]
+  season_codes: {SUM: J, WIN: V}
+  year_code: F
+  year_digits: 2
+  suffix_letters: {M: M, Q: Q, S: S, Y: Y}
+  provenance: "Data/lng_report/bloomberg.py + Data/lng_report/config.py (production)"
+
+_curve_defaults: &curve_defaults
+  vendor: bloomberg
+  field: settle
+  frequency: daily
+  entitlement: licensed_bloomberg
+  yellow_key: Comdty
+
+curves:
+  TTF:
+    <<: *curve_defaults
+    roots: {M: TZT, Q: QZT, S: QQT, Y: QTT}
+    period_suffix: false
+    unit: EUR/MWh
+    currency: EUR
+    geography: NL
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['TTF']; DeliveryOptionModel/config/market.yaml future_root TZT"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+  TTF_USD:
+    <<: *curve_defaults
+    roots: {M: TMR, Q: TQR, S: TSR, Y: TYR}
+    period_suffix: false
+    unit: USD/MMBtu
+    currency: USD
+    geography: NL
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['TFU']; NWEBasisModel/config/sources.yaml monthly_root_usd"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    note: "not used for targets (target_definitions.md §0)"
+  NBP:
+    <<: *curve_defaults
+    roots: {M: FN, Q: QR, S: SA, Y: YAA}
+    period_suffix: false
+    unit: GBp/therm
+    currency: GBP
+    geography: GB
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['NBP']"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    note: "unit GBp/therm assumed [CONFIRM]; London close precedes 19:00 CET"
+  THE:
+    # D-039 (2026-10-19, orchestrator follow-up, verified by bdh): ICE Endex THE monthly root is LFT,
+    # the same TZT-style 2-digit rule. LFTX16 (2016-10 settle 15.82), LFTX21 (2021) and LFTX26 (live,
+    # 74.98) all return data. Monthly only: Q/S/Y LFT roots are NOT verified, so not configured.
+    # Documented alternative (PNX/EEX, same hub, 1-digit form): root NCG, see ticker_form pnx below.
+    <<: *curve_defaults
+    roots: {M: LFT}
+    period_suffix: false
+    unit: EUR/MWh
+    currency: EUR
+    geography: DE
+    status: known
+    provenance: "ICE Endex root LFT verified 2026-10-19: bdh px_settle LFTX16 (2016-10-03..07, 5 rows, 15.82), LFTX21 (2021-10-04..08, 5 rows), LFTX26 (2026-10-01..08, 6 rows, 74.98). Earlier NCG (PNX) root: data/lng_report/config.py dict_comm_to_tickers['THE']"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+  PEG:
+    <<: *curve_defaults
+    # D-039: PNX (EEX) root PNG: PNGX6M16 2016-10 15.88 (5 rows); listed PNGX6M 2026 (6 rows). Ticker form pnx: listed root+month+1-digit year+M, expired adds 2-digit year
+    ticker_form: pnx
+    roots: {M: PNG}
+    period_suffix: false
+    unit: EUR/MWh
+    currency: EUR
+    geography: FR
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['PEG'] + add_suffix_underlyings"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+  PSV:
+    <<: *curve_defaults
+    # D-039: PNX root PSR: PSRX6M16 2016 (5 rows, 17.48), PSRX1M21 2021 (5 rows, 96.68), PSRX6M live (6 rows). Ticker form pnx: listed root+month+1-digit year+M, expired adds 2-digit year
+    ticker_form: pnx
+    roots: {M: PSR}
+    period_suffix: false
+    unit: EUR/MWh
+    currency: EUR
+    geography: IT
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['PSV'] + add_suffix_underlyings"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+  PVB:
+    <<: *curve_defaults
+    # D-039: PNX root PXB: expired and listed forms NOT yet verified (see pull log). Ticker form pnx: listed root+month+1-digit year+M, expired adds 2-digit year
+    ticker_form: pnx
+    roots: {M: PXB}
+    period_suffix: false
+    unit: EUR/MWh
+    currency: EUR
+    geography: ES
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['PVB'] + add_suffix_underlyings"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+  VTP:
+    <<: *curve_defaults
+    # D-039: PNX root CEG: expired and listed forms NOT yet verified (see pull log). Ticker form pnx: listed root+month+1-digit year+M, expired adds 2-digit year
+    ticker_form: pnx
+    roots: {M: CEG}
+    period_suffix: false
+    unit: EUR/MWh
+    currency: EUR
+    geography: AT
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['VTP'] + add_suffix_underlyings"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+  JKM:
+    <<: *curve_defaults
+    roots: {M: JKL}
+    period_suffix: false
+    unit: USD/MMBtu
+    currency: USD
+    geography: JP
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['JKM']; history depth UNVERIFIED (NWEBasisModel/config/sources.yaml jkm.status)"
+    pit_grade: A
+    # Closes after the TTF settlement: usable for a TTF origin only from the next European session.
+    publication_lag: {days: 1, time: "19:00", tz: Europe/Amsterdam, business_days: true}
+  HH:
+    <<: *curve_defaults
+    roots: {M: NG}
+    period_suffix: false
+    unit: USD/MMBtu
+    currency: USD
+    geography: US
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['HH']; DeliveryOptionModel/config/market.yaml"
+    pit_grade: A
+    publication_lag: {days: 1, time: "19:00", tz: Europe/Amsterdam, business_days: true}
+  Brent:
+    <<: *curve_defaults
+    roots: {M: CO}
+    period_suffix: false
+    unit: USD/bbl
+    currency: USD
+    geography: GLOBAL
+    status: known
+    provenance: "Data/lng_report/config.py dict_comm_to_tickers['Brent']; DeliveryOptionModel/config/market.yaml"
+    pit_grade: A
+    publication_lag: {days: 1, time: "19:00", tz: Europe/Amsterdam, business_days: true}
+
+# Single-ticker observation series (OBSERVATION_SCHEMA via get_historical_series).
+series:
+  fx.eurusd.spot_usd_per_eur:
+    vendor: bloomberg
+    ticker: "EUR Curncy"
+    field: px_last            # FX has no px_settle (Data/lng_report/daily_market_data_reporting.py)
+    unit: USD/EUR
+    frequency: daily
+    geography: GLOBAL
+    status: known
+    provenance: "DeliveryOptionModel/config/market.yaml hubs.TTF.fx; field per Data/lng_report/daily_market_data_reporting.py"
+    pit_grade: A
+    # Bloomberg's daily FX close is later than the TTF settlement: next European session (PIT §4).
+    publication_lag: {days: 1, time: "19:00", tz: Europe/Amsterdam, business_days: true}
+    entitlement: licensed_bloomberg
+
+  fx.eurgbp.spot_gbp_per_eur:
+    # Added by the orchestrator 2026-10-16 for NBP conversion (feature-engineering request).
+    vendor: bloomberg
+    ticker: "EURGBP BGN Curncy"
+    field: px_last
+    unit: GBP/EUR
+    frequency: daily
+    geography: GLOBAL
+    status: known
+    provenance: "Data/lng_report/violin.py:31 (fx_codes 'EURGBP BGN Curncy'); Data/lng_report/config.py dict_fx_to_tickers['EURGBP']"
+    pit_grade: A
+    publication_lag: {days: 1, time: "19:00", tz: Europe/Amsterdam, business_days: true}
+    entitlement: licensed_bloomberg
+
+  price.ttf.da_eur_mwh:
+    vendor: bloomberg
+    ticker: "EGSITFAD Index"
+    field: px_last
+    unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    status: known
+    provenance: "user instruction 2026-10-19 ('exchange spot index'); Bloomberg discovery + reference check 2026-10-19 (read-only): EEX TTF EGSI Spot Index (Weekday + Weekend), live 2026-10-18. ICE Endex TTFDDAHD Index stopped 2020-09-29 and is NOT used"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+    note: "EGSI is EEX's volume-weighted spot index for the gas day; weekend-inclusive. ASSUMPTION: published same trading day by 19:00. event_time = delivery gas day (00:00 local per D-016)"
+
+  price.ttf.da_pegas_eur_mwh:
+    vendor: bloomberg
+    ticker: "EEDATTF1 Index"
+    field: px_last
+    unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    status: known
+    provenance: "Bloomberg discovery + reference check 2026-10-19 (read-only): 'PEGAS TTF Spot - Day-Ahead', live 2026-10-19; cross-check for EGSI"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+
+  price.ttf.bom_eur_mwh:
+    vendor: bloomberg
+    ticker: "TTFGBOM Index"
+    field: px_last
+    unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    status: known
+    provenance: "Bloomberg discovery + reference check 2026-10-19 (read-only): 'Netherlands TTF Natural Gas Forward Balance of Month', live 2026-10-19 (Bloomberg OTC assessment, not an exchange settlement)"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+
+  price.coal_api2.m1_usd_t:
+    vendor: bloomberg
+    ticker: "XA1 Comdty"
+    field: px_settle
+    unit: USD/t
+    frequency: daily
+    geography: NWE
+    status: known
+    provenance: "user instruction 2026-10-19 (use the found candidate); Bloomberg discovery + reference check 2026-10-19 (read-only): XA1 Generic 1st 'XA' Future, USD/MT, OI 2267"
+    pit_grade: A
+    publication_lag: {days: 1, time: "19:00", tz: Europe/Amsterdam, business_days: true}
+    entitlement: licensed_bloomberg
+    note: "generic 1st future: ROLLS - use levels or roll-masked returns only (desk lesson on IKx1)"
+
+  price.eua.front_eur_t:
+    vendor: bloomberg
+    ticker: "MO1 Comdty"
+    field: px_settle
+    unit: EUR/t
+    frequency: daily
+    geography: EU
+    status: known
+    provenance: "user instruction 2026-10-19 (use the found candidate); Bloomberg discovery + reference check 2026-10-19 (read-only): MO1 = ECX EMISSION Dec26 (the Dec benchmark), EUR/MT, OI 308009"
+    pit_grade: A
+    publication_lag: {days: 1, time: "19:00", tz: Europe/Amsterdam, business_days: true}
+    entitlement: licensed_bloomberg
+    note: "generic 1st rolls once a year at the Dec expiry, so MO1 is the Dec benchmark between rolls; mask returns at the roll"
+
+  price.power_de.base_m1_eur_mwh:
+    vendor: bloomberg
+    ticker: "FPA2 Comdty"
+    field: px_settle
+    unit: EUR/MWh
+    frequency: daily
+    geography: DE
+    status: known
+    provenance: "Bloomberg discovery + reference check 2026-10-19 (read-only): FPA = EEX German Base Power Month (OI 4951, listed 2016-07); FPA1 is the CURRENT delivery month (Oct26 on 2026-10-19), so M1 = FPA2. SUBSTITUTE for the user's DEDAILY (see price.power_de.daily_eur_mwh)"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+    note: "ASSUMPTION: FPA generics roll at month start; confirm FPA2 = next delivery month on every date"
+
+  price.power_de.daily_eur_mwh:
+    vendor: bloomberg
+    ticker: "DEDAILY Index"
+    field: px_last
+    unit: EUR/MWh
+    frequency: daily
+    geography: DE
+    status: requires_user_input
+    provenance: "user instruction 2026-10-19; Bloomberg discovery + reference check 2026-10-19 (read-only): resolves to 'NOMX DE Base Futures Day' but PX_LAST and LAST_UPDATE_DT are EMPTY for the index and for dated contracts (DEDAILY 20261016/20261019 Comdty) - not entitled or dormant. Live alternative: ELGBDAHD Index (Germany Power Baseload Forward Day Ahead)"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+
+  price.power_de.da_otc_elgb_eur_mwh:
+    # D-041: renamed from price.power_de.da_eur_mwh. History starts 2011-02 (LPXBHRBS starts 2001), so the
+    # DE day-ahead id now points at LPXBHRBS (bloomberg_bnef.yaml). Kept for the OTC assessment.
+    vendor: bloomberg
+    ticker: "ELGBDAHD Index"
+    field: px_last
+    unit: EUR/MWh
+    frequency: daily
+    geography: DE
+    status: known
+    provenance: "Bloomberg discovery + reference check 2026-10-19 (read-only): 'Germany Power Baseload Forward Day Ahead', live 2026-10-19 (Bloomberg OTC assessment)"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+
+  price.ttf.m1_eur_mwh:
+    # SQ-05: the TTF front-month settle the power features need (power.yaml features.prices.gas).
+    # It is derived from the fixed-contract curve (contracts/rolls.py), not a vendor field, so there
+    # is no ticker. No adapter serves it yet; it is listed so the id has one owner.
+    vendor: bloomberg
+    ticker: null
+    field: null
+    unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    status: requires_discovery
+    provenance: "derived from TTF monthly settlements (curve store); the vendor-side id is not required"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+
+  price.power_nl.base_m1_eur_mwh:
+    vendor: bloomberg
+    ticker: "ELHB1MON Index"
+    field: px_last
+    unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    status: known
+    provenance: "Bloomberg discovery + reference check 2026-10-19 (read-only): 'Netherlands Power Baseload Forward Month 1', live 2026-10-19. Chosen over EEX KGR (OI 6) and ENDEX DUB (OI 155) for liquidity of the price signal (OTC assessment, not a settlement)"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+
+  price.power_nl.base_w1_eur_mwh:
+    vendor: bloomberg
+    ticker: "DFBAW Comdty"
+    field: px_settle
+    unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    status: known
+    provenance: "user instruction 2026-10-19 ('DFB'); Bloomberg discovery + reference check 2026-10-19 (read-only): DFB = EEX Dutch Power Base WEEK future, active contract DFBAW (W43-26, OI 137). There is no DFB1 generic (DFB1 Comdty is a USD/RIN future)"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+    note: "weekly contract: rolls every week; use levels only"
+
+  vol.ttf.m1_atm_implied_pct:
+    vendor: bloomberg
+    ticker: "FJS1 Comdty"
+    field: hist_call_imp_vol
+    unit: pct
+    frequency: daily
+    geography: NL
+    status: known
+    provenance: "Bloomberg discovery + reference check 2026-10-19 (read-only): FJS1 HIST_CALL_IMP_VOL 69.20 on 2026-10-19 (TZT has no implied-vol fields)"
+    pit_grade: A
+    publication_lag: {days: 0, time: "19:00", tz: Europe/Amsterdam, business_days: false}
+    entitlement: licensed_bloomberg
+    note: "ASSUMPTION: approximates ATM front-month implied vol; generic rolls with the option series"
+options:
+  TTF:
+    root: FJS
+    status: known
+    provenance: "DeliveryOptionModel/config/market.yaml hubs.TTF.option_root ('TZT has no OPT_CHAIN')"

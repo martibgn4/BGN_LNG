@@ -1,0 +1,110 @@
+# Feature-family configuration. Owned by the feature-engineering agent.
+# Read by pipelines/build_features.py (build_feature_matrix) and features/registry.py.
+#
+# Each family: enabled, optional builder override ("package.module:function"; default in
+# features/registry.py FAMILIES), params. `common` is merged under every family's params
+# (family params win). Builders are imported lazily: an enabled family whose module does not
+# exist fails with a clear FeatureRegistryError.
+#
+# No vendor identifiers here. Series ids are INTERNAL ids defined in configs/sources/*.yaml.
+# Items marked [CONFIRM] are assumptions to be checked before any live result is quoted.
+
+version: 1
+allow_grade_c: false            # grade C never enters a clean run; true only for a labelled
+                                # "upper-bound / contaminated" experiment
+
+common:
+  hub: TTF
+  roll_offset_bdays: 5          # front = nearest month with last trade > R bdays ahead (targets §1)
+  expiry_bdays_before_delivery: 2   # fallback when contract metadata is absent [CONFIRM]
+  holidays: []                  # local dates "YYYY-MM-DD"; ICE Endex calendar [CONFIRM]
+  allowed_grades: [A, B]
+  max_staleness_days: 7         # ffill limit from the last session used (PIT policy §5.2)
+
+families:
+  price:
+    enabled: true
+    params:
+      return_windows: [1, 5, 20]
+      vol_windows: [20, 60]
+      momentum_windows: [60, 120]
+      zscore_windows: [20, 60]
+      min_periods_frac: 0.8
+      annualisation_days: 252
+      volume_window: 20
+      oi_change_days: 5
+      # D-025 / SQ-06: the canonical splice in contracts/rolls.py (same chain, roll rule R and
+      # instruments.yaml calendar as the targets). Set null only to run the reference splice in
+      # features/prices.py, which is kept for cross-checks and is NOT the production path.
+      return_series_provider: "ttf_forecaster.contracts.rolls:canonical_front_series"
+
+  curve:
+    enabled: true
+    params:
+      curve_pad_months: 30
+      gas_year_start_month: 10      # m1_m2_dev normal uses strictly earlier gas years only
+      seasonal_min_years: 1
+
+  cross_commodity:
+    enabled: true
+    params:
+      eurusd_series_id: fx.eurusd.spot_usd_per_eur     # configs/sources/bloomberg.yaml (known)
+      jkm_hub: JKM                                       # curve hubs in configs/sources/bloomberg.yaml
+      hh_hub: HH
+      brent_hub: Brent
+      # TTF - (slope * HH + constant): HH-indexed US FOB plus liquefaction/shipping/regas.
+      # Illustrative desk-convention numbers, NOT estimated [CONFIRM with the desk].
+      hh_slope: 1.15
+      hh_constant_usd_mmbtu: 3.0
+      basis_hubs:
+        NBP: {fx_series_id: fx.eurgbp.spot_gbp_per_eur}  # internal id NOT yet in sources config
+        THE: {}
+        PEG: {}
+
+  calendar:
+    enabled: true
+    params:
+      gas_year_start_month: 10
+      heating_season_months: [10, 11, 12, 1, 2, 3]
+      injection_season_months: [4, 5, 6, 7, 8, 9]
+      withdrawal_season_months: [10, 11, 12, 1, 2, 3]
+      # Norwegian/NCS planned-maintenance concentration. Placeholder [CONFIRM with
+      # gas-fundamentals agent; ideally replaced by Gassco UMM planned-outage volume].
+      maintenance_season_months: [5, 6, 8, 9]
+      holiday_horizon_bdays: 20
+      expiry_week_bdays: 5
+
+  # Families owned by other agents: the orchestrator enables each after checking conformance with
+  # the builder contract in features/registry.py.
+  storage: {enabled: false, params: {}}
+  flows: {enabled: false, params: {}}
+  lng: {enabled: false, params: {}}
+  weather: {enabled: false, params: {}}
+  power: {enabled: false, params: {}}
+  text: {enabled: false, params: {}}   # excluded from clean runs until provenance exists
+
+  interactions:
+    enabled: true
+    params:
+      standardise: expanding    # matrix stage; per-fold train-only fit: InteractionTransformer
+      min_periods: 60
+      # skip (with a warning) specs whose input family is not enabled in this run; "error" to fail
+      on_missing_inputs: skip
+      # Every leg is one-sided (relu) in the tightness direction: value > 0 only when BOTH
+      # stresses are present, 0 otherwise (gas-fundamentals review, sign fix).
+      specs:
+        expiry_proximity_x_prompt_stress:
+          inputs: {bdays_to_expiry: calendar__bdays_to_prompt_expiry, prompt_spread: curve__m1_m2_dev}
+          window_bdays: 10
+        cold_x_low_storage:
+          inputs: {cold: weather__hdd_rev_d1_5, storage: storage__deviation_pct_pts}
+          active_months: [10, 11, 12, 1, 2, 3]       # 0 outside the heating season
+        norway_outage_x_low_storage:
+          enabled: false            # no Gassco UMM data source exists yet
+          inputs: {outage: flows__no_unavailable_next7d_gwhd, storage: storage__deviation_pct_pts}
+        residual_load_x_gas_below_switch:
+          inputs: {residual_load: power__de_residual_load_rev_gw, gas_minus_switch: power__gas_minus_switch_eur_mwh}
+        jkm_premium_x_falling_arrivals:     # inherits grade C from lng arrivals
+          inputs: {jkm_premium: lng__arb_nea_minus_nwe_usd_mmbtu, arrivals_change: lng__arrivals_eu_cargoes_14d_chg7d}
+        no_spare_slots_x_high_arrivals:     # expected sign +; grade C
+          inputs: {slots_available: lng__slots_m1_available, arrivals: lng__arrivals_eu_cargoes_14d}

@@ -1,0 +1,164 @@
+# Futures instruments: delivery conventions, expiry rules and the trading calendar.
+#
+# Owned by the market-data agent. Read by contracts/futures.py, contracts/calendars.py,
+# contracts/rolls.py and data/bloomberg.py. Items marked [CONFIRM] are assumptions about exchange
+# rules (docs/target_definitions.md §4); they are configuration so a correction is not a code change.
+#
+# Vendor identifiers (Bloomberg roots and the ticker-construction rule) are NOT here: per CLAUDE.md
+# they live only in configs/sources/bloomberg.yaml (`curves:` block).
+
+hubs:
+  TTF:
+    exchange: ICE Endex
+    currency: EUR
+    unit: EUR/MWh
+    timezone: Europe/Amsterdam
+    gas_day_start_hour: 6            # gas day 06:00-06:00 local (target_definitions.md §0)
+    tenors: [M, Q, S, Y]
+    expiry:
+      # Last trading day = N business days before the first calendar day of delivery. [CONFIRM]
+      # Q/S/Y contracts are assumed to cascade on the same date as their first month. [CONFIRM]
+      business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}
+      status: requires_confirmation
+      source: "target_definitions.md §1; ICE Endex contract specification not yet checked"
+      # D-035: vendor LAST_TRADEABLE_DT wins for listed contracts. The rule matched 151/159 TZT
+      # contracts (2015-02..2028-04); the 8 misses are UK-bank-holiday treatment that changed over
+      # time (holidays counted as business days in 2015-16, skipped from 2020). Mismatches are
+      # reported in contract_metadata attrs["expiry_mismatches"], never silently dropped.
+      vendor_authoritative: true
+    listing:
+      months_ahead: 18                # used only by the mock / live curve request range [CONFIRM]
+
+  TTF_USD:
+    # USD/MMBtu twin of TTF. NOT used for targets (target_definitions.md §0).
+    exchange: ICE Endex
+    currency: USD
+    unit: USD/MMBtu
+    timezone: Europe/Amsterdam
+    gas_day_start_hour: 6
+    tenors: [M, Q, S, Y]
+    # D-039: 21 of 130 TTF_USD contracts disagree with this rule, several by 2-3 weeks (e.g. 2015-03:
+    # rule 26 Feb, vendor 16 Mar). The rule does not describe this root; vendor date authoritative.
+    expiry: {business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}, status: requires_confirmation, vendor_authoritative: true}
+    listing: {months_ahead: 18}
+
+  NBP:
+    exchange: ICE Futures Europe
+    currency: GBP
+    unit: GBp/therm
+    timezone: Europe/London
+    gas_day_start_hour: 6
+    tenors: [M, Q, S, Y]
+    # D-039: 10 of 159 NBP contracts disagree with this rule; vendor LAST_TRADEABLE_DT authoritative.
+    expiry: {business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}, status: requires_confirmation, vendor_authoritative: true}
+    listing: {months_ahead: 18}
+
+  THE:
+    exchange: EEX/ICE Endex          # [CONFIRM] which venue Bloomberg's NCG root maps to
+    currency: EUR
+    unit: EUR/MWh
+    timezone: Europe/Berlin
+    gas_day_start_hour: 6
+    tenors: [M, Q, S, Y]
+    # D-039: 9 of 159 THE contracts disagree with this rule; vendor LAST_TRADEABLE_DT authoritative.
+    expiry: {business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}, status: requires_confirmation, vendor_authoritative: true}
+    listing: {months_ahead: 18}
+
+  PEG:
+    exchange: EEX                     # [CONFIRM]
+    currency: EUR
+    unit: EUR/MWh
+    timezone: Europe/Paris
+    gas_day_start_hour: 6
+    tenors: [M, Q, S, Y]
+    # D-039: 19 of 158 PEG contracts disagree with this rule; vendor LAST_TRADEABLE_DT authoritative.
+    expiry: {business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}, status: requires_confirmation, vendor_authoritative: true}
+    listing: {months_ahead: 18}
+
+  PSV:
+    exchange: ICE Endex               # [CONFIRM]
+    currency: EUR
+    unit: EUR/MWh
+    timezone: Europe/Rome
+    gas_day_start_hour: 6
+    tenors: [M, Q, S, Y]
+    # D-039: 4 of 151 PSV contracts disagree with this rule; vendor LAST_TRADEABLE_DT authoritative.
+    expiry: {business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}, status: requires_confirmation, vendor_authoritative: true}
+    listing: {months_ahead: 18}
+
+  PVB:
+    exchange: MIBGAS/EEX              # [CONFIRM]
+    currency: EUR
+    unit: EUR/MWh
+    timezone: Europe/Madrid
+    gas_day_start_hour: 6
+    tenors: [M, Q, S, Y]
+    # D-039: 2 of 95 PVB contracts disagree with this rule; vendor LAST_TRADEABLE_DT authoritative.
+    expiry: {business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}, status: requires_confirmation, vendor_authoritative: true}
+    listing: {months_ahead: 18}
+
+  VTP:
+    exchange: CEGH/EEX                # [CONFIRM]
+    currency: EUR
+    unit: EUR/MWh
+    timezone: Europe/Vienna
+    gas_day_start_hour: 6
+    tenors: [M, Q, S, Y]
+    # D-039: 8 of 123 VTP contracts disagree with this rule; vendor LAST_TRADEABLE_DT authoritative.
+    expiry: {business_days_before_delivery: {M: 2, Q: 2, S: 2, Y: 2}, status: requires_confirmation, vendor_authoritative: true}
+    listing: {months_ahead: 18}
+
+  JKM:
+    exchange: NYMEX/ICE               # [CONFIRM] which listing JKL tracks
+    currency: USD
+    unit: USD/MMBtu
+    timezone: Asia/Tokyo
+    gas_day_start_hour: 0
+    tenors: [M]
+    expiry:
+      # JKM settles on an assessment window ending mid-month before delivery; the TTF rule does NOT
+      # apply. Not used for targets; expiry only matters if JKM curves are rolled for features.
+      business_days_before_delivery: {M: null}
+      status: requires_user_input
+    listing: {months_ahead: 18}
+
+  HH:
+    exchange: NYMEX
+    currency: USD
+    unit: USD/MMBtu
+    timezone: America/New_York
+    gas_day_start_hour: 9
+    tenors: [M]
+    expiry:
+      business_days_before_delivery: {M: 3}   # NYMEX NG: 3 business days before the 1st [CONFIRM]
+      status: requires_confirmation
+      # D-039: 14 of 159 HH contracts (2015-2026) disagree with this rule by one session; vendor
+      # LAST_TRADEABLE_DT is authoritative (same policy as TTF, D-035). Mismatches are listed in
+      # docs/modelling_log.md D-039, not hidden.
+      vendor_authoritative: true
+    listing: {months_ahead: 18}
+
+  Brent:
+    exchange: ICE Futures Europe
+    currency: USD
+    unit: USD/bbl
+    timezone: Europe/London
+    gas_day_start_hour: 0
+    tenors: [M]
+    expiry:
+      # ICE Brent contract X expires at the end of X-2 (DeliveryOptionModel/config/market.yaml
+      # contract_month_offset: 2). Not a business-days-before-delivery rule; not implemented here.
+      business_days_before_delivery: {M: null}
+      status: requires_user_input
+    listing: {months_ahead: 18}
+
+calendars:
+  TTF:
+    # Historical sessions are EMPIRICAL: the dates on which a TTF monthly contract settled.
+    # Beyond the last observed date (and before the first) sessions are weekdays minus the
+    # configured holidays below. The ICE Endex holiday list has NOT been checked.
+    weekend: [5, 6]                   # Saturday, Sunday (pandas dayofweek)
+    future_holidays: []               # e.g. "2026-12-25"; [CONFIRM ICE Endex calendar]
+    status: requires_confirmation
+    rule_start: "2000-01-03"
+    horizon_end: "2045-12-29"

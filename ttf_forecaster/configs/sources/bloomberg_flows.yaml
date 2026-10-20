@@ -1,0 +1,20 @@
+# Bloomberg pipeline flows used by the implied-outage builder (data/implied_outage.py). Read by data/bloomberg.py.
+# Verified 2026-10-20 (user request). Live pulls only through a temporary authorised config.
+
+series:
+  flow.no.exit_total_intraday_mcmd:
+    vendor: bloomberg
+    ticker: "GAANTOTI Index"
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: "NO"
+    measure_type: flow
+    status: known
+    pit_grade: B
+    # Intraday nominations revise within the day, so a gas day D is usable from D+1 07:00 Amsterdam (user rule, 2026-10-20).
+    publication_lag: {days: 1, time: "07:00", tz: "Europe/Amsterdam", business_days: false}
+    entitlement: licensed_bloomberg
+    provenance: "Bloomberg 'Norway Total Exit Intraday Within-Day Nominations' GAANTOTI Index (MCM/d); verified 2026-10-20; history from 2020-12-01, 2,150 rows"
+    note: "Within-day nominations, not final allocations. Gas day D usable from D+1 07:00 Europe/Amsterdam (grade B)."

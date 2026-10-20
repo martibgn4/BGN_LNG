@@ -1,0 +1,222 @@
+# Bloomberg LNG aggregates (owner: lng-flows-agent). Served by the market-data agent's Bloomberg
+# adapter (data/bloomberg.py), which reads EVERY configs/sources/bloomberg*.yaml file.
+#
+# PROVENANCE. All tickers below: "desk notes (Bloomberg //blp/instruments discovery), verified
+# 2026-09-17", cross-checked against LNGFreightModel/config/sources.yaml, where every ticker was
+# executed live on 2026-09-17 with field px_last and the payload inspected (row counts and first
+# dates recorded there). AHOYIMEU / AHOYIMNA are taken from that same verified block. Nothing here
+# was executed from this project.
+#
+# PIT. Revision behaviour of the LNGG*/AHOY* aggregates is UNKNOWN (Bloomberg history holds the
+# latest value only) -> pit_grade B everywhere, publication_time from the lag rule below,
+# publication_time_estimated = true. LNGFreightModel measured on 2026-09-17 that on-water / flow
+# series had printed D-1 and transits D-2 at probe time; the intraday release time is unknown, so
+# the rule makes the value usable only from the NEXT TTF settlement after that day (23:00 local),
+# i.e. on-water value for day D first enters the 19:00 origin of D+2. Sensitivity: days 1 time
+# 07:00 (optimistic), days 3 (pessimistic). To be replaced by measured live snapshotting.
+#
+# DATA HANDLING NOTES (drive features/lng.py):
+#   * LNGGTR* transit counts are small integers, often zero  -> rolling sums / shares only.
+#   * AHOY* individual legs are cargo-level and mostly zero (AHOYAMSA zero on 72% of days per
+#     LNGFreightModel) -> rolling sums / shares only; pct-change off zero is infinite. Never use a
+#     raw daily leg value.
+#   * IKA1/IKD1/IKI1 are GENERIC 1st futures that roll monthly: levels or roll-masked returns only.
+#     Roll steps are most of their large moves (LNGFreightModel README).
+
+vendor: bloomberg
+entitlement: licensed_bloomberg
+provenance_default: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17; LNGFreightModel/config/sources.yaml (px_last, live 2026-09-17)"
+
+lag_rules:
+  lng_daily: &lag_lng_daily {days: 1, time: "23:00", tz: "Europe/Amsterdam", business_days: false}
+  lng_transits: &lag_lng_transits {days: 2, time: "23:00", tz: "Europe/Amsterdam", business_days: false}
+  # Baltic LNG futures settle in London after the TTF settlement window -> next European trading
+  # date 19:00 (PIT policy section 4, cross-commodity rule).
+  freight_futures: &lag_freight_fut {days: 1, time: "19:00", tz: "Europe/Amsterdam", business_days: true}
+
+series:
+  # ---- LNG afloat (laden, by days since loading). Global aggregate. --------------------------
+  lng.global.afloat_20d_volume_t:
+    {vendor: bloomberg, ticker: "LNGG20DT Index", field: px_last, unit: "t_LNG", frequency: daily,
+     geography: GLOBAL, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.global.afloat_20d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG20DC Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: GLOBAL, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.global.afloat_30d_volume_t:
+    {vendor: bloomberg, ticker: "LNGG30DT Index", field: px_last, unit: "t_LNG", frequency: daily,
+     geography: GLOBAL, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.global.afloat_30d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG30DC Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: GLOBAL, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+
+  # ---- LNG afloat >= 20 days, vessel count by ORIGIN --------------------------------------------
+  lng.usa.afloat_20d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG20DU Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: US, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.qatar.afloat_20d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG20DQ Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: QA, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.australia.afloat_20d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG20DA Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: AU, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.nigeria.afloat_20d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG20DN Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: NG, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.russia.afloat_20d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG20DR Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: RU, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.other.afloat_20d_vessels_count:
+    {vendor: bloomberg, ticker: "LNGG20DO Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: OTHER, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+
+  # ---- Chokepoint laden transits (daily counts; small integers, often zero) ---------------------
+  lng.panama.laden_transits_count:
+    {vendor: bloomberg, ticker: "LNGGTRPA Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: PANAMA, status: known, history_from: "2018-12-04", pit_grade: B,
+     publication_lag: *lag_lng_transits, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.suez.laden_transits_count:
+    {vendor: bloomberg, ticker: "LNGGTRSU Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: SUEZ, status: known, history_from: "2018-12-04", pit_grade: B,
+     publication_lag: *lag_lng_transits, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.cape.laden_transits_count:
+    {vendor: bloomberg, ticker: "LNGGTRCA Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: CAPE, status: known, history_from: "2018-12-04", pit_grade: B,
+     publication_lag: *lag_lng_transits, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.nsr.laden_transits_count:
+    {vendor: bloomberg, ticker: "LNGGTRNS Index", field: px_last, unit: "vessels", frequency: daily,
+     geography: NSR, status: known, history_from: "2018-12-04", pit_grade: B,
+     publication_lag: *lag_lng_transits, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+
+  # ---- AHOY origin -> destination flows, t LNG per day (cargo-level, mostly zero) ---------------
+  lng.amer_to_nwe.flow_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYAMEU Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: AMER->NWE, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.amer_to_nasia.flow_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYAMNA Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: AMER->NASIA, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.amer_to_sasia.flow_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYAMSA Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: AMER->SASIA, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.amer_to_med.flow_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYAMMD Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: AMER->MED, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.amer_to_amer.flow_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYAMAM Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: AMER->AMER, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.us.exports_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYEXUS Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: US, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.qatar.exports_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYEXQA Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: QA, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.global.exports_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYEXTL Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: GLOBAL, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.global.imports_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYIMTL Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: GLOBAL, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  lng.nwe.imports_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYIMEU Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: NWE, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "LNGFreightModel/config/sources.yaml flows block, live-verified 2026-09-17 (not in the desk-notes list given to this agent)"}
+  lng.nasia.imports_t_per_d:
+    {vendor: bloomberg, ticker: "AHOYIMNA Index", field: px_last, unit: "t_LNG/d", frequency: daily,
+     geography: NASIA, status: known, history_from: "2017-01-01", pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "LNGFreightModel/config/sources.yaml flows block, live-verified 2026-09-17 (not in the desk-notes list given to this agent)"}
+
+  # ---- Baltic LNG freight futures: GENERIC 1st, roll monthly -> levels / roll-masked only -------
+  freight.blng1_aus_jpn.front_future_usd_per_d:
+    {vendor: bloomberg, ticker: "IKA1 Comdty", field: px_last, unit: "USD/d", frequency: daily,
+     geography: AU->JP, status: known, history_from: "2024-02-01", pit_grade: A,
+     publication_lag: *lag_freight_fut, entitlement: licensed_bloomberg, generic_rolling: true,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  freight.blng2_usg_cont.front_future_usd_per_d:
+    {vendor: bloomberg, ticker: "IKD1 Comdty", field: px_last, unit: "USD/d", frequency: daily,
+     geography: USG->CONT, status: known, history_from: "2024-01-29", pit_grade: A,
+     publication_lag: *lag_freight_fut, entitlement: licensed_bloomberg, generic_rolling: true,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+  freight.blng3_usg_jpn.front_future_usd_per_d:
+    {vendor: bloomberg, ticker: "IKI1 Comdty", field: px_last, unit: "USD/d", frequency: daily,
+     geography: USG->JP, status: known, history_from: "2024-02-01", pit_grade: A,
+     publication_lag: *lag_freight_fut, entitlement: licensed_bloomberg, generic_rolling: true,
+     provenance: "desk notes (Bloomberg //blp/instruments discovery), verified 2026-09-17"}
+
+  # ---- Bloomberg discovery 2026-10-19 (read-only): LNG send-out by terminal, GWh/d, live -----------
+  # Daily send-out / regas series published by terminal operators. Revision behaviour unknown -> B.
+  # Lag: lag_lng_daily (D+1 23:00, the conservative rule used for the other LNG daily flows above).
+  lng.fr.montoir_sendout_gwhd:
+    {vendor: bloomberg, ticker: "LNGAMOSO Index", field: px_last, unit: "GWh/d", frequency: daily,
+     geography: FR, measure_type: flow, status: known, pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "Bloomberg discovery 2026-10-19: 'Montoir LNG France Send-Out (Daily,GWh/d,GIE)(Elengy)'; live, PX_LAST 200.4 on 2026-10-17"}
+  lng.fr.dunkerque_sendout_gwhd:
+    {vendor: bloomberg, ticker: "DUNKSEND Index", field: px_last, unit: "GWh/d", frequency: daily,
+     geography: FR, measure_type: flow, status: known, pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "Bloomberg discovery 2026-10-19: 'Dunkerque LNG Send Out' (GWh/d); live, PX_LAST 108.8 on 2026-10-19"}
+  lng.pl.swinoujscie_sendout_gwhd:
+    {vendor: bloomberg, ticker: "LNGASWSO Index", field: px_last, unit: "GWh/d", frequency: daily,
+     geography: PL, measure_type: flow, status: known, pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "Bloomberg discovery 2026-10-19: 'Swinoujscie LNG Poland Send-Out (Daily,GWh/d,GIE)(Gaz-System)'; live, PX_LAST 172.0 on 2026-10-17"}
+  lng.it.rovigo_sendout_gwhd:
+    {vendor: bloomberg, ticker: "LNGAATSO Index", field: px_last, unit: "GWh/d", frequency: daily,
+     geography: IT, measure_type: flow, status: known, pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "Bloomberg discovery 2026-10-19: 'Rovigo LNG Italy Send-Out (Daily,GWh/d,GIE)(Adriatic LNG)'; live, PX_LAST 250.9 on 2026-10-17"}
+  lng.es.bilbao_regas_gwhd:
+    {vendor: bloomberg, ticker: "ENAGRGBB Index", field: px_last, unit: "GWh/d", frequency: daily,
+     geography: ES, measure_type: flow, status: known, pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "Bloomberg discovery 2026-10-19: 'Spain LNG Regasification - Bilbao (GWh/Day)(ENAGAS)'; live, PX_LAST 60.7 on 2026-10-18",
+     note: "Regasification output at one Spanish terminal, used as send-out. Huelva (EGFMHUDF, last 2020-03-31) is dead"}
+  lng.be.zeebrugge_net_entry_gwhd:
+    {vendor: bloomberg, ticker: "FLXGLTNP Index", field: px_last, unit: "GWh/d", frequency: daily,
+     geography: BE, measure_type: flow, status: known, pit_grade: B,
+     publication_lag: *lag_lng_daily, entitlement: licensed_bloomberg,
+     provenance: "Bloomberg discovery 2026-10-19: 'Zeebrugge LNG Belgium Net Entry Physical Flow (Daily,GWh/d,Fluxys)'; live, PX_LAST 218.2 on 2026-10-18",
+     note: "Net ENTRY physical flow at the terminal (send-out proxy). Not a send-out measure"}

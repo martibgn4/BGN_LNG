@@ -1,0 +1,73 @@
+# Storage projection scenarios. Owner: gas-fundamentals-agent.
+# Used by fundamentals/storage_projection.py and features/storage.py.
+#
+# Model (transparent, no fitted parameters beyond a seasonal mean):
+#   profile(d)      = mean net storage flow on day-of-gas-year d, in % of working gas volume per day,
+#                     over gas years STRICTLY BEFORE the origin's gas year (PIT policy §5.3),
+#                     smoothed with a centred circular window.
+#   scenario flow   = withdrawal_multiplier x negative part + injection_multiplier x positive part
+#                     of profile(d) x WGV  +  additive_gwhd
+#   path            = inventory at as_of + cumulative scenario flow, day by day, clipped to
+#                     0 <= S <= WGV and to the injection / withdrawal ratchet below.
+#   uncertainty     = seeded block bootstrap of historical daily deviations (actual - profile, % WGV/d)
+#                     drawn from the SAME season of prior gas years, added to the scenario flow.
+#
+# All scenario magnitudes are ASSUMPTIONS for a first transparent model (status below); they are
+# not estimated and must be reviewed by the desk. Positive flow = injection; GWh/d.
+
+status: assumption_requires_review
+season_ends: {winter_end_mmdd: "03-31", summer_end_mmdd: "09-30"}
+
+profile:
+  smoothing_window_days: 15
+  min_years: 3
+
+bootstrap:
+  n_paths: 1000
+  block_days: 10            # block length preserves the autocorrelation of weather-driven deviations
+  seed: 20261016
+  quantiles: [0.1, 0.5, 0.9]
+
+# Threshold probabilities reported at the end of the season, in % of working gas volume.
+thresholds_pct:
+  winter: [20.0, 30.0]      # P(end-March fill < x)
+  summer: [80.0, 90.0]      # P(end-September fill < x)
+
+# Deliverability ratchet, EU aggregate, piecewise linear in fill %. Withdrawal limits from the ranges
+# stated in ../GasImbalanceModel/SPEC.md Phase 5 ("~20-22 TWh/d near full, falling toward 8-10 TWh/d
+# below ~30 % full"), mid-points taken; UNVERIFIED. Injection ratchet unknown -> null (no limit
+# other than WGV). Set enabled: false to project without ratchets.
+ratchet:
+  enabled: true
+  source: "../GasImbalanceModel/SPEC.md Phase 5 stated ranges (unverified, EU aggregate)"
+  withdrawal_max_gwhd:
+    fill_pct: [0.0, 30.0, 100.0]
+    gwhd:     [9000.0, 9000.0, 21000.0]
+  injection_max_gwhd: null
+
+scenarios:
+  normal:
+    description: "historical average net-flow profile"
+    withdrawal_multiplier: 1.0
+    injection_multiplier: 1.0
+    additive_gwhd: 0.0
+  cold:
+    description: "colder than normal: ~+15 % withdrawals in winter, slightly slower summer injection"
+    withdrawal_multiplier: 1.15
+    injection_multiplier: 0.95
+    additive_gwhd: 0.0
+  mild:
+    description: "milder than normal: ~-15 % withdrawals, slightly faster injection"
+    withdrawal_multiplier: 0.85
+    injection_multiplier: 1.05
+    additive_gwhd: 0.0
+  low_lng:
+    description: "LNG send-out 1,000 GWh/d below normal (~7 cargoes/week at ~1 TWh per 170k m3 cargo)"
+    withdrawal_multiplier: 1.0
+    injection_multiplier: 1.0
+    additive_gwhd: -1000.0
+  high_outage:
+    description: "Norwegian unplanned outages remove 500 GWh/d (~45 mcm/d at 10.55 kWh/m3) on average"
+    withdrawal_multiplier: 1.0
+    injection_multiplier: 1.0
+    additive_gwhd: -500.0

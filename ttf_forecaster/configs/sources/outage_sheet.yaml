@@ -1,0 +1,9 @@
+# Gas/LNG outage spreadsheet (user-maintained, Bloomberg export). Read by data/outage_sheet.py.
+# Snapshot time = the file's modification time (the filename date is wrong; user rule, 2026-10-20).
+# Sign convention: the sheet's 'Prod./Reduction' is negative for a loss. The stored value is the REDUCTION in
+# mcm/d, positive = capacity lost. Gas days run from Start Date to Duration/End inclusive.
+sheet_name: Worksheet
+input_dir: "data/raw/extracts/outages"
+# Facilities that are LNG terminals, and their country (for outage.<cc>.lng_terminal_mcmd).
+lng_terminal_country:
+  "Hammerfest LNG (Snohvit)": "NO"

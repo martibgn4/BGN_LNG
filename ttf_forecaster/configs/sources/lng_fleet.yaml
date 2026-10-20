@@ -1,0 +1,36 @@
+# LNG fleet snapshot via BSRCH COMDTY:SHIP (user-supplied 2026-10-20; verified from Python the same day).
+# A CURRENT-STATE table: no history. Its value is one snapshot per day from now on (data/fleet.py, pipelines/fleet.py).
+# Read by data/fleet.py only. Live calls only through a temporary authorised config.
+fleet_snapshot:
+  status: known
+  domain: "COMDTY:SHIP"
+  options:
+    VESSEL_TYPE_4: "LNG Tanker"
+    OPERATIONAL_STATUS: "In Service/Commission"
+    OUTPUT: "IMO|VESSEL_NAME|LAST_SEEN|NAVIGATION_STATUS|DRAFT_PCT|CARGO_STATUS|CARGO_PRODUCT|CARGO_QUANTITY|NORMALIZED_DESTINATION|NORMALIZED_COUNTRY_REGION|ETA|DEPART_TIME|ARRIVAL_PORT|ARRIVAL_TIME|VESSEL_TYPE_4|VESSEL_CLASS|BENEFICIAL_OWNER"
+  verified: "2026-10-20: 883 rows, 17 columns with display names"
+  # Volume unit. ASSUMPTION, not confirmed from a DES field description: laden quantities are ~60,000 to 90,000 for every
+  # laden vessel, the magnitude of a cargo in TONNES (a 170,000 m3 carrier is roughly 70 to 75 kt of LNG). Confirm before use.
+  volume_unit: "t_LNG"
+  # Origin: the output has no departure-port field (DEPART_TIME only). origin stays null; it is never guessed.
+  origin_field: null
+  # A vessel whose Last Seen is older than this (days before the snapshot) is left out of forecasts (kept in the side table).
+  max_last_seen_age_days: 3
+  # Destination country/region (normalized) -> region label. The text before the first comma is the country.
+  # NWE: north-west Europe. EU: other EU countries. Everything else (incl. Norway, Russia, Turkey, Gibraltar) is unmapped.
+  country_regions:
+    Netherlands: NWE
+    Belgium: NWE
+    France: NWE
+    Germany: NWE
+    United Kingdom: NWE
+    Spain: EU
+    Italy: EU
+    Portugal: EU
+    Poland: EU
+    Lithuania: EU
+    Croatia: EU
+    Finland: EU
+    Denmark: EU
+  regions: [NWE, EU]
+  horizons_days: [7, 14, 30, 45]

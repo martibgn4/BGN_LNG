@@ -1,0 +1,140 @@
+# Model ladder hyperparameters (owner: forecasting-agent).
+#
+# Each key under `models:` is a name accepted by `models.interface.make_model(name, **overrides)`.
+# `model:` selects the registered class (defaults to the key itself); `params:` are defaults that
+# caller overrides replace. Every model also accepts `seed` and REQUIRES `horizon` (trading days;
+# sets the inner-CV gap and the HAC lag h-1). `horizon` has no default anywhere, including
+# `defaults:` below (refused there): pass make_model(name, horizon=h) per experiment.
+# fit(X, y, label_known_time=...) additionally purges every internal split by label time.
+#
+# These values are PRIORS, fixed before any real data is seen. They were not tuned on synthetic
+# data and must not be tuned on outer-test results. Penalties / C / early-stopping rounds are
+# chosen inside fit() by time-ordered inner CV on the training window only.
+#
+# Column-name parameters (level_column, lag_columns, column, rv_columns, ...) are null here: they
+# depend on feature names owned by the feature-engineering agent and are set per experiment.
+
+version: 1
+
+defaults:
+  seed: 20261016
+
+models:
+  # ---------------- Level 0: benchmarks (research spec §4) ----------------
+  zero_return:
+    params: {center: zero}
+  no_change:
+    params: {level_column: null}
+  rolling_mean_60:
+    model: rolling_mean
+    params: {window: 60}
+  rolling_mean_250:
+    model: rolling_mean
+    params: {window: 250}
+  ar:
+    params: {lag_columns: null, max_p: 5, fit_intercept: true}
+  seasonal_mean:
+    params: {min_obs_per_month: 1}
+  storage_deviation_ols:
+    params: {column: null}
+  trailing_vol:
+    params: {column: null, scale: none}
+  ewma_vol:
+    params: {column: null, scale: none}
+  har:
+    params: {rv_columns: null, log: false}
+  base_rate:
+    params: {}
+
+  # ---------------- Level 1: linear ----------------
+  ols_hac:
+    params: {hac_lags: null, fit_intercept: true, standardize: false, family_pca: null}
+  # D-032 F5: min_alpha floors the penalty (grid values below it are dropped). selection "one_se"
+  # (most regularised alpha within one inner-CV SE of the minimum) was tried and REJECTED as the
+  # default: it turned the null world's ridge into a criterion-1 pass (D-033).
+  ridge:
+    params:
+      alphas: [1.0e-4, 3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2, 3.0e-2, 1.0e-1, 3.0e-1, 1.0, 3.0, 10.0, 30.0, 100.0]
+      cv_splits: 3
+      cv_val_fraction: 0.25
+      family_pca: null
+      min_alpha: 1.0e-2
+      selection: min
+  ridge_family_pca:
+    model: ridge
+    params:
+      alphas: [1.0e-4, 1.0e-3, 1.0e-2, 1.0e-1, 1.0, 10.0, 100.0]
+      family_pca: {k: 3, families: null}
+      min_alpha: 1.0e-2
+      selection: min
+  lasso:
+    params:
+      alphas: [1.0e-4, 3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2, 3.0e-2, 1.0e-1, 3.0e-1, 1.0]
+      cv_splits: 3
+      cv_val_fraction: 0.25
+      max_iter: 10000
+  elasticnet:
+    params:
+      alphas: [1.0e-4, 3.0e-4, 1.0e-3, 3.0e-3, 1.0e-2, 3.0e-2, 1.0e-1, 3.0e-1, 1.0]
+      l1_ratio: 0.5
+      cv_splits: 3
+      cv_val_fraction: 0.25
+      max_iter: 10000
+  ecm:
+    params: {level_column: null, x_level_columns: null, short_run_columns: [], gate_pvalue: 0.05,
+             trend: c}
+
+  # ---------------- Level 2: boosting (conservative) ----------------
+  lightgbm:
+    params: &lgb_conservative
+      n_estimators: 1000
+      learning_rate: 0.02
+      num_leaves: 7
+      max_depth: 3
+      min_child_samples: 100
+      reg_lambda: 10.0
+      reg_alpha: 0.0
+      colsample_bytree: 0.7
+      subsample: 0.8
+      subsample_freq: 1
+      early_stopping_rounds: 50
+      es_fraction: 0.2
+      refit_full: true
+      family_pca: null
+  lightgbm_classifier:
+    params: *lgb_conservative
+
+  # ---------------- Level 4: probabilistic ----------------
+  linear_quantile:
+    params: {levels: [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95], alpha: 0.01, family_pca: null}
+  lightgbm_quantile:
+    params:
+      levels: [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]
+      n_estimators: 1000
+      learning_rate: 0.02
+      num_leaves: 7
+      max_depth: 3
+      min_child_samples: 100
+      reg_lambda: 10.0
+      reg_alpha: 0.0
+      colsample_bytree: 0.7
+      subsample: 0.8
+      subsample_freq: 1
+      early_stopping_rounds: 50
+      es_fraction: 0.2
+  conformal:
+    params: {base: ridge, base_params: {}, calib_fraction: 0.25, adaptive: false,
+             aci_gamma: 0.005, aci_alpha: 0.2}
+  threshold_logistic:
+    params: {threshold: null, event: above, calibration: sigmoid, calib_fraction: 0.25,
+             Cs: [0.001, 0.01, 0.1, 1.0, 10.0], cv_splits: 3, cv_val_fraction: 0.25,
+             family_pca: null}
+  lightgbm_event:
+    params: {threshold: null, event: above, calibration: sigmoid, calib_fraction: 0.25,
+             lgb_params: {}}
+
+  # ---------------- Level 6: combinations (not used until Levels 1-2 are understood) --------
+  constrained_stacking:
+    params: {allow_in_sample: false}
+  performance_weighted:
+    params: {allow_in_sample: false, window: null, power: 1.0}

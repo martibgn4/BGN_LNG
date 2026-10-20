@@ -1,0 +1,5581 @@
+# BloombergNEF European Power Market Monitor (user-supplied workbook, 2026-10-19), registered on Bloomberg
+# tickers. Owner: orchestrator. Source file: ttf_forecaster/data/raw/extracts/bnef (git-ignored); this file
+# holds identifiers and provenance only. Every entry was reference-checked on 2026-10-19 (NAME, PX_LAST,
+# LAST_UPDATE_DT): status known only where PX_LAST is present and LAST_UPDATE_DT >= 2025-01-01.
+#
+# NOT registered here (see docs/bloomberg_discovery.md, BNEF section):
+#   * interconnector flows (257 tickers): deferred by request;
+#   * spark and dark spreads, carbon and coal "Calculated field" rows: no Bloomberg ticker, derived in
+#     BNEF's own workbook. Build them from registered prices if needed;
+#   * ids already registered elsewhere (power.de.gen_solar_mw = GT1CDESL, power.de.gen_wind_on_mw =
+#     GT1CDEWS, power.de.load_act_mw = LD1CDE, all in bloomberg_power.yaml): reused, not duplicated;
+#   * dead tickers (last update before 2025): GT1CBECO (Belgium coal) and GT1CDENU (Germany nuclear).
+#
+# DE day-ahead (D-041): price.power_de.da_eur_mwh now points at LPXBHRBS (EPEX DE/AT day-ahead baseload
+# index, history from 2001). ELGBDAHD moved to price.power_de.da_otc_elgb_eur_mwh (history from 2011-02).
+#
+# PIT: exchange auction prices grade A, published the day before delivery; the lag used (delivery day
+# 19:00) is conservative. Generation, load and flows grade B (TSO and vendor revisions), available D+1 12:00.
+# Capacity grade B, D+7 12:00 (cumulative capacity updates are irregular).
+
+series:
+  power.at.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CATBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      202.2917'
+    note: Austria Power Generation by Fuel - Biomass Actual Daily Average
+  power.at.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CATCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Austria Power Generation by Fuel - Hard coal Actual Daily Average
+  power.at.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CATGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      593.6791'
+    note: Austria Power Generation by Fuel - Gas Actual Daily Average
+  power.at.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CATWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      52.58333'
+    note: Austria Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.at.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CATRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1295.775'
+    note: Austria Power Generation by Fuel - Run of River Actual Daily Average
+  power.at.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CATPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      20.0125'
+    note: Austria Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.at.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CATSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      603.3333'
+    note: Austria Power Generation by Fuel - Solar Actual Daily Average
+  power.at.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT1CATWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      924.125'
+    note: Austria Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.be.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CBEBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      80.88087'
+    note: Belgium Power Generation by Fuel - Biomass Actual Daily Average
+  power.be.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CBEGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      620.5721'
+    note: Belgium Power Generation by Fuel - Gas Actual Daily Average
+  power.be.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CBERR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2.384031'
+    note: Belgium Power Generation by Fuel - Run of River Actual Daily Average
+  power.be.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CBENU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      957.7732'
+    note: Belgium Power Generation by Fuel - Nuclear Actual Daily Average
+  power.be.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CBEPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      75.74702'
+    note: Belgium Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.be.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CBESL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      513.6785'
+    note: Belgium Power Generation by Fuel - Solar Actual Daily Average
+  power.be.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT1CBEWO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      886.1987'
+    note: Belgium Power Generation by Fuel - Offshore Wind Actual Daily Average
+  power.ch.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CCHWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CH
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Switzerland Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      737.7933'
+    note: Switzerland Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.ch.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CCHRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CH
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Switzerland Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      868.295'
+    note: Switzerland Power Generation by Fuel - Run of River Actual Daily Average
+  power.ch.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CCHNU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CH
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Switzerland Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2942.074'
+    note: Switzerland Power Generation by Fuel - Nuclear Actual Daily Average
+  power.ch.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CCHPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CH
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Switzerland Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      334.0758'
+    note: Switzerland Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.ch.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CCHSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CH
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Switzerland Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      200.5293'
+    note: Switzerland Power Generation by Fuel - Solar Actual Daily Average
+  power.ch.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CCHWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CH
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Switzerland Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      15.45583'
+    note: Switzerland Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.cz.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CCZBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      281.6057'
+    note: Czech Republic Power Generation by Fuel - Biomass Actual Daily Average
+  power.cz.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CCZCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      123.2323'
+    note: Czech Republic Power Generation by Fuel - Hard coal Actual Daily Average
+  power.cz.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CCZGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      146.4631'
+    note: Czech Republic Power Generation by Fuel - Gas Actual Daily Average
+  power.cz.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CCZWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      45.31865'
+    note: Czech Republic Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.cz.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CCZRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      50.19646'
+    note: Czech Republic Power Generation by Fuel - Run of River Actual Daily Average
+  power.cz.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT1CCZLI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      3803.729'
+    note: Czech Republic Power Generation by Fuel - Lignite Actual Daily Average
+  power.cz.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CCZNU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2943.684'
+    note: Czech Republic Power Generation by Fuel - Nuclear Actual Daily Average
+  power.cz.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CCZPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      37.28365'
+    note: Czech Republic Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.cz.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CCZSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      415.8373'
+    note: Czech Republic Power Generation by Fuel - Solar Actual Daily Average
+  power.cz.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CCZWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      70.58625'
+    note: Czech Republic Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.de.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CDEBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-16, PX_LAST
+      4095.484'
+    note: Germany Power Generation by Fuel - Biomass Actual Daily Average
+  power.de.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CDECO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2603.265625'
+    note: Germany Power Generation by Fuel - Hard coal Actual Daily Average
+  power.de.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CDEGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      6676.962'
+    note: Germany Power Generation by Fuel - Gas Actual Daily Average
+  power.de.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CDEWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      65.3801'
+    note: Germany Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.de.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CDERR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      824.1436'
+    note: Germany Power Generation by Fuel - Run of River Actual Daily Average
+  power.de.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT1CDELI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      8554.63671875'
+    note: Germany Power Generation by Fuel - Lignite Actual Daily Average
+  power.de.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CDEPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      447.3421'
+    note: Germany Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.de.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT1CDEWO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Germany Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      6263.636'
+    note: Germany Power Generation by Fuel - Wind Offshore Actual Daily Average
+  power.dk.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CDKBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Denmark Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1368.321'
+    note: Denmark Power Generation by Fuel - Biomass Actual Daily Average
+  power.dk.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CDKCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Denmark Power Generation by Fu'', LAST_UPDATE_DT 2026-04-16, PX_LAST
+      166.179836979167'
+    note: Denmark Power Generation by Fuel - Hard coal Actual Daily Average
+  power.dk.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CDKGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Denmark Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      106.213'
+    note: Denmark Power Generation by Fuel - Gas Actual Daily Average
+  power.dk.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CDKSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Denmark Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      836.5581'
+    note: Denmark Power Generation by Fuel - Solar Actual Daily Average
+  power.dk.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT1CDKWO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Denmark Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1837.305'
+    note: Denmark Power Generation by Fuel - Wind Offshore Actual Daily Average
+  power.dk.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CDKWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Denmark Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1268.737'
+    note: Denmark Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.ee.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT2CEEBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: EE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Estonia Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      35.86666'
+    note: Estonia Power Generation by Fuel - Biomass Actual Daily Average
+  power.ee.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT2CEEGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: EE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Estonia Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4.75'
+    note: Estonia Power Generation by Fuel - Gas Actual Daily Average
+  power.ee.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT2CEERR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: EE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Estonia Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.7479166'
+    note: Estonia Power Generation by Fuel - Run of River Actual Daily Average
+  power.ee.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT2CEESL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: EE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Estonia Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      212.8878'
+    note: Estonia Power Generation by Fuel - Solar Actual Daily Average
+  power.ee.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT2CEEWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: EE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Estonia Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      165.6781'
+    note: Estonia Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.es.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CESBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      368.7083'
+    note: Spain Power Generation by Fuel - Biomass Actual Daily Average
+  power.es.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CESCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Spain Power Generation by Fuel - Hard coal Actual Daily Average
+  power.es.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CESGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2911.25'
+    note: Spain Power Generation by Fuel - Gas Actual Daily Average
+  power.es.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CESWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      661.1667'
+    note: Spain Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.es.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CESRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      300.1667'
+    note: Spain Power Generation by Fuel - Run of River Actual Daily Average
+  power.es.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT1CESLI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Spain Power Generation by Fuel - Lignite Actual Daily Average
+  power.es.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CESNU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      7021.5'
+    note: Spain Power Generation by Fuel - Nuclear Actual Daily Average
+  power.es.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CESPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      524.0417'
+    note: Spain Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.es.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CESSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      3433.375'
+    note: Spain Power Generation by Fuel - Solar Actual Daily Average
+  power.es.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT1CESWO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Spain Power Generation by Fuel - Wind Offshore Actual Daily Average
+  power.es.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CESWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      11693.04'
+    note: Spain Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.fi.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT2CFIBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      853.2911'
+    note: Finland Power Generation by Fuel - Biomass Actual Daily Average
+  power.fi.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT2CFICO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      6.181158'
+    note: Finland Power Generation by Fuel - Hard coal Actual Daily Average
+  power.fi.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT2CFIGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      17.46972'
+    note: Finland Power Generation by Fuel - Gas Actual Daily Average
+  power.fi.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT2CFIRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2143.267'
+    note: Finland Power Generation by Fuel - Run of River Actual Daily Average
+  power.fi.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT2CFINU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2110.956'
+    note: Finland Power Generation by Fuel - Nuclear Actual Daily Average
+  power.fi.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT2CFISL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      152.1852'
+    note: Finland Power Generation by Fuel - Solar Actual Daily Average
+  power.fi.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT2CFIWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1777.456'
+    note: Finland Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.fr.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: RTEGTBGT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Power Average Biogas Ge'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      299.0'
+    note: France Power Average Biogas Generation (Daily,MW,RTE)
+  power.fr.gen_coal_mw:
+    vendor: bloomberg
+    ticker: RTEGCOAT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Daily Average Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: France Daily Average Generation - Coal - RTE
+  power.fr.gen_gas_mw:
+    vendor: bloomberg
+    ticker: RTEGGAST Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Generation Gas Daily Av'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2633.583'
+    note: France Generation Gas Daily Average - RTE
+  power.fr.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: RTEGHLKT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Daily Average Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1001.40625'
+    note: France Daily Average Generation - Hydropower - Lake - RTE
+  power.fr.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: RTEGHRRT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Daily Average Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1591.24'
+    note: France Daily Average Generation - Hydropower - Run of the River - RTE
+  power.fr.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: RTEGNUCT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Daily Average Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      36738.86328125'
+    note: France Daily Average Generation - Nuclear - RTE
+  power.fr.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: RTEGHPHT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Daily Average Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      583.2292'
+    note: France Daily Average Generation - Hydropower - Pumped Hydro - RTE
+  power.fr.gen_solar_mw:
+    vendor: bloomberg
+    ticker: RTEGSLRT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Daily Average Generatio'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2925.521'
+    note: France Daily Average Generation - Solar - RTE
+  power.fr.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: RTEGWNDT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''France Power Average Wind Gene'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4539.635'
+    note: France Power Average Wind Generation (Daily,MW,RTE)
+  power.gb.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GBDGBIOM Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Generation-Bioma'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2457.139'
+    note: Daily Average Generation-Biomass Plants/GB
+  power.gb.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GBDGCOAL Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Generation-Coal'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Daily Average Generation-Coal Fired Plants/GB
+  power.gb.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GBDGCCGT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Generation-Combi'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4470.649'
+    note: Daily Average Generation-Combined Cycle Gas Turbine Plants/GB
+  power.gb.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GBDGHYDR Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Generation-Non P'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      594.566'
+    note: Daily Average Generation-Non Pumped Storage Hydro Plants/GB
+  power.gb.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GBDGNUCL Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Generation-Nucle'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4864.99'
+    note: Daily Average Generation-Nuclear Plants/GB
+  power.gb.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GBDGPUMP Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Generation-Pumpe'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      -75.44444'
+    note: Daily Average Generation-Pumped Storage/GB
+  power.gb.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GBDGSOLA Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Power Generation'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1672.4375'
+    note: Daily Average Power Generation for Solar/UK
+  power.gb.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GBDGWIND Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Generation-Wind/'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      8731.607'
+    note: Daily Average Generation-Wind/GB
+  power.gr.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT2CGRGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Greece Power Generation by Fue'', LAST_UPDATE_DT 2026-10-08, PX_LAST
+      2087.25'
+    note: Greece Power Generation by Fuel - Gas Actual Daily Average
+  power.gr.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT2CGRLI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Greece Power Generation by Fue'', LAST_UPDATE_DT 2026-10-08, PX_LAST
+      463.9792'
+    note: Greece Power Generation by Fuel - Lignite Actual Daily Average
+  power.gr.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT2CGRSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Greece Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2269.8125'
+    note: Greece Power Generation by Fuel - Solar Actual Daily Average
+  power.gr.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT2CGRWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Greece Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      451.2917'
+    note: Greece Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.hu.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CHUBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      146.5528'
+    note: Hungary Power Generation by Fuel - Biomass Actual Daily Average
+  power.hu.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CHUGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      525.1238'
+    note: Hungary Power Generation by Fuel - Gas Actual Daily Average
+  power.hu.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CHUWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1.958958'
+    note: Hungary Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.hu.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CHURR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2.586406'
+    note: Hungary Power Generation by Fuel - Run of River Actual Daily Average
+  power.hu.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT1CHULI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      203.9627'
+    note: Hungary Power Generation by Fuel - Lignite Actual Daily Average
+  power.hu.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CHUNU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1204.045'
+    note: Hungary Power Generation by Fuel - Nuclear Actual Daily Average
+  power.hu.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CHUSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      818.3579'
+    note: Hungary Power Generation by Fuel - Solar Actual Daily Average
+  power.hu.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CHUWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Generation by Fu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      28.97223'
+    note: Hungary Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.it.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CITBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      471.21875'
+    note: Italy Power Generation by Fuel - Biomass Actual Daily Average
+  power.it.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CITCG ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2026-09-24, PX_LAST
+      412.114583333333'
+    note: Italy Power Generation by Fuel - Coal-derived gas Actual Daily Average
+  power.it.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CITGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      9692.8125'
+    note: Italy Power Generation by Fuel - Gas Actual Daily Average
+  power.it.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CITWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      191.4792'
+    note: Italy Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.it.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CITRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1239.71875'
+    note: Italy Power Generation by Fuel - Run of River Actual Daily Average
+  power.it.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CITPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2025-12-31, PX_LAST
+      1421.917'
+    note: Italy Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.it.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CITSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      3547.792'
+    note: Italy Power Generation by Fuel - Solar Actual Daily Average
+  power.it.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CITWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Generation by Fuel'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      377.1146'
+    note: Italy Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.lt.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT2CLTBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Power Generation by'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      17.34831'
+    note: Lithuania Power Generation by Fuel - Biomass Actual Daily Average
+  power.lt.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT2CLTGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Power Generation by'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      16.6357'
+    note: Lithuania Power Generation by Fuel - Gas Actual Daily Average
+  power.lt.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT2CLTRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Power Generation by'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      23.69869'
+    note: Lithuania Power Generation by Fuel - Run of River Actual Daily Average
+  power.lt.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT2CLTPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Power Generation by'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4.481584'
+    note: Lithuania Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.lt.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT2CLTSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Power Generation by'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      145.421'
+    note: Lithuania Power Generation by Fuel - Solar Actual Daily Average
+  power.lt.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT2CLTWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Power Generation by'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1065.738'
+    note: Lithuania Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.lv.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT2CLVBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LV
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Latvia Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      31.20833'
+    note: Latvia Power Generation by Fuel - Biomass Actual Daily Average
+  power.lv.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT2CLVGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LV
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Latvia Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      10.33333'
+    note: Latvia Power Generation by Fuel - Gas Actual Daily Average
+  power.lv.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT2CLVRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LV
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Latvia Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      172.375'
+    note: Latvia Power Generation by Fuel - Run of River Actual Daily Average
+  power.lv.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT2CLVSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LV
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Latvia Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      188.375'
+    note: Latvia Power Generation by Fuel - Solar Actual Daily Average
+  power.lv.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT2CLVWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LV
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Latvia Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      138.5833'
+    note: Latvia Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.nl.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CNLBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Netherlands Power Generation by Fuel - Biomass Actual Daily Average
+  power.nl.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CNLCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2500.195'
+    note: Netherlands Power Generation by Fuel - Hard coal Actual Daily Average
+  power.nl.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CNLGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2163.304'
+    note: Netherlands Power Generation by Fuel - Gas Actual Daily Average
+  power.nl.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CNLNU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      475.9185'
+    note: Netherlands Power Generation by Fuel - Nuclear Actual Daily Average
+  power.nl.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CNLSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      6.557323'
+    note: Netherlands Power Generation by Fuel - Solar Actual Daily Average
+  power.nl.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT1CNLWO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2279.576'
+    note: Netherlands Power Generation by Fuel - Wind Offshore Actual Daily Average
+  power.nl.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CNLWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Generation b'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      452.6818'
+    note: Netherlands Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.no.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CNOGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: 'NO'
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Norway Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      199.3118'
+    note: Norway Power Generation by Fuel - Gas Actual Daily Average
+  power.no.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CNOWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: 'NO'
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Norway Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      12223.53'
+    note: Norway Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.no.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CNORR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: 'NO'
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Norway Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      3048.985'
+    note: Norway Power Generation by Fuel - Run of River Actual Daily Average
+  power.no.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CNOPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: 'NO'
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Norway Power Generation by Fue'', LAST_UPDATE_DT 2026-09-27, PX_LAST
+      0.0'
+    note: Norway Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.no.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CNOWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: 'NO'
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Norway Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1118.633'
+    note: Norway Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.nordpool.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT2CNPBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2306.035'
+    note: Nordpool Power Generation by Fuel - Biomass/Actual Daily Average
+  power.nordpool.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT2CNPCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-04-16, PX_LAST
+      181.4964'
+    note: Nordpool Power Generation by Fuel - Hard coal/Actual Daily Average
+  power.nordpool.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT2CNPGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      354.7136'
+    note: Nordpool Power Generation by Fuel - Gas/Actual Daily Average
+  power.nordpool.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT2CNPWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      20689.91'
+    note: Nordpool Power Generation by Fuel - Water Reservoir/Actual Daily Average
+  power.nordpool.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT2CNPRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      5389.074'
+    note: Nordpool Power Generation by Fuel - Run of River/Actual Daily Average
+  power.nordpool.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT2CNPNU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      5739.456'
+    note: Nordpool Power Generation by Fuel - Nuclear/Actual Daily Average
+  power.nordpool.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT2CNPPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-09-27, PX_LAST
+      27.1266'
+    note: Nordpool Power Generation by Fuel - Pumped Storage/Actual Daily Average
+  power.nordpool.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT2CNPSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1194.867'
+    note: Nordpool Power Generation by Fuel - Solar/Actual Daily Average
+  power.nordpool.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT2CNPWO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1837.305'
+    note: Nordpool Power Generation by Fuel - Wind Offshore/Actual Daily Average
+  power.nordpool.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT2CNPWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      9584.447'
+    note: Nordpool Power Generation by Fuel - Wind Onshore/Actual Daily Average
+  power.pl.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CPLBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      357.3857'
+    note: Poland Power Generation by Fuel - Biomass Actual Daily Average
+  power.pl.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CPLCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      6302.963'
+    note: Poland Power Generation by Fuel - Hard coal Actual Daily Average
+  power.pl.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CPLGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1798.209'
+    note: Poland Power Generation by Fuel - Gas Actual Daily Average
+  power.pl.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CPLWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      36.66716'
+    note: Poland Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.pl.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CPLRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      63.04608'
+    note: Poland Power Generation by Fuel - Run of River Actual Daily Average
+  power.pl.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT1CPLLI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      3375.777'
+    note: Poland Power Generation by Fuel - Lignite Actual Daily Average
+  power.pl.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CPLPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      163.2583'
+    note: Poland Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.pl.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CPLSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1922.446'
+    note: Poland Power Generation by Fuel - Solar Actual Daily Average
+  power.pl.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CPLWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2369.203'
+    note: Poland Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.pt.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT0CPTBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      308.525'
+    note: Portugal Power Generation by Fuel - Biomass Actual Daily Average
+  power.pt.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT0CPTCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Portugal Power Generation by Fuel - Hard coal Actual Daily Average
+  power.pt.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT0CPTGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      670.7542'
+    note: Portugal Power Generation by Fuel - Gas Actual Daily Average
+  power.pt.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT0CPTWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      19.75833'
+    note: Portugal Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.pt.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT0CPTRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      137.1458'
+    note: Portugal Power Generation by Fuel - Run of River Actual Daily Average
+  power.pt.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT0CPTPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      385.0458'
+    note: Portugal Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.pt.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT0CPTSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      610.9792'
+    note: Portugal Power Generation by Fuel - Solar Actual Daily Average
+  power.pt.gen_wind_off_mw:
+    vendor: bloomberg
+    ticker: GT0CPTWO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      9.575'
+    note: Portugal Power Generation by Fuel - Wind Offshore Actual Daily Average
+  power.pt.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT0CPTWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      3296.642'
+    note: Portugal Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.ro.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: RPFCBFAV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Daily Average Power Production'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      56.713125'
+    note: Daily Average Power Production from Biofuels (Transelectrica)
+  power.ro.gen_coal_mw:
+    vendor: bloomberg
+    ticker: RPFCAPCL Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Romania Power Utilities Averag'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      836.434083333334'
+    note: Romania Power Utilities Average Production Coal
+  power.ro.gen_gas_mw:
+    vendor: bloomberg
+    ticker: RPFCAPGS Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Romania Power Utilities Averag'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      1397.60758333333'
+    note: Romania Power Utilities Average Production Gas
+  power.ro.gen_hydro_mw:
+    vendor: bloomberg
+    ticker: RPFCAPHY Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Romania Power Utilities Averag'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      1038.01758333333'
+    note: Romania Power Utilities Average Production Hydro Power
+  power.ro.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: RPFCAPNC Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Romania Power Utilities Averag'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      0.0'
+    note: Romania Power Utilities Average Production Nuclear Power
+  power.ro.gen_solar_mw:
+    vendor: bloomberg
+    ticker: RPFCAPSL Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Romania Power Utilities Averag'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      298.649625'
+    note: Romania Power Utilities Average Production Solar
+  power.ro.gen_wind_mw:
+    vendor: bloomberg
+    ticker: RPFCAPWD Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Romania Power Utilities Averag'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      424.030541666667'
+    note: Romania Power Utilities Average Production Wind Power
+  power.se.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CSEWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Sweden Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      8466.378'
+    note: Sweden Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.se.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CSENU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Sweden Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      3628.5'
+    note: Sweden Power Generation by Fuel - Nuclear Actual Daily Average
+  power.se.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CSEWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Sweden Power Generation by Fue'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4049.622'
+    note: Sweden Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.si.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CSIBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      14.47084'
+    note: Slovenia Power Generation by Fuel - Biomass Actual Daily Average
+  power.si.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CSIGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      73.354'
+    note: Slovenia Power Generation by Fuel - Gas Actual Daily Average
+  power.si.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CSIRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      50.05977'
+    note: Slovenia Power Generation by Fuel - Run of River Actual Daily Average
+  power.si.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT1CSILI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.5656929'
+    note: Slovenia Power Generation by Fuel - Lignite Actual Daily Average
+  power.si.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CSINU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      690.6274'
+    note: Slovenia Power Generation by Fuel - Nuclear Actual Daily Average
+  power.si.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CSIPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      14.13858'
+    note: Slovenia Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.si.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CSISL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      214.3109'
+    note: Slovenia Power Generation by Fuel - Solar Actual Daily Average
+  power.si.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CSIWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.1596792'
+    note: Slovenia Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.sk.gen_biomass_mw:
+    vendor: bloomberg
+    ticker: GT1CSKBM ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      107.96875'
+    note: Slovakia Power Generation by Fuel - Biomass Actual Daily Average
+  power.sk.gen_coal_mw:
+    vendor: bloomberg
+    ticker: GT1CSKCO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Slovakia Power Generation by Fuel - Hard coal Actual Daily Average
+  power.sk.gen_gas_mw:
+    vendor: bloomberg
+    ticker: GT1CSKGS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      419.4698'
+    note: Slovakia Power Generation by Fuel - Gas Actual Daily Average
+  power.sk.gen_hydro_res_mw:
+    vendor: bloomberg
+    ticker: GT1CSKWR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      31.68021'
+    note: Slovakia Power Generation by Fuel - Water Reservoir Actual Daily Average
+  power.sk.gen_hydro_ror_mw:
+    vendor: bloomberg
+    ticker: GT1CSKRR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      151.9875'
+    note: Slovakia Power Generation by Fuel - Run of River Actual Daily Average
+  power.sk.gen_lignite_mw:
+    vendor: bloomberg
+    ticker: GT1CSKLI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.0'
+    note: Slovakia Power Generation by Fuel - Lignite Actual Daily Average
+  power.sk.gen_nuclear_mw:
+    vendor: bloomberg
+    ticker: GT1CSKNU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1683.001'
+    note: Slovakia Power Generation by Fuel - Nuclear Actual Daily Average
+  power.sk.gen_pumped_storage_mw:
+    vendor: bloomberg
+    ticker: GT1CSKPS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      115.1396'
+    note: Slovakia Power Generation by Fuel - Pumped Storage Actual Daily Average
+  power.sk.gen_solar_mw:
+    vendor: bloomberg
+    ticker: GT1CSKSL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      76.69583'
+    note: Slovakia Power Generation by Fuel - Solar Actual Daily Average
+  power.sk.gen_wind_on_mw:
+    vendor: bloomberg
+    ticker: GT1CSKWS ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Generation by F'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      0.4104167'
+    note: Slovakia Power Generation by Fuel - Wind Onshore Actual Daily Average
+  power.be.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CBE ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Power Load Actual Dail'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      8442.05'
+    note: Belgium Power Load Actual Daily Average
+  power.it.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CIT ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Power Load Actual Daily'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      24811.38'
+    note: Italy Power Load Actual Daily Average
+  power.es.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CES ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Power Load Actual Daily'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      22102.0'
+    note: Spain Power Load Actual Daily Average
+  power.pt.load_act_mw:
+    vendor: bloomberg
+    ticker: LD0CPT ACT 24AV INDEX
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Portugal Power Load Actual Dai'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      5030.671'
+    note: Portugal Power Load Actual Daily Average
+  power.pl.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CPL ACT 24AV INDEX
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: PL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Load Actual Daily'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      15896.79'
+    note: Poland Power Load Actual Daily Average
+  power.cz.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CCZ ACT 24AV INDEX
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CZ
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Czech Republic Power Load Actu'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      6221.104'
+    note: Czech Republic Power Load Actual Daily Average
+  power.at.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CAT ACT 24AV INDEX
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: AT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Austria Power Load Actual Dail'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      5340.708'
+    note: Austria Power Load Actual Daily Average
+  power.nl.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CNL ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands Power Load Actual'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      10066.27'
+    note: Netherlands Power Load Actual Daily Average
+  power.ch.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CCH ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: CH
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Switzerland Power Load Actual'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      6296.842'
+    note: Switzerland Power Load Actual Daily Average
+  power.hu.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CHU ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: HU
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Load Actual Dail'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4322.334'
+    note: Hungary Power Load Actual Daily Average
+  power.sk.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CSK ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovakia Power Load Actual Dai'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      2515.75'
+    note: Slovakia Power Load Actual Daily Average
+  power.si.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CSI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenia Power Load Actual Dai'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      555.9595'
+    note: Slovenia Power Load Actual Daily Average
+  power.dk.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CDK ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DK
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Denmark Power Load Actual Dail'', LAST_UPDATE_DT 2026-10-04, PX_LAST
+      3969.717'
+    note: Denmark Power Load Actual Daily Average
+  power.ee.load_act_mw:
+    vendor: bloomberg
+    ticker: LD2CEE ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: EE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Estonia Power Load Actual Dail'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      715.6906'
+    note: Estonia Power Load Actual Daily Average
+  power.fi.load_act_mw:
+    vendor: bloomberg
+    ticker: LD2CFI ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FI
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Finland Power Load Actual Dail'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      9114.942'
+    note: Finland Power Load Actual Daily Average
+  power.lv.load_act_mw:
+    vendor: bloomberg
+    ticker: LD2CLV ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LV
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Latvia Power Load Actual Daily'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      786.0833'
+    note: Latvia Power Load Actual Daily Average
+  power.lt.load_act_mw:
+    vendor: bloomberg
+    ticker: LD2CLT ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: LT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Power Load Actual Da'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      1369.361'
+    note: Lithuania Power Load Actual Daily Average
+  power.no.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CNO ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: 'NO'
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Norway Power Load Actual Daily'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      15309.57'
+    note: Norway Power Load Actual Daily Average
+  power.se.load_act_mw:
+    vendor: bloomberg
+    ticker: LD1CSE ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: SE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Sweden Power Load Actual Daily'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      13890.25'
+    note: Sweden Power Load Actual Daily Average
+  power.gr.load_act_mw:
+    vendor: bloomberg
+    ticker: LD2CGR ACT 24AV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GR
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Greece Power Load Actual Daily'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      4824.208'
+    note: Greece Power Load Actual Daily Average
+  power.nordpool.load_act_mw:
+    vendor: bloomberg
+    ticker: NO1CNPTT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Nordpool Daily Average Consump'', LAST_UPDATE_DT 2025-02-04, PX_LAST
+      61040.63'
+    note: Nordpool Daily Average Consumption (Nordpool Power Exchange)
+  power.ro.load_act_mw:
+    vendor: bloomberg
+    ticker: RPFCCOAV Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: RO
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Romania Power Utilities Consum'', LAST_UPDATE_DT 2026-10-17, PX_LAST
+      5817.23341666667'
+    note: Romania Power Utilities Consumption Average
+  power.be.solar_cap_mw:
+    vendor: bloomberg
+    ticker: SOLFTTBE Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Solar Belgium Cumulative Capac'', LAST_UPDATE_DT 2035-12-31, PX_LAST
+      21491.666328600008'
+    note: Solar Belgium Cumulative Capacity [MW]
+  power.be.wind_on_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW1BE Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Onshore Belgium Forecast'', LAST_UPDATE_DT 2036-12-31, PX_LAST
+      4874.829999899998'
+    note: Wind Onshore Belgium Forecast Capacity [MW]
+  power.be.wind_off_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW2BE Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: BE
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Offshore Belgium Forecast'', LAST_UPDATE_DT 2041-12-31, PX_LAST
+      4289.0'
+    note: Wind Offshore Belgium Forecast Capacity [MW]
+  power.fr.solar_cap_mw:
+    vendor: bloomberg
+    ticker: SOLFTTFR Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Solar France Cumulative Capaci'', LAST_UPDATE_DT 2035-12-31, PX_LAST
+      70739.49349709677'
+    note: Solar France Cumulative Capacity [MW]
+  power.fr.wind_on_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW1FR Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: FR
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Onshore France Forecast C'', LAST_UPDATE_DT 2036-12-31, PX_LAST
+      40526.5330875'
+    note: Wind Onshore France Forecast Capacity [MW]
+  power.de.solar_cap_mw:
+    vendor: bloomberg
+    ticker: SOLFTTDE Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Solar Germany Cumulative Capac'', LAST_UPDATE_DT 2035-12-31, PX_LAST
+      298204.43538105267'
+    note: Solar Germany Cumulative Capacity [MW]
+  power.de.wind_on_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW1DE Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Onshore Germany Forecast'', LAST_UPDATE_DT 2036-12-31, PX_LAST
+      164686.9964945464'
+    note: Wind Onshore Germany Forecast Capacity [MW]
+  power.de.wind_off_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW2DE Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: DE
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Offshore Germany Forecast'', LAST_UPDATE_DT 2041-12-31, PX_LAST
+      24947.939999999995'
+    note: Wind Offshore Germany Forecast Capacity [MW]
+  power.it.solar_commercial_cap_mw:
+    vendor: bloomberg
+    ticker: SOLFS2IT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Solar Commercial PV Italy Cumu'', LAST_UPDATE_DT 2035-12-31, PX_LAST
+      39103.04093975904'
+    note: Solar Commercial PV Italy Cumulative Capacity [MW]
+  power.it.solar_utility_cap_mw:
+    vendor: bloomberg
+    ticker: SOLFS3IT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Solar Utility PV Italy Cumulat'', LAST_UPDATE_DT 2035-12-31, PX_LAST
+      43245.545'
+    note: Solar Utility PV Italy Cumulative Capacity [MW]
+  power.it.wind_on_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW1IT Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: IT
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Onshore Italy Forecast Ca'', LAST_UPDATE_DT 2036-12-31, PX_LAST
+      23620.03333333333'
+    note: Wind Onshore Italy Forecast Capacity [MW]
+  power.es.solar_cap_mw:
+    vendor: bloomberg
+    ticker: SOLFTTES Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Solar Spain Cumulative Capacit'', LAST_UPDATE_DT 2035-12-31, PX_LAST
+      120311.70151530937'
+    note: Solar Spain Cumulative Capacity [MW]
+  power.es.wind_on_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW1ES Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: ES
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Onshore Spain Forecast Ca'', LAST_UPDATE_DT 2036-12-31, PX_LAST
+      48400.23314285716'
+    note: Wind Onshore Spain Forecast Capacity [MW]
+  power.gb.solar_cap_mw:
+    vendor: bloomberg
+    ticker: SOLFTTGB Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Solar United Kingdom Cumulativ'', LAST_UPDATE_DT 2035-12-31, PX_LAST
+      84721.31000982378'
+    note: Solar United Kingdom Cumulative Capacity [MW]
+  power.gb.wind_on_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW1GB Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Onshore United Kingdom Fo'', LAST_UPDATE_DT 2036-12-31, PX_LAST
+      30697.4016990626'
+    note: Wind Onshore United Kingdom Forecast Capacity [MW]
+  power.gb.wind_off_cap_mw:
+    vendor: bloomberg
+    ticker: WNDFW2GB Index
+    field: px_last
+    unit: MW
+    description_unit: MW
+    frequency: daily
+    geography: GB
+    measure_type: capacity
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 7
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Wind Offshore United Kingdom F'', LAST_UPDATE_DT 2041-12-31, PX_LAST
+      73517.3246586325'
+    note: Wind Offshore United Kingdom Forecast Capacity [MW]
+  gas.be.burn_hzone_gwhd:
+    vendor: bloomberg
+    ticker: FXYPHPPP Index
+    field: px_last
+    unit: GWh/d
+    description_unit: GWh/d
+    frequency: daily
+    geography: BE
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Belgium Gas H-Cal Power Gen De'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      -47.304681'
+    note: 'gas burn H-zone (Fluxys): total or power only is not stated'
+  gas.gb.power_station_mcmd:
+    vendor: bloomberg
+    ticker: NGIOPTOT Index
+    field: px_last
+    unit: MCM/d
+    description_unit: MCM/d
+    frequency: daily
+    geography: GB
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''NTS Power Station Aggregate To'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      23.24339'
+    note: NTS power station aggregate physical flows
+  gas.it.power_burn_gwhd:
+    vendor: bloomberg
+    ticker: SNAMGPGE Index
+    field: px_last
+    unit: GWh/d
+    description_unit: GWh/d
+    frequency: daily
+    geography: IT
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy Gas Power Generation Dem'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      588.380307'
+    note: Italy gas power generation demand (SNAM)
+  gas.es.outflows_national_gwhd:
+    vendor: bloomberg
+    ticker: ENAGONAD Index
+    field: px_last
+    unit: GWh/d
+    description_unit: GWh/d
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Gas Outflows - National'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      583.92'
+    note: Spain national gas outflows (ENAGAS)
+  gas.es.power_burn_gwhd:
+    vendor: bloomberg
+    ticker: ENAGONGP Index
+    field: px_last
+    unit: GWh/d
+    description_unit: GWh/d
+    frequency: daily
+    geography: ES
+    measure_type: flow
+    status: known
+    pit_grade: B
+    publication_lag:
+      days: 1
+      time: '12:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Spain Gas Outflows - Gas for P'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      180.36'
+    note: Spain gas outflows for power generation (ENAGAS)
+  price.power_de.da_eur_mwh:
+    vendor: bloomberg
+    ticker: LPXBHRBS Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: DE
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Epex Spot Germany Day-Ahead Au'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      195.66'
+    note: exchange auction baseload (EPEX)
+  price.power_fr.da_eur_mwh:
+    vendor: bloomberg
+    ticker: PWNXFRAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: FR
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''EPEX Spot Day-Ahead Baseload E'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      212.32'
+    note: EPEX day-ahead baseload
+  price.power_be.da_eur_mwh:
+    vendor: bloomberg
+    ticker: DABEBASE Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: BE
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''EPEX SPOT Belgium (Belpex) Day'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      210.57'
+    note: Belpex day-ahead baseload
+  price.power_nl.da_eur_mwh:
+    vendor: bloomberg
+    ticker: AELCTDAY Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''APX Power NL Day Ahead 24-Hour'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      186.3'
+    note: APX NL day-ahead 24h average
+  price.power_it.da_eur_mwh:
+    vendor: bloomberg
+    ticker: GMELITBS Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: IT
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''GME Day-Ahead Baseload Spot Pr'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      258.89'
+    note: GME day-ahead baseload
+  price.power_es.da_eur_mwh:
+    vendor: bloomberg
+    ticker: OMLPDAHD Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: ES
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''OMEL Day Ahead Average Electri'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      195.5229'
+    note: OMIE day-ahead average
+  price.power_pt.da_eur_mwh:
+    vendor: bloomberg
+    ticker: OMPTDAHD Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: PT
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''OMEL Day Ahead Baseload Electr'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      195.5229'
+    note: OMIE PT day-ahead baseload
+  price.power_gb.da_gbp_mwh:
+    vendor: bloomberg
+    ticker: N2EXAM Index
+    field: px_last
+    unit: GBP/MWh
+    description_unit: GBP/MWh
+    frequency: daily
+    geography: GB
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''N2EX Power Exchange UK Day-Ahe'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      173.45'
+    note: N2EX UK day-ahead baseload
+  price.power_gb.da_apx_gbp_mwh:
+    vendor: bloomberg
+    ticker: PXPXBASE Index
+    field: px_last
+    unit: GBP/MWh
+    description_unit: GBP/MWh
+    frequency: daily
+    geography: GB
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''APX UK Power Auction Price (GB'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      177.45'
+    note: 'CROSS-CHECK 2026-10-19: Bloomberg and BNEF disagree on 2060 days (BBG mean 114.2 vs BNEF 133.5 GBP/MWh, max diff 111). Not the same series or averaging. Do not use until resolved.'
+  price.power_cz.da_eur_mwh:
+    vendor: bloomberg
+    ticker: OTIXBSCZ Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: CZ
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''OTE Day Ahead Spot Market Inde'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      200.65'
+    note: OTE CZ day-ahead baseload
+  price.power_pl.da_pln_mwh:
+    vendor: bloomberg
+    ticker: PXPEIDTB Index
+    field: px_last
+    unit: PLN/MWh
+    description_unit: PLN/MWh
+    frequency: daily
+    geography: PL
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Poland Power Index TGeBase'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      822.56'
+    note: 'CROSS-CHECK 2026-10-19: BBG values are PLN (mean 519); BNEF values are in EUR-scale (mean 116). The BNEF unit label PLN/MWh is inconsistent with its data. The Bloomberg PLN series is used.'
+  price.power_nordpool.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENWSSPAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NORDPOOL
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''System Daily Average EUR (Nord'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      143.98'
+    note: Nord Pool system price
+  price.power_at.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ATPWHRBS Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: AT
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Epex Spot Austria Day-Ahead Po'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      242.74'
+    note: EPEX AT day-ahead baseload
+  price.power_ch.da_eur_mwh:
+    vendor: bloomberg
+    ticker: LSWBHRBS Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: CH
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Epex Spot SwissSix Day-Ahead B'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      241.05'
+    note: EPEX SwissSix day-ahead baseload
+  price.power_ro.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ROPXDAMB Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: RO
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''OPCOM ROPEX Day Ahead Market B'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      307.24'
+    note: OPCOM ROPEX day-ahead base
+  price.power_hu.da_eur_mwh:
+    vendor: bloomberg
+    ticker: HUDABASE Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: HU
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Hungary Power Day-Ahead Auctio'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      326.57'
+    note: HUPX day-ahead baseload
+  price.power_sk.da_eur_mwh:
+    vendor: bloomberg
+    ticker: OTIXBSSK Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: SK
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''OTE Day Ahead Spot Market Inde'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      244.97'
+    note: OTE SK day-ahead baseload
+  price.power_si.da_eur_mwh:
+    vendor: bloomberg
+    ticker: BSPEBASE Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: SI
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Slovenian Electricity Day-ahea'', LAST_UPDATE_DT 2026-02-26, PX_LAST
+      74.55'
+    note: BSP Slovenia day-ahead base
+  price.power_se1.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENWSS1AV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: SE1
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lulea Daily Average EUR (Nordp'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      51.48'
+    note: Nord Pool SE1 daily average
+  price.power_se2.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENWSS2AL Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: SE2
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Sundsvall Daily Average EUR (N'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      64.65'
+    note: Nord Pool SE2 daily average
+  price.power_se3.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENWSS3AL Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: SE3
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Stockholm Daily Average EUR (N'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      117.25'
+    note: Nord Pool SE3 daily average
+  price.power_se4.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENWSS4AL Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: SE4
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Malmo Daily Average EUR (Nordp'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      178.67'
+    note: Nord Pool SE4 daily average
+  price.power_dk1.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENDSODAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: DK1
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Aarhus Daily Average EUR (Nord'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      179.31'
+    note: Nord Pool DK1 daily average
+  price.power_dk2.da_eur_mwh:
+    vendor: bloomberg
+    ticker: CPHE24AV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: DK2
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Copenhagen Daily Average EUR ('', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      192.14'
+    note: Nord Pool DK2 daily average
+  price.power_no1.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENOSOSAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NO1
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Oslo Daily Average EUR (Nordpo'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      160.2'
+    note: Nord Pool NO1 daily average
+  price.power_no2.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENOSKRAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NO2
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Kristiansand Daily Average EUR'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      168.55'
+    note: Nord Pool NO2 daily average
+  price.power_no3.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENOSTRAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NO3
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Trondheim Daily Average EUR (N'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      120.05'
+    note: Nord Pool NO3 daily average
+  price.power_no4.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENOSTMAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NO4
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Tromso Daily Average EUR (Nord'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      23.5'
+    note: Nord Pool NO4 daily average
+  price.power_no5.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENOSBGAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NO5
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Bergen Daily Average EUR (Nord'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      157.26'
+    note: Nord Pool NO5 daily average
+  price.power_fi.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ENNSHEAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: FI
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Helsinki Daily Average EUR (No'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      65.14'
+    note: Nord Pool FI daily average
+  price.power_ee.da_eur_mwh:
+    vendor: bloomberg
+    ticker: ESTPPXAV Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: EE
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Estonia Daily Average EUR (Nor'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      91.45'
+    note: Nord Pool EE daily average
+  price.power_lv.da_eur_mwh:
+    vendor: bloomberg
+    ticker: LVNPEUAG Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: LV
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Latvia Daily Average EUR (Nord'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      135.15'
+    note: Nord Pool LV daily average
+  price.power_lt.da_eur_mwh:
+    vendor: bloomberg
+    ticker: OLITEURP Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: LT
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Lithuania Daily Average EUR (N'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      135.15'
+    note: Nord Pool LT daily average
+  price.power_de.da_offpeak1_eur_mwh:
+    vendor: bloomberg
+    ticker: LPXBHOP1 Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: DE
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Epex Spot Germany Day-Ahead Au'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      177.8'
+    note: EPEX DE off-peak 1
+  price.power_de.da_peak_eur_mwh:
+    vendor: bloomberg
+    ticker: LPXBHRPK Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: DE
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Epex Spot Germany Day-Ahead Au'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      200.6'
+    note: EPEX DE daily peakload
+  price.power_fr.da_peak_eur_mwh:
+    vendor: bloomberg
+    ticker: PWNXFRPK Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: FR
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''EPEX Spot Day-Ahead Peakload E'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      224.9'
+    note: EPEX FR day-ahead peakload
+  price.power_nl.da_peak_eur_mwh:
+    vendor: bloomberg
+    ticker: AELCTMON Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''APX Power NL Day Ahead Peak El'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      181.82'
+    note: APX NL peak
+  price.power_nl.da_offpeak_eur_mwh:
+    vendor: bloomberg
+    ticker: AELCTMOF Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''APX Power NL Day Ahead Off-Pea'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      190.79'
+    note: APX NL off-peak
+  price.power_fr.da_offpeak1_eur_mwh:
+    vendor: bloomberg
+    ticker: PWNXFOP1 Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: FR
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''EPEX Spot France Day-Ahead Off'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      187.94'
+    note: EPEX FR off-peak 1
+  price.power_gb.da_apx_peak_gbp_mwh:
+    vendor: bloomberg
+    ticker: PXPXPEAK Index
+    field: px_last
+    unit: GBP/MWh
+    description_unit: GBP/MWh
+    frequency: daily
+    geography: GB
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''APX UK Power Auction Price (GB'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      186.52'
+    note: APX UK peak
+  price.power_gb.da_apx_offpeak_gbp_mwh:
+    vendor: bloomberg
+    ticker: PXPXOFPK Index
+    field: px_last
+    unit: GBP/MWh
+    description_unit: GBP/MWh
+    frequency: daily
+    geography: GB
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''APX UK Power Auction Price (GB'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      168.37'
+    note: APX UK off-peak
+  price.gas_fr.da_peg_eur_mwh:
+    vendor: bloomberg
+    ticker: PNXIGNDA Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: FR
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''PEGAS PEG (formerly PEG Nord)'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      87.555'
+    note: PEGAS PEG gas spot day-ahead
+  price.gas_it.da_psv_eur_mwh:
+    vendor: bloomberg
+    ticker: PSVGDAHD Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: IT
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Italy PSV Natural Gas Forward'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      92.40001'
+    note: PSV gas day-ahead
+  price.gas_nl.da_ttf_fwd_eur_mwh:
+    vendor: bloomberg
+    ticker: TTFGDAHD Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: NL
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Netherlands TTF Natural Gas Fo'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      88.40001'
+    note: TTF gas day-ahead forward (BNEF price)
+  price.gas_es.da_pvb_ref_eur_mwh:
+    vendor: bloomberg
+    ticker: MIBGRPDA Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: ES
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''MIBGAS Spanish PVB Reference P'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      88.46'
+    note: MIBGAS PVB reference price day-ahead
+  price.gas_es.da_pvb_traded_eur_mwh:
+    vendor: bloomberg
+    ticker: MIBGTPDA Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: ES
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''MIBGAS Spanish PVB Traded Pric'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      89.38'
+    note: MIBGAS PVB traded price day-ahead
+  price.gas_gb.da_nbp_gbp_therm:
+    vendor: bloomberg
+    ticker: NBPGDAHD Index
+    field: px_last
+    unit: GBp/therm
+    description_unit: GBp/therm
+    frequency: daily
+    geography: GB
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''UK NBP Natural Gas Forward Day'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      215.65'
+    note: 'CROSS-CHECK 2026-10-19: 0% of 1467 overlap days within tolerance (BBG mean 122.9 GBp/therm vs BNEF 1.437 GBP/therm). Unit or definition differs. Do not use until resolved.'
+  price.gas_at.da_vtp_eur_mwh:
+    vendor: bloomberg
+    ticker: PEGAETDA Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: AT
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''PEGAS ETF (VTP) Spot - Day-Ahe'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      89.45'
+    note: PEGAS ETF (VTP) gas day-ahead
+  price.gas_de.da_thc_eur_mwh:
+    vendor: bloomberg
+    ticker: EEDANCG1 Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: DE
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''PEGAS THE Spot - Day-Ahead'', LAST_UPDATE_DT 2026-10-19, PX_LAST
+      88.97'
+    note: PEGAS THE gas spot day-ahead
+  price.gas_cz.da_vtp_eur_mwh:
+    vendor: bloomberg
+    ticker: EGSIVTED Index
+    field: px_last
+    unit: EUR/MWh
+    description_unit: EUR/MWh
+    frequency: daily
+    geography: CZ
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 0
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: false
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''EEX Gas Spot pricing -  CZVTP'', LAST_UPDATE_DT 2026-10-18, PX_LAST
+      89.635'
+    note: EEX CZVTP end-of-day index
+  carbon.gb.price_support_gbp_t:
+    vendor: bloomberg
+    ticker: CARBPRIC Index
+    field: px_last
+    unit: GBP/t
+    description_unit: GBP/t
+    frequency: daily
+    geography: GB
+    measure_type: price
+    status: known
+    pit_grade: A
+    publication_lag:
+      days: 1
+      time: '19:00'
+      tz: Europe/Amsterdam
+      business_days: true
+    entitlement: licensed_bloomberg
+    provenance: 'BloombergNEF European Power Market Monitor workbook ticker list (user-supplied 2026-10-19); ref-checked 2026-10-19: NAME ''Carbon Price Support UK'', LAST_UPDATE_DT 2025-12-31, PX_LAST
+      18.0'
+    note: 'CROSS-CHECK 2026-10-19: only 5 overlap days; BBG 18.0 vs BNEF 21.0 GBP/t. Insufficient overlap to judge.'
