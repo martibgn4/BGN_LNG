@@ -31,7 +31,12 @@ from ttf_forecaster.data import bql_excel  # noqa: E402
 from ttf_forecaster.data.bloomberg import BloombergConfig  # noqa: E402
 from ttf_forecaster.data.outages import LiveOutageAdapter  # noqa: E402
 from ttf_forecaster.data.storage import ParquetStore  # noqa: E402
-from ttf_forecaster.pipelines.daily_snapshot import excel_available, run_daily  # noqa: E402
+from ttf_forecaster.pipelines.daily_snapshot import (  # noqa: E402
+    TerminalNotConnected,
+    check_terminal,
+    excel_available,
+    run_daily,
+)
 from ttf_forecaster.pipelines import fleet  # noqa: E402
 from ttf_forecaster.pipelines.outages import pull_snapshot  # noqa: E402
 from ttf_forecaster.settings import load_config  # noqa: E402
@@ -56,6 +61,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--extra-as-of", action="append", default=[], metavar="YYYY-MM-DD",
                     help="also take an outage snapshot for this past as-of date (repeatable)")
     args = ap.parse_args(argv)
+
+    try:
+        check_terminal()
+    except TerminalNotConnected as exc:
+        print(f"ERROR {datetime.now(timezone.utc):%Y-%m-%d %H:%M} UTC: {exc}", file=sys.stderr, flush=True)
+        return 2
 
     today = datetime.now(timezone.utc).date()
     request_time = datetime.now(timezone.utc)

@@ -17,6 +17,46 @@ from ttf_forecaster.pipelines import bql_weather
 from ttf_forecaster.pipelines.outages import pull_snapshot
 
 
+TERMINAL_NOT_CONNECTED = (
+    "Bloomberg Terminal not connected: log in to the Terminal and re-run. "
+    "Nothing was pulled today (outages, BQL weather and LNG fleet all need it)."
+)
+
+
+class TerminalNotConnected(RuntimeError):
+    """The desktop API (localhost:8194) did not accept a session or open //blp/refdata."""
+
+
+def check_terminal(session_factory: Callable[[], Any] | None = None) -> None:
+    """Open a desktop-API session and the refdata service, then close it. Requests no data.
+
+    Raises ``TerminalNotConnected`` with ``TERMINAL_NOT_CONNECTED`` when the Terminal is not running or not
+    logged in. ``session_factory`` (default: a blpapi session to localhost:8194) is injectable for tests.
+    """
+    if session_factory is None:
+        def session_factory() -> Any:
+            import blpapi  # noqa: PLC0415 - only on a live run
+
+            opts = blpapi.SessionOptions()
+            opts.setServerHost("localhost")
+            opts.setServerPort(8194)
+            opts.setNumStartAttempts(1)
+            opts.setConnectTimeout(5000)
+            return blpapi.Session(opts)
+
+    try:
+        session = session_factory()
+        started = session.start()
+    except Exception as exc:  # blpapi missing or refusing the connection
+        raise TerminalNotConnected(f"{TERMINAL_NOT_CONNECTED} ({type(exc).__name__}: {exc})") from exc
+    try:
+        if not started or not session.openService("//blp/refdata"):
+            raise TerminalNotConnected(TERMINAL_NOT_CONNECTED)
+    finally:
+        if started:
+            session.stop()
+
+
 def excel_available() -> bool:
     """True when a running Excel instance is reachable through xlwings."""
     try:

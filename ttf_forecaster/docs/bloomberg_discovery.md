@@ -864,13 +864,19 @@ Limits to keep in mind:
 `scripts/run_daily_snapshot.py` takes today's outage snapshot (FR, DE, NORDPOOL) and today's BQL weather forecasts. The BQL
 part runs only while Excel with the Bloomberg add-in is open; otherwise it is skipped with a message. Re-running on the same
 day adds nothing. The script writes a temporary authorised config copy, as the other live pulls do. **No scheduled task is
-created.** To schedule it, run this once in a Command Prompt (the user's decision, not done here):
+created.** To schedule it, run this once in a Command Prompt (the user's decision, not done here). The task runs
+`scripts/run_daily_snapshot.bat`, which appends all output to `data\live\logs\daily_snapshot.log`:
 
 ```bat
-schtasks /Create /SC DAILY /ST 18:00 /TN "TTF daily snapshot" /TR "\"C:\Marti\python_tests_2\env_local\Scripts\python.exe\" \"C:\Marti\python_tests_2\BGN_LNG\ttf_forecaster\scripts\run_daily_snapshot.py\""
+schtasks /Create /SC DAILY /ST 18:00 /TN "TTF daily snapshot" /TR "\"C:\Marti\python_tests_2\BGN_LNG\ttf_forecaster\scripts\run_daily_snapshot.bat\""
 ```
 
-Options: `--skip-bql` (outages only), `--extra-as-of YYYY-MM-DD` (a past snapshot, from 2026-10-13).
+Options: `--skip-bql` (outages only), `--skip-fleet`, `--extra-as-of YYYY-MM-DD` (a past snapshot, from 2026-10-13).
+
+Terminal preflight (D-053): before any pull the script opens a desktop-API session and `//blp/refdata` (no data request).
+If that fails it stops with exit code 2 and logs `Bloomberg Terminal not connected: log in to the Terminal and re-run.
+Nothing was pulled today`. Recovery for a missed day: outages via `--extra-as-of` (stamped with the late request time),
+BQL weather by re-pulling that as-of; the LNG fleet snapshot cannot be recovered.
 
 ### Open items
 

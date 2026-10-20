@@ -2,7 +2,7 @@
 
 Read this first in any new session, then `CLAUDE.md`, `docs/research_specification.md` (§8 criteria +
 amendments A1–A6), `docs/point_in_time_policy.md`, and the latest entries of `docs/modelling_log.md`
-(D-001 … D-052; D-052 is the renumbered derived-power entry, dated 2026-10-19).
+(D-001 … D-053; D-052 is the renumbered derived-power entry, dated 2026-10-19).
 
 ## State in one paragraph
 - **Pipeline:** point-in-time research platform. It is synthetic-tested, about 770+ tests pass
@@ -36,7 +36,7 @@ amendments A1–A6), `docs/point_in_time_policy.md`, and the latest entries of `
 
 ## Next steps (in order)
 1. **Commit the work** on a branch, once the user approves. Data stays ignored.
-2. **Schedule** `scripts/run_daily_snapshot.py`: outages, BQL weather (needs Excel) and the LNG fleet.
+2. **Schedule** `scripts/run_daily_snapshot.bat` (wraps the .py, logs to `data/live/logs/`; exits 2 with a clear message if the Terminal is not logged in, D-053): outages, BQL weather (needs Excel) and the LNG fleet.
    The user decides; the Task Scheduler command is in `docs/bloomberg_discovery.md` §8.
 3. **Wire the new data into the features:** flows/balance, cross-commodity basis, LNG (imports,
    arrivals), power (generation, load, spreads, nuclear availability), BQL weather; plus the PNX

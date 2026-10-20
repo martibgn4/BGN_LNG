@@ -973,3 +973,15 @@ build `NCGX10M`.
 - **Level gap (13%):** most likely a perimeter difference; AHOYIMEU covers more countries than NL/BE/FR/GB/DE.
   Not used to rescale either series.
 - **Revisit:** if the vendor documents AHOY's date convention.
+
+### D-053 · 2026-10-20 · Daily snapshot: Terminal preflight with a clear failure, and a logging wrapper
+- **User decision:** the daily job may fail when the Bloomberg Terminal is not logged in, but the message must say so plainly.
+- **Change:** `pipelines/daily_snapshot.check_terminal` opens a desktop-API session (localhost:8194, one attempt, 5 s timeout)
+  and `//blp/refdata`, then closes it. It requests no data. On failure `scripts/run_daily_snapshot.py` prints
+  "Bloomberg Terminal not connected: log in to the Terminal and re-run. Nothing was pulled today ..." to stderr and exits 2,
+  before any config copy, store write or pull.
+- **Wrapper:** `scripts/run_daily_snapshot.bat` appends stdout/stderr and the exit code to `data\live\logs\daily_snapshot.log`
+  (git-ignored). The Task Scheduler command in `docs/bloomberg_discovery.md` §8 now points at it. No task is created.
+- **Not changed:** a failure inside one part still stops the later parts (user accepted). The LNG fleet snapshot of a missed
+  day is lost for good; outages and BQL weather can be re-pulled late.
+- **Tests:** 5 (connected, not started, refdata refused, exception wrapped, script exits 2 with nothing touched).
